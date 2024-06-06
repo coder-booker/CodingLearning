@@ -1,0 +1,25 @@
+
+
+#box {
+    display: flex;
+    flex-wrap: wrap;
+    /* justify-content: center; */
+    /* align-items: center; */
+
+    width: 50vmin;
+    height: 50vmin;
+
+    background-color: darkgray;
+}
+
+.square {
+    flex-basis: calc(100% / 3);
+
+    /* 单行高度 */
+    /* line-height: 3em;  */
+    text-align: center;
+
+    font-size: 50px;
+
+    background-color: gray;
+}
