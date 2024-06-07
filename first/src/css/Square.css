@@ -1,6 +1,8 @@
 
 
 #box {
+    position: relative;
+
     display: flex;
     flex-wrap: wrap;
     /* justify-content: center; */
@@ -14,6 +16,7 @@
 
 .square {
     flex-basis: calc(100% / 3);
+    height: calc(100% / 3);
 
     /* 单行高度 */
     /* line-height: 3em;  */
@@ -22,4 +25,15 @@
     font-size: 50px;
 
     background-color: gray;
+}
+
+#reset {
+    position: absolute;
+    left: calc(50% - 50px);
+    bottom: -30px;
+
+    display: hidden;
+    
+    width: 100px;
+    height: 30px;
 }
