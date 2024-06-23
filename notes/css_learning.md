@@ -16,3 +16,11 @@
 
 css mudule
     :global(.className)：可以且仅可以去除这个class渲染后的哈希
+
+display: 
+    非block/inline-block无法设w h
+    flex父元素会把所有子元素的display变成flex子元素，以此移除所有原特性
+    flex子元素不会融合外部margin
+
+根据字体大小决定大小
+    不设置width和height，只设置font-size和padding+box-sizing就可以
