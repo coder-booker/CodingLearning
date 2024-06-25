@@ -24,3 +24,6 @@ display:
 
 根据字体大小决定大小
     不设置width和height，只设置font-size和padding+box-sizing就可以
+
+box-shadow: 
+    [horizontal_offset] [vertical_offset] [blur_radius] [spread_radius] [color];
