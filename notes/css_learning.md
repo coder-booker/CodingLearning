@@ -12,7 +12,10 @@
     渐变：background-image: linear-gradient(to bottom, transparent 20%, blue 40%, blue 60%, transparent 80%);
 
 文本
-    垂直居中：line-height和height一样就可以居中
+    垂直居中：
+        line-height和height一样
+        行内元素使用vertical-align
+        flex使用center
 
 css mudule
     :global(.className)：可以且仅可以去除这个class渲染后的哈希
