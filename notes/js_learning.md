@@ -1,17 +1,142 @@
 
 # ***基础***
-    变量二进制的低三位代表其类型：000: 对象，001：整数，100：字符串等
-    == 类型转换同一再对比
-    === 不做类型转换
-        类型对比 -> 如一样则对比值，如果是数字就得额外判断NaN，如果是对象或函数则对比引用
+## Basic
+- 六大基本类型
+    - undefined
+    - null
+    - boolean
+    - number
+    - string
+    - symbol
+- 变量二进制的低三位代表其类型：000: 对象，001：整数，100：字符串等
+- == 类型转换同一再对比
+- === 不做类型转换
+    类型对比 -> 如一样则对比值，如果是对比数字就得额外判断NaN，如果是对比对象或函数则对比引用
+- typeof xxx查询, instanceof XxxYyy判断
+- false：
+    - 0（数字零）
+    - -0（负零）
+    - 0n（BigInt 零）
+    - ""（空字符串）
+    - null 
+    - undefined 
+    - NaN（Not-a-Number）
+- true: 
+    - true
+    - 非零数字（例如 1, -1, 3.14）
+    - 非空字符串（例如 "hello", "false", "0"）
+    - 对象（例如 {}, []）
+    - 函数（例如 function() {}, () => {}）
+    - 非零 BigInt（例如 1n, -1n）
+## 赋值
+- 数组解构
+- 对象解构
+    - eg: `const {a, b, c} = { a: 10, b: 10, c: 10};`
+- 解构默认值
+    - 数组: `const [ a, b = 20, c = 50 ] = [ 10 ];` -> `a=10, b=20, c=50` (必须按顺序)
+    - 对象: `const { a = 10, b = 20, c = 30 } = {a: 20, b, c: 20}` -> `a=20, b=20, c=20` (以键来标识)
+## 类型自动转换
+- js是动态类型语言，所以变量的类型是运行时确定的，因此会有类型的自动转换
+- 转换可以手动也可以自动，但大多数情况下用自动
+- 场景
+    - 对象参与运算时，如果需要转换类型，会尝试用`toString()`或者`valueOf()`方法转换成原始值primitive再运算，如果两个方法都没有返回原始值则报错
+    - 对比运算
+        - 字符串与数字混合：转成数字
+        - 对象与对象：对比地址
+        - eg `'1'<2`返回true，`'5'==5`返回true
+        - 注意`===`是严格相等，不会进行类型转换
+    - 数学运算
+        - 全都尝试变成数字
+        - `+`例外：如果`+`一个字符串，会变成字符串拼接
+    - 字符串拼接
+        - 啥都尝试转成字符串
+    - 逻辑运算(比如条件判断和`!`的场景)转换成true和false
+        - 骚操作：因此`!!`可以转换成对应的boolean
+## 对象
+- 万物皆对象
+- `this`指向调用者的上下文
+- 全局对象
+    - 非严格模式下为window，全局变量和独立函数、匿名函数都为其属性与方法，它们的this也会指向widnow
+    - 严格模式下this返回的是undefined
+    - `var`声明的不在函数内的变量会属于全局对象，而`let`不会
+- 字面量对象
+    - 直接用花括号初始化的变量就是字面量对象
+- 原型链
+    - 所有对象都有一个原型，原型也是一个对象，直到原型为null
+- 对象除非特殊处理过，否则布可迭代（数组就是特殊的可迭代对象）
+- `delete`操作符
+    - delete 操作符用于删除对象的某个属性；如果没有指向这个属性的引用，那它最终会被释放。
+    - 如果你试图删除的属性不存在，那么delete将不会起任何作用，但仍会返回true
+    - 如果对象的原型链上有一个与待删除属性同名的属性，那么删除属性之后，对象会使用原型链上的那个属性（也就是说，delete操作只会在自身的属性上起作用）
+    - 任何使用 var 声明的属性不能从全局作用域或函数的作用域中删除。
+        - 但在对象中的函数是能够用delete操作删除的。
+    - 任何用let或const声明的属性不能够从它被声明的作用域中删除。
+    - configurable为false属性不能被移除。这意味着像Math, Array, Object内置对象的属性以及使用Object.defineProperty()方法设置为不可设置的属性不能被删除。
+    - 参数是神秘的字面量（例如数字啥的）也不能delete，只会返回true
+- `Object.defineProperty([obj], [prop], [descriptor])`
+    - 用来给某个对象详细设置属性的内置函数
+    - 具体可以设置什么通过descriptor来定义
+    - `obj`：要被定义属性的对象
+    - `prop`：要定义的属性名
+    - `descriptor`：属性描述符对象
+        - `value`：属性的值。默认为 undefined。
+        - `writable`：属性是否可写。默认为 false。
+            - 如果是false，所有的修改对此属性的修改都会不起作用
+        - `enumerable`：属性是否可枚举。默认为 false。
+            - 用`for in`或者`Object.keys`枚举的时候会不会显示这个属性
+        - `configurable`：属性是否可配置。默认为 false。
+            - 能否被`Object.defineProperty`再次定义
+        - `get`：属性的 getter 函数。默认为 undefined。
+            - 也就是该属性被调用时会使用这个get()的返回值
+        - `set`：属性的 setter 函数。默认为 undefined。
+            - 也就是该属性被修改时会把修改值当成参数输入set()中
+- 内置对象的所有属性都是不可配置的(configurable=false)
+
 ### 数组
+<<<<<<< HEAD
+- 数组本质上就是经过特殊处理的可迭代对象
+- .push() 追加
+- .length 长度
+- .shift() 删除并返回index为0的元素
+- .pop() 删除并返回最后一位元素
+- .toString() 用,拼接所有元素成字符串
+- .splice()
+    - 高度集成的数组方法，可以同时添加删除和替换元素
+    - arr.splice(a, b, c, d);
+        - 以索引a为起始，删除b个元素。b可以 = 0 或 > arr.length
+        - 在索引a的位置插入c, d，甚至efgh，没有限制数量
+- .include() 判断有无包含某元素
+- .indexOf() 获得某元素在数组中的第一个匹配项的idx，如无则返回-1
+- .find() 获得某元素在数组中的第一个匹配项本身，如无返回undefined
+- 一般用const修饰，因为const的是引用而非数组内的值，所以数组const仍可修改
+- 复制可以用[...target]
+- new Array(len).fill(0);
+- const a = Array.from(iterator/str); 从迭代器/字符串建立数组
+
+### 迭代器
+- for of 可以用，一个元素多个值用for let [a, b] of
+- ...扩展运算符可以全部解出来
+### 字符串
+- let a = "asdasd";
+- for of 或 a.split('').forEach/.map 可以遍历
+- a.charCodeAt(i); 打印a[i]处字符的ascii code
+- a.length 获得长度
+- a.substring([start], [end?]) 不接受负数，如果start > end会自动交换这两个数
+- a.slice([start], [end?]) 接受负数为从末尾倒数的index，如果start > end会返回空字符串
+
+
+### json
+- 把变量用{}包起来，可以建立拥有以变量名为键，变量值为值的键值对的对象
+- JSON.stringify()把对象转变为json样式，即键为字符串，值根据类型变更
+- `.json`不只是解析json内容，同时还会转化为js的对象
+- 无论用那种语法传输，背后都是json字符串形式的
+
+=======
+    .shift() 删除index为0的元素
     .push() 追加
     .length 长度
-    .shift() 删除index为0的元素
-    .pop() 删除并返回最后一位元素
     .toString() 用,拼接所有元素成字符串
-    复制可以用[...target]
-    一般用const修饰，因为const的是引用而非数组内的值，所以数组const仍可修改
+>>>>>>> parent of 245175a (daily update)
 ### 循环 
 传统循环：<br>
 - `for ( const i = 0; i < n; i++ ) {};`
@@ -34,31 +159,343 @@ for of：<br>
 
 .forEach()：<br>
 - 类似map，但不返回值
-- 值得注意的是，这类循环都是直接对数组本身操作的，唯一记录的就是数组长度和index，每次步进1直到记录的数组长度。因此在循环内更改数组十分危险
 
 .filter()：<br>
-- 类似map，但只返回内部函数返回了true的元素
+- 类似map，但只返回内部函数返回了true的元素  
 
 
+<<<<<<< HEAD
+### Promise
+- `new Promise((resolve, reject) => { resolve("value"); reject("error") })`
+    - resolve和reject都是函数体，调用就会终止promise异步操作，但resolve表成功，reject表失败
+    - value是.then()会接受的值
+    - error是.catch()可以接收的值
+- `async`, `await`
+    - await本质上就是把promise转换成了正常的返回值，也就是封装好了then
+### 导入模块
+- 一般使用ES6模块格式即可
+- 只有ES6模块可以导出/导入ES6模块
+- 如果一份文件A导出，一份文件B引用，html导入时要使用`<script type="module" src="B.js></script>"`告知浏览器B是一个es6模块
+=======
 # ***函数***
-    默认返回undefined
 ### 箭头函数
     () => xxxx; 隐性返回xxxx
     () => {return xxxx;}; 显性返回xxxx
 <br>
+>>>>>>> parent of 245175a (daily update)
 
 
-# ***null, undefined, NaN***
-### null
-    应该在人为希望为空的变量/属性设置
-    解除引用回收垃圾
-    将会使用(被有效值赋值)的变量初始化为null
-    null的类型是object
-    typeof null -> object
-    而null就是32个0
-### undefined
-    变量的“原始状态”
-    未初始化变量，未声明属性，未传递实参，未声明变量的类型，void类型的变量，return; 都是undefined
-    typeof undefined -> undefined
-### NaN (Not a Number)
-    typeof NaN -> number
+# ***Event***
+### DragEvent
+- dataTransfer
+    - `event.dataTransfer.setData("text/plain", "a msg");`
+    - `event.dataTransfer.getData("text/plain");`
+
+
+# 函数
+- 默认返回undefined
+- 独立函数
+    - 在全局对象下声明的函数
+- 匿名函数
+    - 定义时没有名称的函数
+    - 箭头函数就是一种简洁的匿名函数
+        - () => xxxx; 隐性返回xxxx
+        - () => {return xxxx;}; 显性返回xxxx
+    - 立刻执行函数是也只能是匿名函数
+        - 给匿名函数的定义套上一层括号，然后用call或者.apply调用就是立刻执行函数
+- .call(...args) vs .apply(this, args) vs func()
+    - 调用函数的不同方法
+    - 所有函数都默认有这俩方法
+    - .call(...args), func()
+        - 注意其实默认会隐性传入一个this，为第一个参数（this在这里和func()有些不同）
+        - 所有参数都是直接传递
+    - .apply(this, args)
+        - 显性传入一个this为第一个参数
+        - 剩余的参数使用数组化的参数传递
+- 剩余参数 rest parameters
+    - 在参数的定义那里写...[name]就可以接受任意长度的参数并构建为一个数组
+    - eg
+    ```js
+    function (...args: any[]) {
+        try {
+            return await originalMethod.apply(this, args);
+        } catch (error) {
+            console.error(`Error in ${target.constructor.name}.${propertyKey}: ${error}`);
+        }
+    };
+    ```
+- 函数与对象
+    - 实例化函数对象会使用返回值作为实例化后储存的对象。
+        - 如果没有返回、返回值不为对象(比如返回了个基础类型)、或返回值为this，则返回其父级对象（函数作为方法时的父级对象）
+        - 如果没有父级对象或者是匿名函数，非严格模式下会返回全局对象window，严格模式下返回`undefined`
+    - 所以函数内也可以使用this，只要用new实例化为一个独立的对象且返回值不是对象就行
+
+# null, undefined, NaN
+- null
+    - 应该在人为希望为空的变量/属性设置
+    - 解除引用回收垃圾
+    - 将会被使用(被有效值赋值)的变量初始化为null
+    - null的类型是object（typeof null -> object）
+    - 而null就是32个0
+- undefined
+    - 变量的“原始状态”
+    - 未初始化变量，未声明(不存在的)属性，未传递实参，未声明变量的类型，void类型的变量，return; 都是undefined
+    - typeof undefined -> undefined
+    - null==undefined，但null!==undefined
+- NaN (Not a Number)
+    - typeof NaN -> number
+    - NaN不会等于任何东西，包括其自身
+- eg
+    ```ts
+    // 下面的返回值全是undefined
+    let a = [];
+    console.log(a?.name);
+
+    let b = "";
+    console.log(b?.name);
+
+    let c = null;
+    console.log(c?.name);
+
+    let d  = undefined;
+    console.log(d?.name)
+    ```
+
+
+# ***内置对象与方法***
+### Math
+- Math.max(...[all numebrs]); 如果a和b没法转换成number，返回NaN
+    - Number(value); 所有变量，失败返回NaN
+    - parseInt(value); 字符串，失败返回NaN
+    - +name; 所有变量，失败返回NaN
+    - * 1; 所有变量，失败返回NaN
+- `Math.pow([base], [exponent]);` or `**`
+- Math.abs()
+
+### setTimeout, setInteraval
+- `setTimeout(func, time)`
+    - 会在time ms后执行func()
+- `let xxx = setInterval(func, time)` + `clearInterval(xxx)`
+
+### Set/Map
+- general
+- Set
+    - let a = new Set();
+        可以从数组初始化
+    - a.add(val);
+    - a.has(val);
+    - a.delete(val);
+- Map
+    - let a = new Map();
+    - a.set(key, val);
+    - a.has(key);
+    - a.get(key);
+    - a.delete(key);
+    - a.forEach((key, val) => {});
+    - a.entries(); 返回键值对迭代器
+    - a.keys(); 返回键迭代器
+    - a.values(); 返回值迭代器
+    - for ( let [key, val] of a.entries() );
+
+
+# other
+### 语法糖
+- `xxx?.yyy`: 可选链操作符
+    - 安全访问xxx的属性yyy：如果xxx为undefined或者null之类无法获得属性的值，返回undefined而非报错
+    - 注意如果xxx存在，即不是undefined或者null，虽然xxx?.yyy仍会返回undefined，但不是因为?.而是js自己的访问不存在变量的特性
+- `!!xxxx`: 把xxxx转换成布尔值。等价于判断xxxx是否为null/undefined之类的无效值，减少了写判断式的功夫
+- `a = b ?? c` vs `a = b || c`
+    - `??`只会在null和undefined的时候返回右侧，`||`则只要false就返回
+### resizeObserver
+```js
+const resizeObserver = new ResizeObserver((entries) => {
+    // 可以同时监控多个元素
+    for (let entry of entries) {
+        // entry.target是被观察的元素
+
+        // entry.contentRect包含元素的尺寸信息
+        const [w, h] = [entry.contentRect.width, entry.contentRect.height];
+    }
+});
+const observedElement = document.getElementById("aaa");
+// observe 一个元素，要多个就多次observe
+resizeObserver.observe(observedElement);
+```
+### Server-Sent Event (SSE)
+- let frontend receive passively data from backend
+- front: 
+```js
+const subscriber = new EventSource('http://localhost:11451/subscribe');
+    subscriber.onopen = () => {
+      console.log('Connection opened');
+    };
+    subscriber.onmessage = (event) => {
+        // event.data是传入的东西，会被当成字符串（包括true false）
+        console.log(event.data);
+        // 可以用JSON解析
+        const data = JSON.parse(event.data);
+    };
+    // 自定义事件，当发过来的字段中有"event: customEvent\n"就能被侦测到
+    eventSource.addEventListener('customEvent', function(event) {
+      console.log('Custom Event:', event.data);
+    });
+    subscriber.onerror = function(error) {
+      console.error("EventSource failed:", error);
+    };
+    // 适当的时候关闭
+    subscriber.close();
+```
+- back:
+```js
+const clients = [];
+// 建立连接用
+app.get('/subscribe', (req, res) => {
+  try {
+    // 设置header为event-stream，并且设置cache和keep-alive来确保数据会实时更新
+    res.setHeader('Content-Type', 'text/event-stream');
+    res.setHeader('Cache-Control', 'no-cache');
+    res.setHeader('Connection', 'keep-alive');
+
+    // 记录client连接，用以继续给同一个client发数据
+    clients.push(res);
+
+    // 如果前端.close()了
+    req.on('close', () => {
+        // 清除client连接记录
+        clients.splice(clients.indexOf(res), 1);
+        console.log('close'+clients.length);
+        // 关闭
+        res.end();
+    });
+} catch (err) {
+    console.error(`Subscribe ERROR: ${err}`);
+    res.status(500).send('error');
+}
+
+// 发送数据用
+function sendMsg() {
+  try {
+    // 发送信息。直接发送的任何东西都会被解析为字符串，包括boolean
+    const data = JSON.stringify({aaa: "aaaa"});
+    clients.forEach(client => {
+        // 发送，\n\n为SSE标准中单次数据发送的结束符
+        client.write(`data: ${data}\n\n`);
+        
+        // 除了用json，一次发送多个字段还可以用一个\n分割多个字段来发送
+        // SSE发送的消息可以按照一定"xxx: yyy"格式被前端自动解析
+        client.write(`id: 1\n`);                // eventSource.lastEventId
+        client.write(`event: customEvent\n`);   // eventSource.addEventListener('customEvent', (event) => {})
+        client.write(`data: ${data}\n\n`);      // event.data
+    });
+}
+```
+### localStorage
+- `localStorage.setItem("key", value)`
+- `localStorage.getItem("key")`
+### URL类
+- 封装好各种获得URL参数的方法
+- 其中的属性/方法：
+    - href：完整的 URL 字符串。
+    - protocol：URL 的协议部分（例如 http: 或 https:）。
+    - host：URL 的主机部分，包括端口号（如果有）。
+    - hostname：URL 的主机名部分，不包括端口号。
+    - port：URL 的端口号。
+    - pathname：URL 的路径部分。
+    - search：URL 的查询字符串，包括问号（?）。
+    - searchParams：一个 URLSearchParams 对象，表示查询参数。
+    - hash：URL 的片段标识符，包括井号（#）。
+    - origin：URL 的源，包括协议、主机名和端口号。
+    - toString()：返回 URL 的字符串表示形式。
+    - toJSON()：返回 URL 的 JSON 表示形式，通常与 toString() 相同。
+- e.g.
+    ```ts
+    const url = new URL('https://example.com:8080/path/name?query=string#hash');
+    console.log(url.href);         // 'https://example.com:8080/path/name?query=string#hash'
+    console.log(url.protocol);     // 'https:'
+    console.log(url.host);         // 'example.com:8080'
+    console.log(url.hostname);     // 'example.com'
+    console.log(url.port);         // '8080'
+    console.log(url.pathname);     // '/path/name'
+    console.log(url.search);       // '?query=string'
+    console.log(url.searchParams); // URLSearchParams { 'query' => 'string' }
+    console.log(url.hash);         // '#hash'
+    console.log(url.origin);       // 'https://example.com:8080'
+    console.log(url.toString());   // 'https://example.com:8080/path/name?query=string#hash'
+    console.log(url.toJSON());     // 'https://example.com:8080/path/name?query=string#hash'
+    ```
+
+
+### Request
+- 属性  
+    - method：请求方法（如 GET、POST、PUT、DELETE 等）。
+    - url：请求的完整 URL。
+    - headers：请求头部，类型为 Headers 对象。
+    - body：请求主体，类型为 ReadableStream。
+    - bodyUsed：一个布尔值，表示请求主体是否已被读取。
+    - credentials：请求的凭据模式（如 omit、same-origin、include）。
+    - mode：请求的模式（如 cors、no-cors、same-origin）。
+    - cache：请求的缓存模式（如 default、no-store、reload、no-cache、force-cache、only-if-cached）。
+    - redirect：请求的重定向模式（如 follow、error、manual）。
+    - referrer：请求的引用来源。
+    - referrerPolicy：请求的引用来源策略。
+- 方法  
+    - clone()：创建请求的副本。
+    - text()：以文本形式读取请求主体，返回一个 Promise。
+    - json()：以 JSON 形式读取请求主体，返回一个 Promise。
+    - formData()：以 FormData 形式读取请求主体，返回一个 Promise。
+    - arrayBuffer()：以 ArrayBuffer 形式读取请求主体，返回一个 Promise。
+    - blob()：以 Blob 形式读取请求主体，返回一个 Promise。
+- 手动实例化
+    ```ts
+    const request = new Request('https://example.com', {
+        method: 'GET',
+        headers: new Headers({
+            'Content-Type': 'application/json'
+        }),
+        mode: 'cors',
+        cache: 'default'
+    });
+    ```
+
+### Response
+- 常用属性和方法
+    - status：响应的状态码。
+    - statusText：响应的状态文本。
+    - headers：响应头部，类型为 Headers 对象。
+    - ok：一个布尔值，表示响应的状态码是否在 200-299 范围内。
+    - redirected：一个布尔值，表示响应是否是重定向的结果。
+        - 一般情况下浏览器都会自动处理3xx的重定向状态码，不需要手动检测redirected和fetch
+    - type：响应的类型（如 basic、cors、default、error、opaque、opaqueredirect）。
+    - url：响应的 URL。
+    - clone()：创建响应的副本。
+    - text()：以文本形式读取响应主体，返回一个 Promise。
+    - json()：以 JSON 形式读取响应主体，返回一个 Promise。
+    - formData()：以 FormData 形式读取响应主体，返回一个 Promise。
+    - arrayBuffer()：以 ArrayBuffer 形式读取响应主体，返回一个 Promise。
+    - blob()：以 Blob 形式读取响应主体，返回一个 Promise。
+- 手动实例化
+    ```ts
+    const response = new Response(JSON.stringify({ key: 'value' }), {
+        status: 200,
+        statusText: 'OK',
+        headers: new Headers({
+            'Content-Type': 'application/json'
+        })
+    });
+    ```
+### Error
+- 常用属性
+    - name: 错误的名称，默认值是 "Error"。
+    - message: 错误的描述信息。
+    - stack: 错误的堆栈追踪信息，通常用于调试。
+- 构造函数只接收message，要构造的时候修改其他属性需要extends；但可以在实例化后修改其他属性
+- e.g. `const error = new Error('Something went wrong');`
+
+
+
+
+
+- to-do
+    - 搞清楚所谓"this指向调用者的上下文"是什么意思
+        - 这涉及到.call()隐性传入的this是什么
+    - symbol是什么
