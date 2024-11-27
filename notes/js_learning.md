@@ -1,13 +1,8 @@
 
-# ***基础***
+# 基础
 ## Basic
-- 六大基本类型
-    - undefined
-    - null
-    - boolean
-    - number
-    - string
-    - symbol
+- 六大基本类型/原始值
+    - undefined、null、boolean、number、string、symbol
 - 变量二进制的低三位代表其类型：000: 对象，001：整数，100：字符串等
 - == 类型转换同一再对比
 - === 不做类型转换
@@ -35,6 +30,7 @@
 - 解构默认值
     - 数组: `const [ a, b = 20, c = 50 ] = [ 10 ];` -> `a=10, b=20, c=50` (必须按顺序)
     - 对象: `const { a = 10, b = 20, c = 30 } = {a: 20, b, c: 20}` -> `a=20, b=20, c=20` (以键来标识)
+- 储存基本类型/原始值的变量被赋值给别的变量时，是复制了一份副本给这个新变量。而储存对象的变量则会赋值其引用给别的变量。
 ## 类型自动转换
 - js是动态类型语言，所以变量的类型是运行时确定的，因此会有类型的自动转换
 - 转换可以手动也可以自动，但大多数情况下用自动
@@ -62,7 +58,8 @@
 - 字面量对象
     - 直接用花括号初始化的变量就是字面量对象
 - 原型链
-    - 所有对象都有一个原型，原型也是一个对象，直到原型为null
+    - 每个对象都有一个private属性，指向自己的prototype(也可以理解为继承的类)，而prototype也有自己的prototype
+    - 可以一直往上追溯，直到某个prototype的prototype属性为null
 - 对象除非特殊处理过，否则布可迭代（数组就是特殊的可迭代对象）
 - `delete`操作符
     - delete 操作符用于删除对象的某个属性；如果没有指向这个属性的引用，那它最终会被释放。
@@ -92,8 +89,7 @@
             - 也就是该属性被修改时会把修改值当成参数输入set()中
 - 内置对象的所有属性都是不可配置的(configurable=false)
 
-### 数组
-<<<<<<< HEAD
+## 数组
 - 数组本质上就是经过特殊处理的可迭代对象
 - .push() 追加
 - .length 长度
@@ -113,10 +109,11 @@
 - new Array(len).fill(0);
 - const a = Array.from(iterator/str); 从迭代器/字符串建立数组
 
-### 迭代器
+## 迭代器
 - for of 可以用，一个元素多个值用for let [a, b] of
 - ...扩展运算符可以全部解出来
-### 字符串
+
+## 字符串
 - let a = "asdasd";
 - for of 或 a.split('').forEach/.map 可以遍历
 - a.charCodeAt(i); 打印a[i]处字符的ascii code
@@ -124,68 +121,63 @@
 - a.substring([start], [end?]) 不接受负数，如果start > end会自动交换这两个数
 - a.slice([start], [end?]) 接受负数为从末尾倒数的index，如果start > end会返回空字符串
 
+## json
+- 把已声明变量的名字用{}包起来，可以快捷建立拥有以变量名为键，变量值为值的键值对的字面量对象
+- `JSON.stringify()`把对象转变为json字符串样式
+- `.json()`不只是解析json内容，同时还会转化为js的对象
+- 无论用那种语法传输，背后都是json字符串形式的？？？？
 
-### json
-- 把变量用{}包起来，可以建立拥有以变量名为键，变量值为值的键值对的对象
-- JSON.stringify()把对象转变为json样式，即键为字符串，值根据类型变更
-- `.json`不只是解析json内容，同时还会转化为js的对象
-- 无论用那种语法传输，背后都是json字符串形式的
-
-=======
-    .shift() 删除index为0的元素
-    .push() 追加
-    .length 长度
-    .toString() 用,拼接所有元素成字符串
->>>>>>> parent of 245175a (daily update)
-### 循环 
-传统循环：<br>
-- `for ( const i = 0; i < n; i++ ) {};`
-
-for in：<br>
-- `for ( let x in a_object ) {};`
-- x代表对象属性
-- 虽然父类属性会被跳过，但可能有部分父类的属性被设置为可遍历了。可以用`a_object.hasOwnProperty(x)`来判断避免
-- 数组的属性是其索引
-
-for of：<br>
-- `for ( let x of a_iterable ) {};`
-- x代表可迭代对象a_iterable的迭代值
-- 数组可迭代，迭代值是元素；常见json对象不可迭代
-
-.map()：<br>
-- `arr.map((element, index, arr) => { return sth; }, a_object);`
-- 第一个参数是函数，接收 元素，索引，被map的对象本身三个参数；可以只声明一个来只接收元素
-- 第二个参数是供在第一个参数的函数内调用`this`的指向。可以因此 达成用a的元素索引b 的操作
-
-.forEach()：<br>
-- 类似map，但不返回值
-
-.filter()：<br>
-- 类似map，但只返回内部函数返回了true的元素  
+## 循环 
+- 传统循环：
+    - `for ( const i = 0; i < n; i++ ) {};`
+- for in：
+    - `for ( let x in a_object ) {};`
+    - x代表对象属性
+    - 虽然父类属性会被跳过，但可能有部分父类的属性被设置为可遍历了。可以用`a_object.hasOwnProperty(x)`来判断避免
+    - 数组的属性是其索引
+- for of：
+    - `for ( let x of a_iterable ) {};`
+    - x代表可迭代对象a_iterable的迭代值
+    - 数组可迭代，迭代值是元素；常见json对象不可迭代
+- .map()：
+    - `arr.map((element, index, arr) => { return sth; }, a_object);`
+    - 第一个参数是函数，接收 元素，索引，被map的对象本身三个参数；可以只声明一个来只接收元素
+    - 第二个参数是供在第一个参数的函数内调用`this`的指向。可以因此 达成用a的元素索引b 的操作
+- .forEach()：
+    - 类似map，但不返回值
+- .filter()：
+    - 类似map，但只返回内部函数返回了true的索引位置的元素
 
 
-<<<<<<< HEAD
-### Promise
-- `new Promise((resolve, reject) => { resolve("value"); reject("error") })`
-    - resolve和reject都是函数体，调用就会终止promise异步操作，但resolve表成功，reject表失败
-    - value是.then()会接受的值
-    - error是.catch()可以接收的值
-- `async`, `await`
-    - await本质上就是把promise转换成了正常的返回值，也就是封装好了then
-### 导入模块
-- 一般使用ES6模块格式即可
-- 只有ES6模块可以导出/导入ES6模块
-- 如果一份文件A导出，一份文件B引用，html导入时要使用`<script type="module" src="B.js></script>"`告知浏览器B是一个es6模块
-=======
-# ***函数***
-### 箭头函数
-    () => xxxx; 隐性返回xxxx
-    () => {return xxxx;}; 显性返回xxxx
-<br>
->>>>>>> parent of 245175a (daily update)
+## 内存管理（似乎是没有做完的笔记，可能得之后再重新学一下这段）
+- 引用：
+    - 一般的数据结构都是强引用（就是常规意义下的引用。弱引用就是创造副本）
+- 内存分配
+    - js会为以下东西分配内存
+        - 数值
+        - 字符串
+        - 对象/数组**的值**
+        - 可调用对象（函数）
+        - 函数调用结果
+            - 如DOM、有返回值的方法
+            - 构造函数也是，为一个对象分配内存
+    - 值得注意的点
+- 内存回收
+    - 这个问题是无法完全解决的，但有一些普遍的方法来涵盖大部分情况：
+        - 引用计数回收
+            - 判断某内存有无被引用，没有就回收
+            - 这个方法面对循环引用会失效
+        - 标记清除算法
+            - 从全局根对象开始往下找引用，最后把没法被遍历到的对象删除
+            - 现代引擎使用的核心思路都是这个算法，剩下的改进都基于这个算法
+            - 弱引用不被认为是可被遍历到的
+- 用以观察垃圾回收的数据结构
+- 内存抖动
+    - Thrashing：VM频繁进行swap
+    - Memory Churn：内存系统频繁分配和回收内存
 
 
-# ***Event***
+# Event
 ### DragEvent
 - dataTransfer
     - `event.dataTransfer.setData("text/plain", "a msg");`
@@ -193,7 +185,7 @@ for of：<br>
 
 
 # 函数
-- 默认返回undefined
+- 默认隐性返回undefined，除非显性返回了某些值
 - 独立函数
     - 在全局对象下声明的函数
 - 匿名函数
@@ -271,7 +263,13 @@ for of：<br>
     - * 1; 所有变量，失败返回NaN
 - `Math.pow([base], [exponent]);` or `**`
 - Math.abs()
-
+### Promise
+- `new Promise((resolve, reject) => { resolve("value"); reject("error") })`
+    - resolve和reject都是函数体，调用就会终止promise异步操作，但resolve表成功，reject表失败
+    - value是.then()会接受的值
+    - error是.catch()可以接收的值
+- `async`, `await`
+    - await本质上就是把promise转换成了正常的返回值，也就是封装好了then
 ### setTimeout, setInteraval
 - `setTimeout(func, time)`
     - 会在time ms后执行func()
@@ -299,6 +297,10 @@ for of：<br>
 
 
 # other
+### 导入模块
+- 一般使用ES6模块格式即可
+- 只有ES6模块可以导出/导入ES6模块
+- 如果一份文件A导出，一份文件B引用，html导入时要使用`<script type="module" src="B.js></script>"`告知浏览器B是一个es6模块
 ### 语法糖
 - `xxx?.yyy`: 可选链操作符
     - 安全访问xxx的属性yyy：如果xxx为undefined或者null之类无法获得属性的值，返回undefined而非报错

@@ -10,3 +10,7 @@
         - manager可以与 DAO 层交互，对多个 DAO 的组合复用。
         - dao封装model
     - model: sql or nosql
+
+
+### DTO, DAO, etc
+- 订好前后端不同服务交互时的类定义
