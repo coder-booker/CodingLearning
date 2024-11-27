@@ -186,31 +186,47 @@
 
 # 函数
 - 默认隐性返回undefined，除非显性返回了某些值
+- 上下文
+    - 函数的上下文在9成情况下是由其调用决定的
+        - 哪怕调用的函数体是一个有非全局对象的this的写法，只要调用的方法不传递this，函数内部的this就是全局对象
+        - 除了箭头函数
+        - eg obj.func()中func的this就会变成obj
+        - eg new func()中的this就会变成一个func实例对象
+    - 只有箭头函数会捕获上下文
 - 独立函数
     - 在全局对象下声明的函数
 - 匿名函数
     - 定义时没有名称的函数
     - 箭头函数就是一种简洁的匿名函数
+        - 注意箭头函数会捕获上下文
         - () => xxxx; 隐性返回xxxx
         - () => {return xxxx;}; 显性返回xxxx
-    - 立刻执行函数是也只能是匿名函数
-        - 给匿名函数的定义套上一层括号，然后用call或者.apply调用就是立刻执行函数
-- .call(...args) vs .apply(this, args) vs func()
+    - 立刻执行函数(IIFE)
+        - 只会是匿名函数
+        - 给匿名函数的定义套上一层括号，然后调用就是立刻执行函数
+        - 上下文是全局对象
+- 构造函数
+    - 函数定义之后用new来调用
+    - 这样调用之后内部的this就会是这个函数的实例对象
+- `.call(this, ...args)` vs `.apply(this, args)` vs `func()`
     - 调用函数的不同方法
-    - 所有函数都默认有这俩方法
-    - .call(...args), func()
-        - 注意其实默认会隐性传入一个this，为第一个参数（this在这里和func()有些不同）
-        - 所有参数都是直接传递
-    - .apply(this, args)
+    - 所有函数都默认有这仨方法
+    - `.call(this, ...args)`
+        - 显性传入一个this为第一个参数
+        - 直接传递剩余参数
+    - `.apply(this, args)`
         - 显性传入一个this为第一个参数
         - 剩余的参数使用数组化的参数传递
+    - `func()`
+        - 隐性传入上下文中的this
+        - 任何地方、任何形式，只要用这种普通函数调用方式，this都会是全局对象
 - 剩余参数 rest parameters
     - 在参数的定义那里写...[name]就可以接受任意长度的参数并构建为一个数组
     - eg
     ```js
     function (...args: any[]) {
         try {
-            return await originalMethod.apply(this, args);
+            return await originalMethod`.apply(this, args)`;
         } catch (error) {
             console.error(`Error in ${target.constructor.name}.${propertyKey}: ${error}`);
         }
