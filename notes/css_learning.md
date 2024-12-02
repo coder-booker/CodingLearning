@@ -16,16 +16,13 @@
 - 减少不透明度来自适应背景主题的明暗
 - `<b></b>`和`font-weight: `结合可以实现部分文本粗体化，而无需使用`<span></span>`
 
-<<<<<<< HEAD
 ### selector
 - 所有空格分隔的选择器都是上下级，所有无空格的选择器都是concurrent关系
     - 因此其实常用的伪类选择器也是无空格的concurrent级
     - e.g. `.AAA.BBB`是选中同时拥有AAA和BBB class的元素，`.AAA .BBB`是上下级关系
     - e.g. `.AAA :focus`可以一次性选中所有AAA的子元素的focus样式
-=======
 文本
     垂直居中：line-height和height一样就可以居中
->>>>>>> parent of 245175a (daily update)
 
 ### Notes of elements
 - 单位
@@ -84,7 +81,11 @@
     - 非block/inline-block无法设w h
     - flex父元素会把所有子元素的display变成flex子元素，以此移除所有原特性
     - flex子元素不会融合外部margin
-
+- position
+    - static：默认值
+    - relative
+    - absolute
+    - fixed
 - box-shadow: 
     - [horizontal_offset] [vertical_offset] [blur_radius] [spread_radius] [color];
 

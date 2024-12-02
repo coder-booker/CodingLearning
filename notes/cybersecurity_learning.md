@@ -6,6 +6,8 @@
 - 攻击者一般是在没有任何session的情况下尝试攻击的，因此有session的情况下很多防御手段都会无效化
 - 浏览器会自动进行URL normalization，也就是把`../`,`%2e%2e/`这类path traversal attack的字符直接删除
     - 但只有一层，用`%%32%65`仍会解码保留成`%2e`
+- 学网安可以反向进行一些相当有趣的防护
+- openssl就是一个开源的SSL/TLS层，有各种加密功能
 
 ### CIA + AAN
 - CIA
@@ -39,22 +41,48 @@
         - 成功提升后要记得更新session
 - experience
     - 从抓包中找到些资讯，然后尝试用在url上作为param或者query string
-# Hash
+# Hash & Cryptographic Failures
 - most commonly used algorithm
     - MD5
     - SHA256
 - hash是可能被破解的，用些hash的识别网站就有可能
     - URL modifying
 - cookie
+- Unsalted Hash vs Salted Hash
+    - Salted: 引入了随机数的哈希算法
+    - Unsalted: 相同输入会输出相同结果的哈希算法
+        - 因此可以被BFS出来
+- Signature
+    - RAW Signature
+    - CMS Signature
+    - SOAP Signature
+    - Email Signature
+    - PDF/Word Signature
+        - 因此政府机构会用有证书的PDF传输文件
+- keystore/truststore
+    - keystore用来储存私钥和公钥验证证书（公钥验证证书就是客户端在第二次握手会验证的那块东西）
+        - 各种keystore：
+            - File based keystore：用一个文件储存
+            - Database keystore：用数据库储存
+            - Hardware keystore：直接储存在硬件，无法被盗取。但使用场景极少，只有需要高度安全的场景才会使用
+    - truststore用来储存各种CA证书，包括根证书和中间证书
+    - 有趣的是，大公司的内网访问外网，其实是公司自己作为中转服务器来签发CA给客户端以及和目标服务端建立连接。而由于公司内网肯定会信任这个中转CA，HTTPS的一个例外情况被利用在企业内网安全上
+- "Let's Encrypt"是免费的CA网站
 
 # injection
 - 有很多种
     - cross-site scripting (XSS)
         - 在受害者网站内运行script/code
-        - three types:
+        - 有很多种:
+            - Self-XSS
+                - 没有触发服务器请求的XSS，比如单纯alert一下cookie
             - Reflected XSS (non-persistent XSS attack)
                 - 在http请求中嵌入代码，如在query string写&lt;script>
                 - non-persistent是因为只有那一种情况会运行恶意代码
+                - 简易流程
+                    - 攻击者给用户发送一个恶意连接，内部包含一些script，会给攻击者主动发送信息
+                    - 用户在其session中点击并向服务器发出了恶意请求
+                    - 请求响应只会会返回给用户，然后恶意script被执行，给攻击者发送敏感信息
             - Stored XSS（persistent XSS attack）
                 - 把有害代码通过某种方式保存到app里，每当app的这个功能被触发就会触发有害代码
                 - e.g. 在comment中插入script，只要有用户加载了这条评论就会运行script
@@ -159,7 +187,6 @@
     - 有意思的是，直到现在仍然有不少CVE指名存在漏洞的框架或者版本被使用
     - ways to evaluate severity of a CVE: CVSS (Common Vulnerability Scoring System)
         - [0.0-10.0]
-    
 - Vulnerable and Outdated Components Attack
     - 生产环境使用已经没维护的版本
         - 可能早就被标注会有攻击风险
@@ -167,26 +194,28 @@
     - eg CVE-2021-41773
         - apache 2.4.49/2.4.50这两个版本虽然过滤了一些简单的特殊字符，如遇到`\`,`.`啥的会直接删除，但没有过滤`%2e`这类编码，导致可以用`%2e`访问路径
         - 此外，没有进行访问权限控制也是问题之一
+
+# Insecure Design
+- 一些准则：
+    - Threat modelling
+    - Secure design pattern
+    - Secure component libraries
+    - Reference architecture
+- Unprotected Storage of Credentials
+    - Common examples:
+        - Storing password in plaintext format in application's properties
+        - Hardcoding logon credentials on unencrypted configuration files
+        - Saving decryption keys on network drives
+    - 其实就是以防有人真的得到了storage的权限
+- Trust Boundary Violation
+    - 用于把系统的不同部分分隔开
+    - 对输入和输出进行过滤和验证可以让数据穿过这些边界
+
+# Security Logging and Monitoring Failures
 - OWASP Top 10：Failure - A09
     - Improper Output Neutralization for Logs
     - Omission of Security-relevant Information
     - Insertion of Sensitive Information into Log File (cont’d.)
-- Insecure Design
-    - 一些准则：
-        - Threat modelling
-        - Secure design pattern
-        - Secure component libraries
-        - Reference architecture
-    - Unprotected Storage of Credentials
-        - Common examples:
-            - Storing password in plaintext format in application's properties
-            - Hardcoding logon credentials on unencrypted configuration files
-            - Saving decryption keys on network drives
-        - 其实就是以防有人真的得到了storage的权限
-    - Trust Boundary Violation
-        - 用于把系统的不同部分分隔开
-        - 对输入和输出进行过滤和验证可以让数据穿过这些边界
-# Security Logging and Monitoring Failures
 - Improper Isolation or Compartmentalization
     - 就是用户权限没有做好，导致用户可以访问的资源和功能没有隔离开
     - 所以会导致Broken Access Control
@@ -200,6 +229,15 @@
     - Netcat
 - sql各种现代函数
 
+# Server-Side Request Forgery (SSRF)
+- 伪造请求，使用服务器内的功能，比如组织里的内网功能
+- 有点类似OS injection/RCE
+- Common SSRF
+    - Server SSRF: 注入本地ip 127.0.0.1/admin之类的，
+    - Back-end SSRF：注入其他内网ip 192.168.10.8之类的，用有缺陷的服务器访问敏感服务器，因为不少情况下内网的各项服务之间的通信不会有权限控制
+    - 
+
+
 # useful vocab
 - privilege
 - RBAC（Role-Based Access Control，基于角色的访问控制）
@@ -209,3 +247,7 @@
 - Phishing 网络钓鱼
 - tier 层级
 - segregation 分隔
+
+
+# to-do
+- XSS, 第九题开始

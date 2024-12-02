@@ -175,6 +175,13 @@
 - 内存抖动
     - Thrashing：VM频繁进行swap
     - Memory Churn：内存系统频繁分配和回收内存
+- 内存泄露
+    - 意思就是有没用的内存被保留或者创建了，或者说内存出现在了其不该出现的生命周期中
+    - 常见的原因：
+        - 闭包引用的变量
+        - 全局变量
+        - 事件未清除
+        - 删除根节点时，子元素存在引用而没被删除
 
 
 # Event
@@ -226,7 +233,7 @@
     ```js
     function (...args: any[]) {
         try {
-            return await originalMethod`.apply(this, args)`;
+            return await originalMethod.apply(this, args);
         } catch (error) {
             console.error(`Error in ${target.constructor.name}.${propertyKey}: ${error}`);
         }

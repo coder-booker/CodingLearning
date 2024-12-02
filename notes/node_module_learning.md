@@ -111,3 +111,52 @@ const mySelector2 = createSelector(
 
 ### Prisma
 - `npx prisma init --datasource-provider mongodb`
+
+### useSWR
+- 来自swr库
+- 可以用来替代fetch，这玩意就是一个封装好的带有缓存和去重功能的fetch
+- 但在next中，client不能使用async和await，因此fetcher要用.then
+- 最为重要的功能是缓存（还没彻底搞明白）和去重
+- 缓存：
+  - 在触发特定条件前都会把上一次相同请求的结果保存下来，直到触发了，就会后台重新请求并对比新旧数据来决定要不要重新渲染
+  - https://swr.vercel.app/zh-CN
+  - 特定条件为（以下为默认值）：
+    - `revalidateOnFocus: true`：当浏览器窗口重新获得焦点时，重新验证数据。
+    - `revalidateOnReconnect: true`：当网络重新连接时，重新验证数据。
+    - `refreshInterval: 0`：定期验证缓存，0表示不会定期重新验证数据。单位为ms
+    - revalidateOnMount - 如果设置为 true，每次组件挂载时都会自动重新验证数据。
+    - refreshWhenHidden - 如果设置为 true，在文档不可见时还是会自动重新验证数据。
+    - refreshWhenOffline - 如果设置为 true，即使 offline，也会自动重新验证数据。
+    - suspense - 如果设置为 true，在重新验证数据之前将显示占位符内容来保持组件渲染的持续性。
+    - errorRetryCount - 它是重试次数，默认值为 3，当数据验证失败时，它将尝试重新验证数据的次数。
+    - errorRetryInterval - 毫秒数，当数据验证失败后重试的间隔时间。默认值为 5 秒。
+    - dedupingInterval - 重复验证响应的缓存时间，以毫秒为单位。
+    - focusThrottleInterval - 切换页面焦点之后，重试时间的等待时间。
+    - loadingTimeout - 最长等待请求的毫秒数，超时会显示加载错误消息。
+  - 这些条件可以全局部署，有个叫SWRConfig的东西
+- 去重：
+  - 背后有一个请求队列，每个请求结束前都会被加入其中
+  - 具体行为如下：
+    - 请求触发时：
+      1. 检查当前请求队列有无相同url的请求，如有则自己不添加进请求队列而是等该请求的结果
+      2. 检查有无相同url的缓存，如有则缓存优先，然后后台仍然重新验证。这个后台验证算是一个新的请求
+    - 请求进行时(等待响应)：被添加到请求队列中等待完成
+    - 请求完成：把结果分发给第一步被拦下来的相同请求。此时新的相同url请求才会看情况能否重新被允许加入请求队列
+- eg
+  ```ts
+  import useSWR, { SWRConfig } from "swr";
+
+  const fetcher = (url: string) => fetch(url).then(res => res.json());
+
+  const { data, error, isLoading, isValidating, mutate } = useSWR(key, fetcher, options);
+
+  return (
+      <SWRConfig
+          value={{
+              // ...缓存配置
+          }}
+      >
+          {children that use the config}
+      </SWRConfig>
+  );
+  ```
