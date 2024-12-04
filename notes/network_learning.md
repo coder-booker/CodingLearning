@@ -136,6 +136,9 @@
         - 就是常规网站的主要域名，比如我的就是domain-booker
     - Subdomain
         - SLD 下的子域，一般拥有这个域名就可以自己配置
+- 共享缓存
+    - 多个用户或者客户端可以一起使用的缓存
+    - 最常见的例子就是Content Delivery Network (CDN)，CDN的常见例子则是网络供应商缓存网站并把缓存发给客户端
 ## HTTP 协议
 - 单向，服务端没法主动发出请求，客户端也没法做出响应
 - 用换行符、回车符作为header每个项的边界
@@ -172,31 +175,43 @@
         - 相同优先级下，对选择越具体的指名，优先度越高，如`text/*;q=0.9`比`text/html;q=0.9`低
         - 用法：有选择的header一般用`, `分割不同选择。在选择后加`;q=x.x`就可以设置优先级
             - eg `Accept-Encoding: gzip;q=0.9, br, deflate;q=0.8`
-    - 缓存
-        - 有两种，但第二种一般配合第一种使用；
-            - 强制缓存
-                - 有两种
-                    - Cache-Control（由Response设置）
-                        - 优先级比expire高，且选择更精细
-                        - 由Response的header设置
-                        - 包含了过期时间
-                    - Expires
-            - 协商缓存
-                - 协商缓存什么时候刷新缓存是由应用+浏览器+强制缓存的缓存策略决定的
-                    - 例如浏览器页面刷新或者应用要validate数据，就会重新请求资源而非读取缓存
-                - 有两种
-                    - If-Modified-Since（Request设置）+ Last-Modified（Response设置）
-                        - 第一次后的所有请求都会把最近一次响应体的Last-Modified的值以If-Modified-Since字段发出
-                        - 服务器根据If-Modified-Since判断是否过期
+    - 缓存：有两种，但第二种一般配合第一种使用；
+        - 强制缓存
+            - 有两种
+                - Cache-Control（由Response设置）
+                    - 优先级比expire高，且选择更精细
+                    - 包含了过期时间
+                    - 可用的值：
+                        - public/private：允许/不允许共享缓存
+                        - no-cache：缓存，但每次用缓存都得revalidate
+                        - no-store：不缓存
+                        - max-age=[xxx，秒]：指定缓存时间，只有有缓存的设定下才生效
+                        - s-maxage=[xxx，秒]：但仅适用于共享缓存的max-age
+                        - must-revalidate：严格模式revalidate，在缓存过期时绝不会“先用着”
+                        - proxy-revalidate：但仅适用于共享缓存的must-revalidate
+                        - no-transform：禁止缓存代理对资源进行任何转换或修改。
+                        - immutable：表示资源是不可变的，客户端可以认为资源永远不会改变。
+                        - stale-while-revalidate/stale-if-error=[xxx，秒]：在过期/过期且响应错误的xxx秒内先用着过期的内容
+                - Expires
+                    - 一坨指名过期时间的日期，优先级最低
+        - 协商缓存
+            - 协商缓存什么时候刷新缓存是由应用+浏览器+强制缓存的缓存策略决定的
+                - 例如浏览器页面刷新或者应用要validate数据，就会重新请求资源而非读取缓存
+            - 有两种
+                - If-Modified-Since（Request设置）+ Last-Modified（Response设置）
+                    - 第一次后的所有请求都会把最近一次响应体的Last-Modified的值以If-Modified-Since字段发出
+                    - 服务器根据If-Modified-Since判断是否过期
+                        - 没过期就304，过期了就发送新资源
+                    - Last-Modifed的时间精度无法小于秒级
+                - If-None-Match（Request设置）+ ETag（Response设置）
+                    - 第一次后的所有请求都会把最近一次响应体的ETag的值以If-None-Match字段发出
+                        - 服务器根据If-None-Match判断是否过期
                             - 没过期就304，过期了就发送新资源
-                        - Last-Modifed的时间精度大于等于秒级
-                    - If-None-Match（Request设置）+ ETag（Response设置）
-                        - 第一次后的所有请求都会把最近一次响应体的ETag的值以If-None-Match字段发出
-                            - 服务器根据If-None-Match判断是否过期
-                                - 没过期就304，过期了就发送新资源
-                        - ETag的时间精度在秒级以下
-                        - ETag的生成与文件内容、大小、版本号、修改时间有关，因此可以识别没有更新修改时间的修改
-                    - ETag和Last-Modified都被设置时，ETag没变化才对比Last-modified
+                    - ETag的时间精度在秒级以下
+                    - ETag的生成与文件内容、大小、版本号、修改时间有关，因此可以识别没有更新修改时间的修改
+        - 缓存行为优先级：s-maxage > max-age > ETag > Last-Modified > Expires
+        - 有时候缓存可能即使过期了也被使用
+            - 例如断网了、客户端的优化策略时在服务器验证响应前先用着过期的缓存、stale-while-revalidate被设置了等
 - status
     - 3xx：重定向相关
         - 301 Moved Permanently 永久重定向
@@ -230,15 +245,25 @@
         - 请求优先级是什么？
         - 只能客户端单向请求，服务端只能响应
 - /2.0
-    - 支持纯二进制分帧 (frame)
-        - 1.1用纯文本还多了一层文本和二进制互相转换的步骤，2.0直接用二进制了
-        - 所谓二进制分帧就是直接在二进制中分块
-        - 直接用二进制表示各种状态，使用更少空间
-        - 有两种帧：Header Frame和Data Frame，分别储存header和body
+    - 兼容HTTP/1.1，因为协议url前缀并未改变
+    - Frame 二进制分帧
+        - 1.1用纯文本还多了一层文本和二进制互相转换的步骤，2.0直接用二进制表示各种状态和数据，使用更少空间
+        - 帧结构
+            - Frame Header
+                - frame一些metadata
+                - 包括帧长度、帧类型、标识位(用来携带简单的控制信息)、流标识符(Stream ID)
+            - Frame Payload
+                - 就是实际的frame数据，被HPACK压缩过
+        - 有两类帧：
+            - 数据帧
+                - Header Frame、Data Frame，分别储存header和body
+                - Priority Frame，表示Stream优先级
+            - 控制帧
+                - 太多了我的老天
     - 支持服务端主动发送信息给客户端
     - Stream
         - 应用层的multiplexing，是并发concurrent，可以同一时间内发送和接受多个stream
-        - 每个stream里有只会有两个message：request和response
+        - 每个stream里有且只会有两个message：request和response
             - message就是HTTP/1.x中的请求或响应
             - 每个message里有多个frame，组合在一起为一个message
             - message内的frame可以乱序，因为最后会根据stream_id组装成完整的http请求或响应
@@ -246,7 +271,24 @@
     - 除了原本1.1的body，还能压缩header
         - HPACK算法：
             - 客户端和服务端都维护一张静态和一张动态header表，其中每个header都会被赋予一个索引，这样只传送索引就行
-            - 静态表就是常见header，动态表则会动态添加
+            - 静态表
+                - HTTP/2.0框架内，静态表有1-61一共61个项
+                - 注意静态表内存有常见header+常见值以及常见header两种内容，因此有时候索引可知直接代表header和其值，有时候则只代表header，值要用Huffman编码再送出去
+                - 已有的静态表项的二进制表达：
+                    - 第一位标识是否已存在于静态表
+                    - 剩下7位表示index（7位是为了刚好占用俩字节）
+                - 无值的静态表项的二进制表达：
+                    - 01开头表示无值的静态表项
+                    - 后6位标识具体index
+                    - 1位标识是否经过huffman编码
+                    - 7位标识value的长度
+                    - 剩下的位是动态的，代表value，但尾部不满一字节的会用1补位
+            - 动态表
+                - index从62开始
+                - 动态添加其他header键值对，不会只保存header键。因此如果value一直有细微变化，动态表的作用就被限制了
+                - 动态表的内容也会被huffman编码
+                - 采用FIFO来移除过多的键值对
+                - web服务器一般都可以配置类似 http2_max_request 的东西来限制http2的请求数量，以此限制动态表张占用的内存
     - HTTP/2.0的队头堵塞其实体现在TCP的连续seq_num上，但这就有点脱离应用层的范畴了
 - /3.0（暂时省略些）
     - 基于UDP
@@ -262,7 +304,7 @@
             - TCP使用双方地址和端口来区分连接，因此移动数据换成wifi就会导致连接失效，要重新TCP+TLS握手建立连接
             - 因此使用连接ID来区分连接。在连接迁移时，直接通过连接ID重建连接省却了额外的握手成本。
     - 但3.0普及很慢
-## HTTPS协议
+## SSL/TLS加密通信与HTTPS协议
 - HTTP的缺陷
     - 会被窃听（抓包）
     - 会被篡改（修改请求和响应）
@@ -283,10 +325,13 @@
         - 接收方用和发送方相同的哈希运算计算这段数据
         - 对比接收方解密出来的东西和哈希出来的东西
     - 所以本质上就是接受一段数据并哈希，然后对比和服务端的哈希是否一样。因为过程中用了私钥和公钥加密解密，如果私钥公钥不匹配，对比的东西必然有一段是不一样的。
+    - 常见算法
+        - ECDSA，RSA
 - 数字证书
     - 记录在案（数字证书认证机构 CA）的证书，用来给客户端验证服务器身份用的。
     - 之所以记录在案是为了保证HTTPS的Non-repudiation
     - CA也有自己的私钥和公钥，目的是为了证明CA是CA。公钥一般都被各大浏览器内置
+    - 服务器证书的加密方式也有很多种，如RSA、ECDSA等
     - 具体内容：
         - 个人信息
         - 服务器的数字签名
@@ -305,7 +350,6 @@
         - 用会话密钥哈希加密要发送的数据得到MAC
 - 在TCP/IP层（网络传输层）和应用层之间加入一层
 - HTTP和HTTPS的默认端口号不一样，一个80一个443
-## SSL/TLS加密通信
 - 注意如果使用SSL/TLS，会多一层握手的流程
 - SSL 1.0, 2.0, 3.0都因为漏洞问题被弃用，随后才出现了TLS
 - record 指一个“计算元”
@@ -433,12 +477,21 @@
         - 把MAC集合在请求中正常会话加密发送给接收端
         - 接收端解密后得到MAC和数据
         - 以相同的哈希和会话密钥对数据生成对应MAC，如果和请求中的不用一样就代表数据可能被篡改过。相同则代表数据安全
+- TLS 1.3
+    - 废除了不支持前向安全的RSA和Dh，只使用ECDHE，而签名算法、对称加密算法啥的选择也减少了
+    - 可以把密钥和Hello一起发出去，达到1RTT握手
+- 重放攻击与前向安全
+    - 不具备前向安全的通信协议/方法都会导致重放攻击的可行性
+    - 重放攻击就是重复利用监听到的用户请求
+
+
 - 有趣的是，大公司的内网访问外网，其实是公司自己作为中转服务器来签发CA给客户端以及和目标服务端建立连接。而由于公司内网肯定会信任这个中转CA，HTTPS的一个例外情况被利用在企业内网安全上
 - TLS证书就是https验证用的数字证书
 - Cloudflare 向所有用户提供免费的 TLS/SSL 证书
-- *********由于历史遗留原因（人们已经用ssl很久了），tls配置很多时候仍会使用ssl作命名，但实际上命名为ssl的东西基本上都同时支持tls了
+- 由于历史遗留原因（人们已经用ssl很久了），tls配置很多时候仍会使用ssl作命名，但实际上命名为ssl的东西基本上都同时支持tls了
 
 ## 请求优化与压缩
+### General 优化
 - 减少重定向
     - 代理服务器(类似中间件的服务器)一般只负责把迁移后的url发给用户(3xx status)，然后用户再对代理服务器访问新url
     - 但实际上如果代理服务器自己就能转发请求，自然就可以节省一次请求
@@ -452,7 +505,10 @@
 - 压缩
     - General方法：去掉对机器没用的符号，如换行符制表符
     - 无损压缩
-        - 统计原始数据，使用*霍夫曼编码*生成代表数据的二进制比特序列，频繁出现的数据用较短的序列，不常出现的用长一些的（以此让短的序列储存较frequent的数据）
+        - 霍夫曼编码
+            - 统计原始数据，生成代表数据的二进制比特序列
+            - 频繁出现的数据用较短的序列，不常出现的用长一些的（以此让短的序列储存较frequent的数据）（这也是HTTP/2.0的一个主要优化）
+            - ACSII码的字符都被按照频率编码过了
         - 常见的算法：gzip, deflate, br(br是Google开发的Brotli算法的缩写，压缩效率最高)
     - 有损压缩
         - 牺牲次要数据来减少数据量，
@@ -468,11 +524,57 @@
     - 具体使用
         - 使用`Accept-Encoding: `header来标识接受的压缩算法
         - 响应式声明`Content-Encoding: `来标识选择的压缩算法
+### HTTPS优化
+- 硬件优化
+    - 用更快，甚至特化过加密计算的CPU，如支持AES-NI特性的CPU优化了AES算法
+- 软件优化
+    - 对称加密算法使用ChaCha20，对CPU更友好一些，但有AES-NI的则该用AES
+    - 短一些的密钥长度也能快些，如使用AES_128_GCM比AES_256_GCM快一些
+    - 升级软件，如更新OpenSSL，一般都会有优化
+- 协议优化
+    - ECDHE支持False Start，变相让TLS握手减少到1RTT
+    - ECDHE选择x25519曲线，这个曲线是最快的
+    - 使用TLS 1.3，实现真正的1RTT
+- 证书优化
+    - 证书传输优化
+        - 使用ECDSA证书，因为相比RSA证书密钥短得多，能减少带宽
+    - 证书验证优化
+        - 证书链逐级验证或会需要访问CA，这样便增加了大量网络成本
+        - 有几种解决方法
+            - Certificate Revocation List CRL 证书吊销列表
+                - CA定期更新。
+                - 但CRL庞大，实时性也较差
+            - Online Certificate Status Protocol OCSP 在线证书状态协议
+                - 只查询和返回某证书是否有效
+                - 解决了实时性
+            - OCSP Stapling
+                - 服务器不止发送证书，还会周期性地把自己的证书的OCSP响应保存并发出，包含其时间戳
+                - 因为CA的签名，服务器无法篡改
+- 会话复用
+    - 直接复用会话就能减少TLS握手的开销，1 RTT就能恢复对话
+    - 有几种方式
+        - Session ID
+            - 客户端和服务器在第一次握手后会保存一个唯一的session ID，在一段时间内再次尝试握手就会带上这个ID，如果ID还没过期就能直接重新建立TLS通信而无需再次计算密钥和握手
+            - 但服务器这样要储存所有session ID和对应对称密钥，压力比较大
+            - 而且由于负载均衡，命中的服务器未必存有对应的密钥和session ID
+        - Session Ticket
+            - 服务端会把会话密钥加密发给客户端让客户端缓存。之后一段时间的TLS请求服务端就会解密和验证Ticket有效期，并直接用这个密钥来开始和客户端对话
+            - 只要确保每台服务器用来加密Ticket的密钥是一致的，每一台服务器都能响应会话复用
+    - TLS 1.3甚至能0 RTT回复对话
+        - 具体来说就是把复用请求的ClientHello和HTTP请求一起发过去，HTTP请求会被对称密钥加密
+        - 因为session ID并不是敏感信息，session ticket又会被服务端加密，明文的ClientHello并不会泄露密钥信息
+        - 但仍受重放攻击威胁
+    - 但会话复用不具备前向安全性，且受重放攻击威胁
+        - 客户端申请会话复用的请求可以被监听
+        - 这样攻击者在会话复用有效期内伪造一份监听到的请求，就能重复发出这份请求
+        - 只能通过设置过期时间，或者只针对安全幂等的HTTP请求允许会话复用来避免重放攻击
+    
 ## WebSocket协议
 - 本质上就是应用层的一个功能，可以视为HTTP的升级双向版，因此也有其大部分现代特性
 - 特点
     - 允许全双工通信
 - 使用：
+    - ws://或者wss://
     - 在HTTP/HTTPS的握手阶段就声明以下headers：
         - `Connection: Upgrade`：表示要升级协议
         - `Upgrade: websocket`：表示要升级到websocket协议。
@@ -497,11 +599,14 @@
             Upgrade: websocket
             Sec-WebSocket-Accept: Oy4NRAQ13jhfONC7bP8dTKb4PTU=
             ```
+## 文件协议
+- file://
 ## DNS协议 Domain Name System
 - 默认用UDP，适合快速查询
 - 大量传输时用TCP，但较少见
 ## FTP协议 File Transfer Protocol
 - TCP
+- ftp://
 ## SMTP/POP3/IMAP协议
 - 都是email用的协议
 - SMTP(Simple Mail Transfer Protocol): 用于发送email

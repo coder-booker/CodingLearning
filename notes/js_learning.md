@@ -149,7 +149,69 @@
     - 类似map，但只返回内部函数返回了true的索引位置的元素
 
 
-## 内存管理（似乎是没有做完的笔记，可能得之后再重新学一下这段）
+# js运行环境
+## General concept
+- v8和Nodejs的区别
+    - 两者完全不在一个层级
+    - v8引擎是浏览器内核中的运行js用的一部分，在浏览器运行js文件时就会用到。而Node.js是在浏览器外运行js代码的一个环境。所以说两者完全不在一个层级
+    - 然而Node.js的底层有利用v8引擎，这点和这部分要讨论的内容不太相关
+    - 所以当我们讨论运行环境时，应该说"在浏览器运行"或者"在Node.js"运行
+## ECMAScript
+- js的来源，js只是其拓展罢了
+- 各版本的更新
+    - ES5（ECMAScript 5，2009）：
+        - 引入了严格模式（strict mode）。
+        - 增加了数组方法（如 forEach、map、filter 等）。
+        - 增加了 JSON 支持。
+        - 增加了 Object.defineProperty 等方法。
+    - ES2015（ES6，ECMAScript 2015）：
+        - 引入了 let 和 const 关键字。
+        - 引入了箭头函数（arrow functions）。
+        - 引入了类（class）和模块（module）。
+        - 增加了模板字符串（template strings）。
+        - 增加了解构赋值（destructuring assignment）。
+        - 增加了 Promise 对象。
+        - 增加了import export的ECMAScript Module(ESM)规范
+    - ES2016（ES7，ECMAScript 2016）：
+        - 增加了 Array.prototype.includes 方法。
+        - 增加了指数运算符（**）。
+    - ES2017（ES8，ECMAScript 2017）：
+        - 引入了 async/await 语法。
+        - 增加了 Object.entries 和 Object.values 方法。
+        - 增加了字符串填充方法（padStart 和 padEnd）。
+    - ES2018（ES9，ECMAScript 2018）：
+        - 增加了异步迭代器（async iterators）。
+        - 增加了对象展开运算符（object spread operator）。
+    - ES2019（ES10，ECMAScript 2019）：
+        - 增加了 Array.prototype.flat 和 Array.prototype.flatMap 方法。
+        - 增加了 Object.fromEntries 方法。
+        - 增加了字符串的 trimStart 和 trimEnd 方法。
+    - ES2020（ECMAScript 2020）：
+        - 引入了可选链操作符（optional chaining operator，?.）。
+        - 引入了空值合并操作符（nullish coalescing operator，??）。
+        - 增加了 BigInt 数据类型。
+- CommonJS和ESM规范
+    - 就是两种js用的模块化声明规范。
+    - CommonJS
+        - 是早期的Node.js用的规范，只能在服务端运行。
+        - 不支持命名导出，只能通过导出一个对象来实现类似的功能
+    - ESM
+        - 新的模块标准，服务端和浏览器都能运行
+        - 支持命名导出
+    - ESM已经在快速替代CommonJS成为标准模块系统，但CommonJS仍然是很多旧js库的规范
+    - 有两种方法可以告知nodejs使用ESM或者CommonJS
+        - 在package.json声明`"type":"module"`代表项目全局使用ESM，不写或写`"type":"commonjs"`代表用CommonJS
+        - 把想使用ESM的文件用.mjs后缀命名，想使用CommonJS的用.cjs后缀命名
+    - nodejs可以自动兼容互用ESM和CommonJS
+## 线程
+- js的运行环境大多是单线程，但只限于js代码和事件循环在一个线程中运行，对于一些其他的耗时任务例如IO操作和GC，其实有很多后台线程在并发或并行运行
+- 运行js代码和事件循环的主线程也可以通过Nodejs的一个多线程/进程库来并发并行
+## 内存管理
+- general concept
+    - 对于内存管理而言，我们关注对象多于变量常量，因为后者一般离开作用域就会被回收，而前者会有各种嵌套引用，更需要被处理
+- 对象图
+    - 用于管理对象引用关系的graph数据结构
+    - 边是引用，节点是对象
 - 引用：
     - 一般的数据结构都是强引用（就是常规意义下的引用。弱引用就是创造副本）
 - 内存分配
@@ -161,17 +223,37 @@
         - 函数调用结果
             - 如DOM、有返回值的方法
             - 构造函数也是，为一个对象分配内存
-    - 值得注意的点
-- 内存回收
+- 内存回收 GC
     - 这个问题是无法完全解决的，但有一些普遍的方法来涵盖大部分情况：
         - 引用计数回收
             - 判断某内存有无被引用，没有就回收
             - 这个方法面对循环引用会失效
-        - 标记清除算法
+        - 标记清除算法 Mark-Sweep
             - 从全局根对象开始往下找引用，最后把没法被遍历到的对象删除
             - 现代引擎使用的核心思路都是这个算法，剩下的改进都基于这个算法
             - 弱引用不被认为是可被遍历到的
-- 用以观察垃圾回收的数据结构
+        - 标记整理算法 Mark-Compact
+            - Mark-Sweep加一步整理，但也因此会多一些开销
+            - 把标记的对象移动到内存一段，整理空间并清除碎片
+    - 早期的垃圾回收多会直接在主线程进行，但现代一般都会并发或并行
+- V8引擎的GC机制
+    - 把内存分为以下两个空间
+        - 新生代
+            - 用来储存生命周期较短的对象
+            - 进一步分为两个空间
+                - From 空间：当前正在使用的空间
+                - To 空间：空闲的空间
+            - 使用Scavenge算法回收垃圾。流程如下：
+                - 用Mark-Sweep把From里的存活对象复制到To
+                - 把所有对From内对象的引用更新到To中
+                - 把To标记成From，把From标记成To
+        - 老生代
+            - 用来储存生命周期较长的对象
+            - 使用标记整理算法回收垃圾
+    - 增量标记 Incremental Marking
+        - 把回收时的标记阶段拆分，让单次回收的暂停时间减少，更灵活
+    - 并发垃圾回收
+        - 让后台线程执行GC
 - 内存抖动
     - Thrashing：VM频繁进行swap
     - Memory Churn：内存系统频繁分配和回收内存
@@ -196,9 +278,10 @@
 - 上下文
     - 函数的上下文在9成情况下是由其调用决定的
         - 哪怕调用的函数体是一个有非全局对象的this的写法，只要调用的方法不传递this，函数内部的this就是全局对象
-        - 除了箭头函数
-        - eg obj.func()中func的this就会变成obj
-        - eg new func()中的this就会变成一个func实例对象
+        - 除了箭头函数，箭头函数会自己捕获上下文
+        - eg obj.func()中func的this就会变成obj，因为这种方法传递了一个obj的this
+        - eg new func()中的this就会变成一个func实例对象，因为这种方法传递了一个func实例的this
+        - eg func(anotherFunc) { anotherFunc(); }; func(obj.aaaa); 这里的anotherFunc调用后的this是全局对象，因为没有传递obj的this给func。
     - 只有箭头函数会捕获上下文
 - 独立函数
     - 在全局对象下声明的函数

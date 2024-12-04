@@ -6,6 +6,7 @@
 - 攻击者一般是在没有任何session的情况下尝试攻击的，因此有session的情况下很多防御手段都会无效化
 - 浏览器会自动进行URL normalization，也就是把`../`,`%2e%2e/`这类path traversal attack的字符直接删除
     - 但只有一层，用`%%32%65`仍会解码保留成`%2e`
+- file:///etc/passwd：linux中的系统用户配置文件
 - 学网安可以反向进行一些相当有趣的防护
 - openssl就是一个开源的SSL/TLS层，有各种加密功能
 
@@ -73,10 +74,13 @@
 - 有很多种
     - cross-site scripting (XSS)
         - 在受害者网站内运行script/code
+        - html也可以进行XSS，具体而言就是通过eventhandler来运行script
+        - css也可以进行XSS，比如再url()内输入具体url协议来运行恶意代码
         - 有很多种:
             - Self-XSS
                 - 没有触发服务器请求的XSS，比如单纯alert一下cookie
             - Reflected XSS (non-persistent XSS attack)
+                - reflect the injected script off the web server. That occurs when input sent to the web server is part of the request.
                 - 在http请求中嵌入代码，如在query string写&lt;script>
                 - non-persistent是因为只有那一种情况会运行恶意代码
                 - 简易流程
@@ -250,4 +254,4 @@
 
 
 # to-do
-- XSS, 第九题开始
+- A7 JWT token，第七题
