@@ -9,19 +9,28 @@
 
 # 宽高
 - 盒模型
-    - 外边距
-    - 边框
-    - 内边距+滚动条
-    - 内容
+    - 关乎以下四项内容
+        - 外边距 margin
+        - 边框 border
+        - 内边距+滚动条 padding
+        - 内容 content
+    - 有两种盒模型
+        - W3C 标准盒子模型
+            - border-box: content-box
+            - 只算content的宽高
+        - IE 怪异盒子模型
+            - border-box: border-box
+            - 算上border
+            - 包含滚动条，因为border包含着滚动条
 - 这些属性在不同浏览器会有很多很多不同行为，因此大概知道意义就好了
-- clien
-    - clienttWidth/Height
+- client
+    - clientWidth/Height
         - 可视范围的宽高
         - 包含内边距的宽/高，不包含滚动条
 - offset
     - offsetParent
-        - position不为static的最近父级元素
-        - 最顶头的定位过的元素是body，所以没有被定位过的父级的话会返回body
+        - position不为static(默认值)的最近父级元素
+        - 最顶头的定位过的元素是body，所以没有被定位过的父级的话offsetParent会返回body
         - 如果元素本身是fixed那自然也没有任何父级，offsetParent返回null
     - offsetWidth/Height
         - 包含边框的宽高
@@ -35,6 +44,6 @@
         - 包含滚动条宽高
         - 不包含内边距
     - scrollTop/Left
-        - 元素上/左边缘和元素可见上/左边缘的距离
+        - 元素实际上/左边缘和元素可见上/左边缘的距离
         - 一般溢出滚动了才会变，不然大部分时候都是0
 

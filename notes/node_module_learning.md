@@ -73,22 +73,35 @@ async function validate(account, password) {
 
 
 ### redux
-- dispatch 用于分发 action。
-- 更新state：`dispatch(action-object)`
-- reducer 处理 action 并更新 state。
-- action creator 创建 action。
-- selector 从 Redux store 中提取特定的数据。
-- createSlice 合并简化了 reducer 和 action creator 的定义。
-- 内部设置好的reducer会自动被生成一个同名的action creator
-- action的type：`/[slice-name]/[reducer-name]`
-- action的payload: `payload: {...[给action creater传入的参数对象]}`
-- reducer会自动返回state，不需要显性返回
-- 同步action使用reducer，异步action使用extraReducer（因为异步更新要额外逻辑）
-- createAsyncThunk 合并简化了固定action和复杂的异步reducer逻辑。
-- 内置pending、fulfilled、rejected三个action
-- 因此在对应slice中，需要处理这三个action。
-- redux有规范的处理thunk action的功能
-    - 在slice中除reducer外，额外定义一个extraReducer来处理thunk aciton
+- dispatch
+    - 用于分发广播action
+    - 根据action的type属性分发到指定路径/name
+    - `dispatch(action-object)`
+- reducer
+    - reducer就是把action换成state更新行为的模块
+    - 接受广播的action，并根据写好的应对action的代码对应地更新state。
+    - reducer会隐性返回state，不需要显性返回
+- action
+    - 被dispatch给reducer的DTO
+    - 内部结构：
+        - `type: /[slice-name]/[reducer-name]`，表示action的路径/name
+        - `payload: {some_data}`，表示action想发出去的数据，一般用于在reducer中更新state的数据
+    - action creator就是创建一个action的函数，也就是创建一个有type和payload的对象的函数而已
+- selector
+    - 就是读取目前最新state
+    - 背后逻辑是通过浅对比机制随时加载最新的state。浅对比的对象是selector的返回值
+- Slice
+    - action creator + 对应reducer的语法糖
+    - 内部设置好的reducer会自动被生成一个同路径的action creator，导出之后就可以用这个action creator制造该路径的action
+        - slice自动设置的action creator的参数会被赋值在payload中
+        - eg slice设置了个setUser的reducer，对应的action creator要则这么调用：`setUser({userName: 'mike'})`
+    - extraReducer里设置的reducer则不会自动创建action creator，一般是外包给Thunk来定义
+- createAsyncThunk
+    - action creator语法糖
+    - Thunk其实就是一个由异步代码提供payload的action creator
+        - 异步操作有三个常用action：pending、fulfilled、rejected。Thunk会在其内部撰写的代码运行过程中，按照其运行情况自动在定义的name下发布对应action
+        - 内部撰写的代码返回rejectWithValue(xxx)的返回值就是rejected action的payload，返回其他值就是fulfilled的action payload。pending action没有payload
+        - 在对应slice中，需要用extraReducers来设定其reducer。
 - createSelector 创建 memoized selector，用于提取复杂的 state和优化性能。
 
 - selector和createSelector
@@ -100,7 +113,7 @@ const mySelector2 = createSelector(
     [...input_func_list], 
     output_func
 );
-// 第一个参数是n个取state为第一个参数，剩下参数动态取的函数。因为state内置自动传入，剩余的参数就看input_func有没有接收了
+// 第一个参数是n个 取state为第一个参数，剩下参数动态取的 函数。因为state内置自动传入，剩余的参数就看input_func有没有接收了
 // 第二个参数是接收第一个参数中所有input_func的返回值为参数的函数，而这个函数的返回值就是selector的值了
 // 因此整个createSelector就是为了state本身需要被预处理才能被使用的情况
 // 此外，createSelector还可以进行参数层面的浅对比来决定是否更新state，以此避免默认的计算出和直接浅对比state本身的资源浪费（尤其在预处理/计算比较复杂的时候）

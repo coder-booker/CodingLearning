@@ -251,10 +251,10 @@
         - 帧结构
             - Frame Header
                 - frame一些metadata
-                - 包括帧长度、帧类型、标识位(用来携带简单的控制信息)、流标识符(Stream ID)
+                - 包括帧长度、帧类型(数据or控制帧中的哪一项)、标识位(用来携带简单的控制信息，也可以设置stream优先级)、流标识符(Stream ID)
             - Frame Payload
-                - 就是实际的frame数据，被HPACK压缩过
-        - 有两类帧：
+                - 就是实际的frame数据，或者说是HTTP请求或响应的header和body，被HPACK压缩过
+        - 帧的种类根据功能大致分为两种：
             - 数据帧
                 - Header Frame、Data Frame，分别储存header和body
                 - Priority Frame，表示Stream优先级
@@ -263,11 +263,23 @@
     - 支持服务端主动发送信息给客户端
     - Stream
         - 应用层的multiplexing，是并发concurrent，可以同一时间内发送和接受多个stream
-        - 每个stream里有且只会有两个message：request和response
-            - message就是HTTP/1.x中的请求或响应
-            - 每个message里有多个frame，组合在一起为一个message
-            - message内的frame可以乱序，因为最后会根据stream_id组装成完整的http请求或响应
-            - 每个stream有唯一的stream id，有趣的是客户端只会是奇数，服务端只会是偶数
+        - 并发可以乱序，因为最后会根据stream_id配对每一个response和request
+        - stream内通信
+            - 每个stream里有且只会有一次request和response，传输完就会结束stream
+            - 同一stream内的通信遵守请求-响应模型，虽然只会有一次请求和响应
+            - stream中传输的帧必须有序，但可以在stream的并发中分批次发出和接收
+        - stream支持服务端主动通信
+            - 这样可以在客户端访问某路径时，把其他必须的数据也主动push给客户端
+                - 服务端会先把对应的HTTP header帧发给客户端告知即将主动发出数据，然后并发剩余的body
+                - 这个通知用的帧称为PUSH_PROMISE帧，其中的流标识符被称为Promised Stream ID，供客户端识别后续分批并发的帧是哪个
+        - stream id
+            - 就是Frame Header的流标识符
+            - 客户端主动的stream的stream id只会是奇数，服务端主动的只会是偶数
+            - stream id不能复用，只会递增
+            - stream id耗尽后，会发出一个GOAWAY控制帧来关闭TCP连接
+        - stream有优先级，通过Frame Header的标识位设置
+    - message
+        - 一个抽象容器，用来把同一请求或者响应分帧的东西都抽象地装起来而已
     - 除了原本1.1的body，还能压缩header
         - HPACK算法：
             - 客户端和服务端都维护一张静态和一张动态header表，其中每个header都会被赋予一个索引，这样只传送索引就行
@@ -288,8 +300,8 @@
                 - 动态添加其他header键值对，不会只保存header键。因此如果value一直有细微变化，动态表的作用就被限制了
                 - 动态表的内容也会被huffman编码
                 - 采用FIFO来移除过多的键值对
-                - web服务器一般都可以配置类似 http2_max_request 的东西来限制http2的请求数量，以此限制动态表张占用的内存
-    - HTTP/2.0的队头堵塞其实体现在TCP的连续seq_num上，但这就有点脱离应用层的范畴了
+                - web服务器一般都可以配置类似 http2_max_request 的东西来限制http2的请求数量，以此间接限制动态表占用的内存
+    - HTTP/2.0也有队头堵塞，但因为体现在TCP的连续seq_num缓存上，有点脱离应用层的范畴了
 - /3.0（暂时省略些）
     - 基于UDP
     - QUIC协议
