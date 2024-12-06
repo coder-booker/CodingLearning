@@ -1,26 +1,26 @@
 ### How to solve customers complaint
-    - Stay Calm and Empathetic
-        - 说明一些聆听技巧、阅读技巧之类的
-    - Identify the Root Cause: 
-        - Highlight your problem-solving skills by ***discussing how you investigate the underlying issue.*** 
-        - Mention specific techniques like asking ***clarifying questions or reviewing relevant data*** to pinpoint the problem.
-        - try to describe the problem in a specific and ***structured*** way
-    - Offer Solutions: 
-        - Describe how you ***present options*** to the customer and ***involve them in the decision-making process*** to ensure their satisfaction.
-        - 必要时可以提供***补偿***或者临时方案
-    - Follow Up: 
-        - Emphasize the importance of follow-through. Explain ***how you check back with the customer*** after resolving their complaint to ensure the solution was effective and to reinforce their trust in your service.
-    - Learn and Improve: 
-        - Illustrate your commitment to continuous improvement by discussing ***how you analyze complaints to identify patterns and implement changes.*** Mention how you use feedback to enhance your approach and prevent future issues
+- Stay Calm and Empathetic
+    - 说明一些聆听技巧、阅读技巧之类的
+- Identify the Root Cause: 
+    - Highlight your problem-solving skills by ***discussing how you investigate the underlying issue.*** 
+    - Mention specific techniques like asking ***clarifying questions or reviewing relevant data*** to pinpoint the problem.
+    - try to describe the problem in a specific and ***structured*** way
+- Offer Solutions: 
+    - Describe how you ***present options*** to the customer and ***involve them in the decision-making process*** to ensure their satisfaction.
+    - 必要时可以提供***补偿***或者临时方案
+- Follow Up: 
+    - Emphasize the importance of follow-through. Explain ***how you check back with the customer*** after resolving their complaint to ensure the solution was effective and to reinforce their trust in your service.
+- Learn and Improve: 
+    - Illustrate your commitment to continuous improvement by discussing ***how you analyze complaints to identify patterns and implement changes.*** Mention how you use feedback to enhance your approach and prevent future issues
 
 ### How to Trouble-shooting
-    - There are common steps: 
-        1. identify the situation/context
-        2. identify the problem
-        3. brainstorm some solutions
-        4. evaluate them and pick the best one
-        5. implement
-        6. evaluate the result
+- There are common steps: 
+    1. identify the situation/context
+    2. identify the problem
+    3. brainstorm some solutions
+    4. evaluate them and pick the best one
+    5. implement
+    6. evaluate the result
 
 ### career goal
 - be specific. 
