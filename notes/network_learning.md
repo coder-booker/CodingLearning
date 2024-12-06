@@ -75,8 +75,8 @@
     - 控制会话
 - 传输层 transport layer
     - TCP(面向连接)/UDP(无连接)
-- 网络层/互联网层 internet layer
-    - IP(无连接服务)
+- 网络层 network layer
+    - IP/DNS(无连接服务)/NAT
 - 数据链路层 data link layer
     - MAC
 - 物理层 physical layer
@@ -86,8 +86,8 @@
     - 应用+表示+会话
 - 传输层 transport layer
     - TCP(面向连接)/UDP(无连接)
-- 网络层/互联网层 internet layer
-    - IP(无连接服务)
+- 互联网层 internet layer
+    - IP/DNS(无连接服务)/NAT
 - 网络接口层 network interface layer
     - 数据链路+物理
 

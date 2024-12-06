@@ -102,8 +102,8 @@
     - visible - default
     - hidden
     - scroll - constantly display
-    - auto - display when overflow
 
+    - auto - display when overflow
 - flex 
     - margin：auto会尽可能分配多的空间，所以可以用来置左置右置顶置底
         - 和justify-content+align-items不太一样，margin以单个子元素为单位，jus和ali以整个容器里的元素为单位

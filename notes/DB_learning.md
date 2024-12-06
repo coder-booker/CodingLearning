@@ -19,7 +19,6 @@
 # SQL
 - some sql query new to me
     - ORDER BY [col_index|col_name] ASC|DESC;
-
     - NAME_COSNT('name', value)
         - 等价于`value AS 'name'`
         - NAME_COSNT()的参数位置可以调用别的函数或者任何运算

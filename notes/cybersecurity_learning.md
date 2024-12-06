@@ -27,7 +27,18 @@
         - 不可否认性：用唯一的数字签名来标识发送方
         - 为了让数据也拥有法律效力
 
-# Broken Access Control
+# OWASP
+- A01 Broken Access Control
+- A02 Cryptographic Failures
+- A03 Injection
+- A04 Insecure Design
+- A05 Security Misconfiguration
+- A06 Vulnerable and Outdated Components
+- A07 Identification and Authentication Failures
+- A08 Software and Data Integrity Failures
+- A09 Security Logging and Monitoring Failures
+- A10 Server Side Request Forgery (SSRF)
+### A01 Broken Access Control
 - types:
     - Insecure Direct Object Reference (IDOR)
         - types：
@@ -42,7 +53,7 @@
         - 成功提升后要记得更新session
 - experience
     - 从抓包中找到些资讯，然后尝试用在url上作为param或者query string
-# Hash & Cryptographic Failures
+### A02 Hash & Cryptographic Failures
 - most commonly used algorithm
     - MD5
     - SHA256
@@ -70,97 +81,128 @@
     - 有趣的是，大公司的内网访问外网，其实是公司自己作为中转服务器来签发CA给客户端以及和目标服务端建立连接。而由于公司内网肯定会信任这个中转CA，HTTPS的一个例外情况被利用在企业内网安全上
 - "Let's Encrypt"是免费的CA网站
 
-# injection
+### A03 injection
 - 有很多种
-    - cross-site scripting (XSS)
-        - 在受害者网站内运行script/code
-        - html也可以进行XSS，具体而言就是通过eventhandler来运行script
-        - css也可以进行XSS，比如再url()内输入具体url协议来运行恶意代码
-        - 有很多种:
-            - Self-XSS
-                - 没有触发服务器请求的XSS，比如单纯alert一下cookie
-            - Reflected XSS (non-persistent XSS attack)
-                - reflect the injected script off the web server. That occurs when input sent to the web server is part of the request.
-                - 在http请求中嵌入代码，如在query string写&lt;script>
-                - non-persistent是因为只有那一种情况会运行恶意代码
-                - 简易流程
-                    - 攻击者给用户发送一个恶意连接，内部包含一些script，会给攻击者主动发送信息
-                    - 用户在其session中点击并向服务器发出了恶意请求
-                    - 请求响应只会会返回给用户，然后恶意script被执行，给攻击者发送敏感信息
-            - Stored XSS（persistent XSS attack）
-                - 把有害代码通过某种方式保存到app里，每当app的这个功能被触发就会触发有害代码
-                - e.g. 在comment中插入script，只要有用户加载了这条评论就会运行script
-            - DOM-based XSS
-                - 和reflected XSS很像，但不使用http来攻击，而是用响应式js的动态DOM来运行恶意代码
-                - 因此在服务端没法识别到这种攻击，因为往服务端发的http请求中没有痕迹
-    - XML external entity injection (XXE) 
-        - 在接收XML的应用服务中，利用XXE语言的特性来获得敏感信息
-    - OS injection/Remote Code Execution (RCE)
-        - 直接在服务端的os运行代码
-        - 例如参数传到linux中并运行某命令，用;或者&&来在那一条行中运行多条命令
-- 一些防范的手段：
+- cross-site scripting injection (XSS)
+    - 在受害者网站内运行script/code
+    - html也可以进行XSS，比如通过eventhandler来运行script
+    - css也可以进行XSS，比如再url()内输入具体url协议来运行恶意代码
+    - 有很多种:
+        - Self-XSS
+            - 没有触发服务器请求的XSS，比如单纯alert一下cookie
+        - Reflected XSS (non-persistent XSS attack)
+            - reflect the injected script off the web server. That occurs when input sent to the web server is part of the request.
+            - non-persistent是因为只有那一种情况会运行恶意代码
+            - 简易流程（？得去看看Webgoat）
+                - 攻击者给用户发送一个恶意连接，内部包含一些script，会给攻击者主动发送信息
+                - 用户在其session中点击并向服务器发出了恶意请求
+                - 请求响应只会会返回给用户，然后恶意script被执行，给攻击者发送敏感信息
+            - 可能的使用场景：
+                - 在http请求中嵌入代码，如在query string写script
+                - 在表单的input写script
+        - Stored XSS（persistent XSS attack）
+            - 把有害代码通过某种方式保存到app里，每当app的这个功能被触发就会触发有害代码
+            - e.g. 在comment中插入script，只要有用户加载了这条评论就会运行script
+        - DOM-based XSS
+            - 和reflected XSS很像，但不使用http来攻击，而是用响应式js的动态DOM来运行恶意代码
+            - 因此在服务端没法识别到这种攻击，因为往服务端发的http请求中没有痕迹
+- XML external entity injection (XXE) 
+    - 在接受XML的应用服务中，利用XXE语言的特性来获得敏感信息
+- OS injection/Remote Code Execution (RCE)
+    - 直接在服务端的os运行代码
+    - 类型：
+        - 参数传到linux中并运行某命令，用;或者&&来在那一条行中运行多条命令
+
+- SQL injections
+    - 基本上关键在于熟悉SQL语句的语法
+    - experiences
+        - 留心开头和结尾的引号
+            - e.g. `"SELECT * FROM user_data WHERE first_name = 'John' AND last_name = '" + lastName + "'";`如果要注入，得处理尾部的`'`（例如注释掉或者用另一个'接上）
+        - `--`在SQL中代表注释符
+            - eg：https://example.com/search?query=admin';-- 可以把`SELECT * FROM users WHERE username = 'admin' AND password = 'password';`变成`SELECT * FROM users WHERE username = 'admin';-- AND password = 'password';`
+        - `OR`
+            - eg：https://darklabacademy.com/score?student_id=10002'+OR+1=1;-- 可以bypass验证：`SELECT * FROM result WHERE student_id = '10002'OR 1=1--' AND released = 1`
+    - Common attackable query command
+        - SELECT, UPDATE, DELETE
+    - types:
+        - In-Band
+            - when use the same channel to send sql query and get result
+            - 2 types:
+                - Error based 
+                    - utilize error meesage thrown
+                - Union based
+                    - 因为我们输入的参数被sql使用的位置一般在末尾的where之类的，因此用union关键字才能同时select些别的
+                    - ORDER BY可以用列索引来判断被注入的sql查询的列数
+                    - union的两个查询结果的列数要一样
+                        - 用ORDER BY和常量扩充列数来保证列数相同
+                - （LIKE可能也能用？）
+        - Out-of Band 
+            - 用sql语句叫数据库把信息泄露给外网
+            - 仅适用于能够发出DNS、HTTP或者SMB请求的数据库
+            - SQL原来可以进行DNS请求
+            - 用load_file()，把任何敏感信息作为子域名发给SLD的DNS服务器，DNS服务器就可以看到这个敏感信息
+            - xp_dirtree
+        - Inferential (Blind)
+            - 一般用于无法直接获得查询结果的情况下，也就是无法直接知道有没有查询到
+            - 本质上就是猜数据库里的数据是什么，如果猜对了就会在各种方面返回和没猜对不一样的值，以此判断得出正确的值
+            - Boolean based
+                - 直接暴力遍历值等于什么，如果猜对了一般会时网络请求中包长度变长，我们就可以知道这个值是正确的
+            - Time based
+                - 利用了AND和OR的短路机制
+                    - 例如把延迟函数放在AND最后一个条件，这样如果前面的条件为false则不会延迟，而延迟了的条件都是正确的条件
+        - Vulnerability test
+            - common ways
+                - single quotation marks `'`
+                - SQL specific syntax such as ASCII characters
+                - Boolean conditions (e.g., `' OR 1=1--`)
+                - Payloads to trigger time delays (e.g., `'; waitfor delay ('0:0:30')--`)
+                - Payloads to trigger out-of-band network interaction (e.g., `exec master..xp_cmdshell 'whoami'`)
+            - tools
+                - SQLMAP (open-source penetration testing tool)
+            - ways to protect
+                - input validation
+                - parameterised queries (also known as prepared statements)（其实就是把query封装一下，让query可以用指定参数名而不是字符串拼接的方式填入session数据）
+                - character-escaping functions
+                - web application firewall to monitor requests and block malicious traffic.
+- 一些防范injection的手段：
     - cookie设置HttpOnly（防止DOM-based XSS）
     - CSRF token：动态生成会话唯一的token来标识合法http请求
         - 让攻击者在没有对应session的情况下无法伪造请求
 
-### SQL injections
-- 基本上关键在于熟悉SQL语句的语法
-- experiences
-    - 留心开头和结尾的引号
-        - e.g. `"SELECT * FROM user_data WHERE first_name = 'John' AND last_name = '" + lastName + "'";`如果要注入，得处理尾部的`'`（例如注释掉或者用另一个'接上）
-- list
-    - `--`在SQL中代表注释符
-        - injection exmaple：
-            https://example.com/search?query=admin'--+  
-            `SELECT * FROM users WHERE username = 'admin' --' AND password = 'password';`
-    - `OR`
-        - injection exmaple：
-            https://darklabacademy.com/score?student_id=10002'+OR+1=1--  
-            `SELECT * FROM result WHERE student_id = '10002'OR 1=1--' AND released = 1`
-- Common attackable query command
-    - SELEC, UPDATE, DELETE
-- types:
-    - In-Band
-        - when use the same channel to send sql query and get result
-        - 2 types:
-            - Error based 
-                - utilize error meesage thrown
-            - Union based
-                - 因为我们输入的参数被sql使用的位置一般在末尾的where之类的，因此用union关键字才能同时select些别的
-                - ORDER BY可以用列索引来判断被注入的sql查询的列数
-                - union的两个查询结果的列数要一样
-                    - 用ORDER BY和常量扩充列数来保证列数相同
-            - （LIKE可能也能用？）
-    - Out-of Band 
-        - 用sql语句叫数据库把信息泄露给外部域名
-        - 仅适用于能够发出DNS、HTTP或者SMB请求的数据库
-        - SQL原来可以进行DNS请求
-        - 用load_file()，把任何敏感信息作为子域名发给SLD的DNS服务器，DNS服务器就可以看到这个敏感信息
-        - xp_dirtree
-    - Inferential (Blind)
-        - 一般用于无法直接获得查询结果的情况下，也就是无法直接知道有没有查询到
-        - 本质上就是猜数据库里的数据是什么，如果猜对了就会在各种方面返回和没猜对不一样的值，以此判断得出正确的值
-        - Boolean based
-            - 直接暴力遍历值等于什么，如果猜对了一般会时网络请求中包长度变长，我们就可以知道这个值是正确的
-        - Time based
-            - 利用了AND和OR的短路机制
-                - 例如把延迟函数放在AND最后一个条件，这样如果前面的条件为false则不会延迟，反之可以说延迟了的条件都是正确的条件
-    - Vulnerability test
-        - common ways
-            - single quotation marks `'`
-            - SQL specific syntax such as ASCII characters
-            - Boolean conditions (e.g., `' OR 1=1--`)
-            - Payloads to trigger time delays (e.g., `'; waitfor delay ('0:0:30')--`)
-            - Payloads to trigger out-of-band network interaction (e.g., `exec master..xp_cmdshell 'whoami'`)
-        - tools
-            - SQLMAP (open-source penetration testing tool)
-        - ways to protect
-            - input validation
-            - parameterised queries (also known as prepared statements)（其实就是把query封装一下，让query可以用指定参数名而不是字符串拼接的方式填入session数据）
-            - character-escaping functions
-            - web application firewall to monitor requests and block malicious traffic.
+### A04 Insecure Design
+- 一些准则：
+    - Threat modelling
+    - Secure design pattern
+    - Secure component libraries
+    - Reference architecture
+- Unprotected Storage of Credentials
+    - Common examples:
+        - Storing password in plaintext format in application's properties
+        - Hardcoding logon credentials on unencrypted configuration files
+        - Saving decryption keys on network drives
+    - 其实就是以防有人真的得到了storage的权限
+- Trust Boundary Violation
+    - 用于把系统的不同部分分隔开
+    - 对输入和输出进行过滤和验证可以让数据穿过这些边界
 
-# Identification and Authentication Failures
+### A05 Security Misconfiguration
+
+
+### A06 Vulnerable and Outdated Components
+- CVE (Common Vulnerabilities and Exposures)
+    - 就是公开一些架构内被发现的漏洞
+    - 有意思的是，直到现在仍然有不少CVE指名存在漏洞的框架或者版本被使用
+    - ways to evaluate severity of a CVE: CVSS (Common Vulnerability Scoring System)
+        - [0.0-10.0]
+- Vulnerable and Outdated Components Attack
+    - 生产环境使用已经没维护的版本
+        - 可能早就被标注会有攻击风险
+    - 包括框架、库什么的
+    - eg CVE-2021-41773
+        - apache 2.4.49/2.4.50这两个版本虽然过滤了一些简单的特殊字符，如遇到`\`,`.`啥的会直接删除，但没有过滤`%2e`这类编码，导致可以用`%2e`访问路径
+        - 此外，没有进行访问权限控制也是问题之一
+
+### A07 Identification and Authentication Failures
 - Credential Stuffing
     - 在拥有一个账号和密码的情况下，自动化尝试用这个账密登入不同的网站
 - Brute Force Attack
@@ -185,37 +227,10 @@
     - 不停发MFA的验证请求让用户疲劳厌烦，最后同意其中一个MFA请求
     - 需要事先已经知道用户的账密才能有机会触发MFA验证请求
 
-# Vulnerable and Outdated Components
-- CVE (Common Vulnerabilities and Exposures)
-    - 就是公开一些架构内被发现的漏洞
-    - 有意思的是，直到现在仍然有不少CVE指名存在漏洞的框架或者版本被使用
-    - ways to evaluate severity of a CVE: CVSS (Common Vulnerability Scoring System)
-        - [0.0-10.0]
-- Vulnerable and Outdated Components Attack
-    - 生产环境使用已经没维护的版本
-        - 可能早就被标注会有攻击风险
-    - 包括框架、库什么的
-    - eg CVE-2021-41773
-        - apache 2.4.49/2.4.50这两个版本虽然过滤了一些简单的特殊字符，如遇到`\`,`.`啥的会直接删除，但没有过滤`%2e`这类编码，导致可以用`%2e`访问路径
-        - 此外，没有进行访问权限控制也是问题之一
+### A08 Software and Data Integrity Failures
+- 简单来说就是数据或者软件被中途篡改了，例如CI/CD中被安装恶意代码或者通信时截获修改转发信息
 
-# Insecure Design
-- 一些准则：
-    - Threat modelling
-    - Secure design pattern
-    - Secure component libraries
-    - Reference architecture
-- Unprotected Storage of Credentials
-    - Common examples:
-        - Storing password in plaintext format in application's properties
-        - Hardcoding logon credentials on unencrypted configuration files
-        - Saving decryption keys on network drives
-    - 其实就是以防有人真的得到了storage的权限
-- Trust Boundary Violation
-    - 用于把系统的不同部分分隔开
-    - 对输入和输出进行过滤和验证可以让数据穿过这些边界
-
-# Security Logging and Monitoring Failures
+### A09 Security Logging and Monitoring Failures
 - OWASP Top 10：Failure - A09
     - Improper Output Neutralization for Logs
     - Omission of Security-relevant Information
@@ -233,13 +248,47 @@
     - Netcat
 - sql各种现代函数
 
-# Server-Side Request Forgery (SSRF)
+### A10 Server-Side Request Forgery (SSRF)
 - 伪造请求，使用服务器内的功能，比如组织里的内网功能
 - 有点类似OS injection/RCE
 - Common SSRF
     - Server SSRF: 注入本地ip 127.0.0.1/admin之类的，
     - Back-end SSRF：注入其他内网ip 192.168.10.8之类的，用有缺陷的服务器访问敏感服务器，因为不少情况下内网的各项服务之间的通信不会有权限控制
     - 
+
+### 暂时还没分类的vulnerability
+- Shell
+    - shell是命令行解释器
+    - Web Shell
+        - 上传到服务器的恶意脚本
+        - 其实和shell一点关系都没有，但不知道为什么称为“Shell”而不是“script”
+    - Remote Shell
+        - 让服务器与外部机器远程连接，使外部机器能够操作服务器
+        - 类型：
+            - Bind Shell：
+                - 首先你得能够直接访问服务器，包括有其IP和可以连接，如果有防火墙或者服务器没法连接外网肯定就不行了
+                - 具体流程：让服务器listen来自外部机器的连接，然后外部机器与服务器建立TCP连接，这样就可以用很多协议来exploit服务器了
+            - Reverse Shell：
+                - 让服务器主动和外部机器建立连接
+                - 一般通过RCE让服务器自己主动进行恶意操作，例如开启防火墙、打开端口什么的
+- File Inclusion
+    - 让服务器运行unexpected的脚本
+    - 有两种
+        - Remote File Inclusion
+            - 上传恶意脚本或者URL提供脚本并让服务器加载运行
+        - Local File Inclusion
+            - 让服务器运行其本地的文件
+            - 或会需要path traversal
+            - `../etc/passwd`就是很经典的例子
+            - 奇怪的还没来得及学的可以用于File Inclusion exploitation PHP Wrapper
+                - PHP filter
+                - PHP ZIP
+                - PHP Data
+                - PHP Expect
+- Denial of Service (DoS)
+    - DDoS就是指Distributed Denial of Service
+
+
 
 
 # useful vocab
@@ -255,3 +304,4 @@
 
 # to-do
 - A7 JWT token，第七题
+- Week 10 第10页

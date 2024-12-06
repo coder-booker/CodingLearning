@@ -22,7 +22,20 @@
     - Incremental
     - Prototype
     - Spiral
-    - Agile 
+    - Agile
+- CI/CD
+    - 持续交付/部署
+    - 自动且频繁地合并分支和release到部署的一套流程
+    - 把合并分支和部署的行为拆分且自动化，这样一切微小的更改都能快速经过测试和部署
+    - 本质上就是把手动处理的内容自动化了，因此需要非常完善的自动测试流程，否则自动部署会爆炸
+- Trouble-shooting
+    - There are common steps: 
+        1. identify the situation/context
+        2. identify the problem
+        3. brainstorm some solutions
+        4. evaluate them and pick the best one
+        5. implement
+        6. evaluate the result
 
 
 # 设计架构时的思路
