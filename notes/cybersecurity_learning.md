@@ -17,7 +17,7 @@
     - Integrity
         - 完整性，也就是数据应该一致，不能随意更改
     - Availability
-        - 字面意思，服务器烧了，着火了都算不available
+        - 字面意思，服务器烧了、着火了都算不available
 - AAN
     - Authentication
         - identify who you are
@@ -228,7 +228,18 @@
     - 需要事先已经知道用户的账密才能有机会触发MFA验证请求
 
 ### A08 Software and Data Integrity Failures
-- 简单来说就是数据或者软件被中途篡改了，例如CI/CD中被安装恶意代码或者通信时截获修改转发信息
+- 简单来说就是数据或者软件被中途篡改了，但没有验证就被使用了
+    - 其实也意味着trust boundary没设置好，把不安全的source也trust了
+- 分类Software Integrity Failures和Data Integrity Failures
+- Software Integrity Failures常见原因
+    - 软件未验证
+    - 更新机制有漏洞，例如CI/CD中被安装恶意代码或者通信时截获修改转发信息
+- Data Integrity Failures常见原因
+    - 传输数据没签名、验证
+    - Serialization attack
+    - cookie没设计
+    - 上传/下载文件没验证
+    - 输入输出验证
 
 ### A09 Security Logging and Monitoring Failures
 - OWASP Top 10：Failure - A09
@@ -258,10 +269,12 @@
 
 ### 暂时还没分类的vulnerability
 - Shell
-    - shell是命令行解释器
+    - shell是命令行解释器/脚本环境
+    - interactive shell: 解释键盘键入的command的shell
+    - non-interactive shell: 就是不解释command，而是解释script的shell
     - Web Shell
-        - 上传到服务器的恶意脚本
-        - 其实和shell一点关系都没有，但不知道为什么称为“Shell”而不是“script”
+        - 上传到服务器并被运行的恶意脚本
+        - 其实本质上是一份script，但因为有可能可以进行RCE，我们随意地修改script内容就能和背后的non-interactive shell交互，因此也可以把这个script理解为一个shell界面
     - Remote Shell
         - 让服务器与外部机器远程连接，使外部机器能够操作服务器
         - 类型：
@@ -271,15 +284,16 @@
             - Reverse Shell：
                 - 让服务器主动和外部机器建立连接
                 - 一般通过RCE让服务器自己主动进行恶意操作，例如开启防火墙、打开端口什么的
+    - ways 
 - File Inclusion
     - 让服务器运行unexpected的脚本
     - 有两种
-        - Remote File Inclusion
+        - Remote File Inclusion RFI
             - 上传恶意脚本或者URL提供脚本并让服务器加载运行
-        - Local File Inclusion
+        - Local File Inclusion LFI
             - 让服务器运行其本地的文件
             - 或会需要path traversal
-            - `../etc/passwd`就是很经典的例子
+            - `../etc/passwd`有点像，但这只是read而非execution
             - 奇怪的还没来得及学的可以用于File Inclusion exploitation PHP Wrapper
                 - PHP filter
                 - PHP ZIP
@@ -287,7 +301,43 @@
                 - PHP Expect
 - Denial of Service (DoS)
     - DDoS就是指Distributed Denial of Service
+- Magic Hash Attack
+    - 简单来说就是手动搓出特定哈希值，以达到某些神奇效果的技术
+    - eg：
+        - PHP宽松对比时，字符串以0e，1e之类的开头，就会把这个字符串解析为科学计数法的数字
+        - 因此如果另一边是字符串，就可以触发PHP宽松对比数字和字符串时的自动转换机制，把另一边转换成数字。
+        - 如此就可以通过操控科学计数法的数字来手动和被转换成数字的字符串进行匹配，bypass验证
 
+# Cybersecurity Protection Techniques
+- Demilitarized Zone DMZ
+- zero trust architecture
+    - 每一个节点间的通信都需要验证
+- trust boundary
+- 正确的log
+    - 包含必要的追踪信息，例如ip source
+    - 不要放入敏感信息
+
+# tools
+- BurpSuite
+    - repeator, intruder
+    - path traveral
+- netcat
+    - `nc`
+    - 用来在多台设备间传输数据用的，例如可以给服务器设置后门
+    - 也可以用来扫端口
+- nmap
+    - 扫某个url的端口的
+    - 一般参数用 `-p-`就行了，自动尝试不同协议和不同端口
+- sqlmap
+    - 可以自动判断有没有sqli漏洞
+    - 一般来说直接把body写入--data参数就会被自动解析和检测
+- gobuster
+    - 用wordlist遍历各种东西，例如路径、服务、sub-domain等
+- hash-identifier
+    - cyber chief其实就行
+- websites tools: 
+    - cyber chief
+    - crack station
 
 
 

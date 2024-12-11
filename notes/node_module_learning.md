@@ -87,13 +87,29 @@ async function validate(account, password) {
         - `type: /[slice-name]/[reducer-name]`，表示action的路径/name
         - `payload: {some_data}`，表示action想发出去的数据，一般用于在reducer中更新state的数据
     - action creator就是创建一个action的函数，也就是创建一个有type和payload的对象的函数而已
+        - action creator一般需要type和payload才能创建action，但redux有些语法糖能隐性设置好type，只需要传入payload就行，比如slice隐性定义的action creator
+        - 注意，slice里的和reducer同名的action creator是沟槽的隐性定义的，***和slice里的reducer没有半点关系***
 - selector
     - 就是读取目前最新state
     - 背后逻辑是通过浅对比机制随时加载最新的state。浅对比的对象是selector的返回值
+    - eg
+    ```js
+    const mySelector = state => state.data
+    const defaultSelector = useSelect(mySelector) // 会自动传入state, 如果不指定mySelector则直接返回state
+
+    const mySelector2 = createSelector(
+        [...input_func_list], 
+        output_func
+    );
+    // 第一个参数是n个 取state为第一个参数，剩下参数动态取的 函数。因为state内置自动传入，剩余的参数就看input_func有没有接收了
+    // 第二个参数是接收第一个参数中所有input_func的返回值为参数的函数，而这个函数的返回值就是selector的值了
+    // 因此整个createSelector就是为了state本身需要被预处理才能被使用的情况
+    // 此外，createSelector还可以进行参数层面的浅对比来决定是否更新state，以此避免默认的计算出和直接浅对比state本身的资源浪费（尤其在预处理/计算比较复杂的时候）
+    ```
 - Slice
     - action creator + 对应reducer的语法糖
-    - 内部设置好的reducer会自动被生成一个同路径的action creator，导出之后就可以用这个action creator制造该路径的action
-        - slice自动设置的action creator的参数会被赋值在payload中
+    - 内部设置好的reducer会自动被生成一个同路径的action creator
+        - 导出这个reducer实际上是导出其action creator，这个action creator隐性定义了type，只要接收一个object成为payload就能创建好一个action
         - eg slice设置了个setUser的reducer，对应的action creator要则这么调用：`setUser({userName: 'mike'})`
     - extraReducer里设置的reducer则不会自动创建action creator，一般是外包给Thunk来定义
 - createAsyncThunk
@@ -104,20 +120,6 @@ async function validate(account, password) {
         - 在对应slice中，需要用extraReducers来设定其reducer。
 - createSelector 创建 memoized selector，用于提取复杂的 state和优化性能。
 
-- selector和createSelector
-```js
-const mySelector = state => state.data
-const defaultSelector = useSelect(mySelector) // 会自动传入state, 如果不指定mySelector则直接返回state
-
-const mySelector2 = createSelector(
-    [...input_func_list], 
-    output_func
-);
-// 第一个参数是n个 取state为第一个参数，剩下参数动态取的 函数。因为state内置自动传入，剩余的参数就看input_func有没有接收了
-// 第二个参数是接收第一个参数中所有input_func的返回值为参数的函数，而这个函数的返回值就是selector的值了
-// 因此整个createSelector就是为了state本身需要被预处理才能被使用的情况
-// 此外，createSelector还可以进行参数层面的浅对比来决定是否更新state，以此避免默认的计算出和直接浅对比state本身的资源浪费（尤其在预处理/计算比较复杂的时候）
-```
 
 ### react-quill
 - 用于自定义文本模块
