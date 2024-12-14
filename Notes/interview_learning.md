@@ -85,5 +85,47 @@
     ```
     - 个人网站感觉也可以抽时间上一上
 
-### connection target
-- 
+### connection
+- 思路
+    - 目的是有了connection之后，我可以得到更多职场知识，且对方更了解我一点了可以帮忙refer或者内推
+    - 所有这个时候就有了两点需要注意：
+        - 我想要知道什么职场知识？（这点需要因人而异，感觉就是直接搜索connection对象做过的工作、结合自己的情况问一下）（这点可以搜索一下“networking问啥问题比较好”）
+        - connection对象是否合适？也就是我们要找谁做connection呢？
+            - 1. 申请的公司的职员
+            - 2. 和自己经历相似的人
+            - 3. 只要是校友都可以connect一下
+            - 4. 随机connect，比如曾经见过的人，讲师啥的。
+        - 结论：refer可能没那么来得及，所以就以单纯的network和问职场经验为主吧
+    - template
+        - 
+- target
+- problem
+    - 
+    - career advice
+
+# company target
+- Tech
+    - international
+        - Microsoft
+        - Google
+        - Meta
+    - Mainland
+        - 华为
+        - 阿里
+        - 字节
+        - 大疆
+        - 腾讯
+        - 宁德时代
+        - 比亚迪
+        - 科大讯飞
+        - 网易
+        - 美团
+        - 蚂蚁
+        - mihoyo
+        - 小米
+        - 百度
+- Bank/finance
+    - Accture
+    - Jane street
+    - big four: Deloitte, PWC, EY, KPMG
+    - banks: 

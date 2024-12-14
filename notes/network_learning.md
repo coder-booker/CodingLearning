@@ -125,6 +125,16 @@
 - 面向连接服务就是TCP这一类得连接才能传输的协议
 - 无连接服务则是直接发送数据（“尽最大努力交付”(Best-Effort-Delivery)）
 
+# Client/Server (C/S) & Browser/Server (B/S)
+- client其实是一个很专的概念，指application
+- 早期的互联网的通信模型就是这样的，因此才会用RPC
+- 但后来出现了Browser这种特殊但很泛用的client，因此才慢慢转向HTTP
+- 现在这两者已经没那么分得开了，因为现在的产品都是***多端***的
+
+# 序列化协议
+- JSON
+- Protobuf (Protocol Buffers)
+- XML
 
 # 应用层
 - DNS的查询是一个DNS请求
@@ -138,7 +148,7 @@
         - SLD 下的子域，一般拥有这个域名就可以自己配置
 - 共享缓存
     - 多个用户或者客户端可以一起使用的缓存
-    - 最常见的例子就是Content Delivery Network (CDN)，CDN的常见例子则是网络供应商缓存网站并把缓存发给客户端
+    - 最常见的例子就是代理服务器或者Content Delivery Network (CDN)，CDN的常见例子则是网络供应商缓存网站并把缓存发给客户端
 ## HTTP 协议
 - 单向，服务端没法主动发出请求，客户端也没法做出响应
 - 用换行符、回车符作为header每个项的边界
@@ -153,13 +163,13 @@
         User-Agent: Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:131.0) Gecko/20100101 Firefox/131.0
         Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/png,image/svg+xml,*/*;q=0.8
         Accept-Language: en-US,en;q=0.5
-        Accept-Encoding: gzip, deflate, br  <!-- 压缩算法 -->
+        Accept-Encoding: gzip, deflate, br  <!-- body的压缩算法 -->
         Content-Type: application/x-www-form-urlencoded
         Content-Length: 75
         Origin: http://10.0.0.102
         Connection: keep-alive
         Referer: http://10.0.0.102/message.php
-        Cookie: PHPSESSID=a561bae723e2bf896352a27c9ee81917; Admin=Admin
+        Cookie: PHPSESSID=a561bae723e2bf896352a27c9ee81917; Admin=admin
         <!-- 这里用两个换行符区分headers和body，然后Centent-Length控制body边界 -->
         csrf_token=d63e274d90a8cd33b1fac086669be5706f868a8b8bfc1b498e6bf449b774f2b9
         ```
@@ -186,7 +196,7 @@
                         - no-cache：缓存，但每次用缓存都得revalidate
                         - no-store：不缓存
                         - max-age=[xxx，秒]：指定缓存时间，只有有缓存的设定下才生效
-                        - s-maxage=[xxx，秒]：但仅适用于共享缓存的max-age
+                        - s-maxage=[xxx，秒]：但仅适用于共享缓存的max-age（共享缓存是啥往上看）
                         - must-revalidate：严格模式revalidate，在缓存过期时绝不会“先用着”
                         - proxy-revalidate：但仅适用于共享缓存的must-revalidate
                         - no-transform：禁止缓存代理对资源进行任何转换或修改。
@@ -365,7 +375,7 @@
 - 注意如果使用SSL/TLS，会多一层握手的流程
 - SSL 1.0, 2.0, 3.0都因为漏洞问题被弃用，随后才出现了TLS
 - record 指一个“计算元”
-- TLS
+- TLS overview
     - TLS 1.0
         - 就是基于SSL 3.0的，改进了安全性
         - 四次握手，2RTT
@@ -413,6 +423,8 @@
                 - 服务端选择了椭圆和基点(一般一个参数就选好了)，并把自己生成的私钥d1和椭圆基点相乘得到公钥Q1。椭圆配置和Q1都发给客户端。签名算法会签名Q1
                 - 客户端用椭圆参数和自己的私钥d2得到Q2（Q2=d2x基点），发给服务端
                 - 对称公钥交换完成
+        - PSK Pre-Shared Key
+            - 通信之前就通过某种方式交换了的密钥
     - 数字签名
         - 在同一次通信中，如果有被签名的数据发出，一定也会有签名前的数据被发出，以供接收方验证
         - 注意签名算法用在哪和密钥协商算法的选择有关系
@@ -490,19 +502,19 @@
         - 接收端解密后得到MAC和数据
         - 以相同的哈希和会话密钥对数据生成对应MAC，如果和请求中的不用一样就代表数据可能被篡改过。相同则代表数据安全
 - TLS 1.3
+    - 一次RTT就能握手（具体发送了什么自己想）
     - 废除了不支持前向安全的RSA和Dh，只使用ECDHE，而签名算法、对称加密算法啥的选择也减少了
     - 可以把密钥和Hello一起发出去，达到1RTT握手
 - 重放攻击与前向安全
     - 不具备前向安全的通信协议/方法都会导致重放攻击的可行性
     - 重放攻击就是重复利用监听到的用户请求
 
-
 - 有趣的是，大公司的内网访问外网，其实是公司自己作为中转服务器来签发CA给客户端以及和目标服务端建立连接。而由于公司内网肯定会信任这个中转CA，HTTPS的一个例外情况被利用在企业内网安全上
 - TLS证书就是https验证用的数字证书
 - Cloudflare 向所有用户提供免费的 TLS/SSL 证书
 - 由于历史遗留原因（人们已经用ssl很久了），tls配置很多时候仍会使用ssl作命名，但实际上命名为ssl的东西基本上都同时支持tls了
 
-## 请求优化与压缩
+## HTTP请求性能优化与压缩
 ### General 优化
 - 减少重定向
     - 代理服务器(类似中间件的服务器)一般只负责把迁移后的url发给用户(3xx status)，然后用户再对代理服务器访问新url
@@ -536,6 +548,8 @@
     - 具体使用
         - 使用`Accept-Encoding: `header来标识接受的压缩算法
         - 响应式声明`Content-Encoding: `来标识选择的压缩算法
+- 连接池
+    - 很多网络库都会内置连接池
 ### HTTPS优化
 - 硬件优化
     - 用更快，甚至特化过加密计算的CPU，如支持AES-NI特性的CPU优化了AES算法
@@ -580,7 +594,22 @@
         - 客户端申请会话复用的请求可以被监听
         - 这样攻击者在会话复用有效期内伪造一份监听到的请求，就能重复发出这份请求
         - 只能通过设置过期时间，或者只针对安全幂等的HTTP请求允许会话复用来避免重放攻击
-    
+
+## RPC (Remote Procedure Call)
+- 顾名思义，其思路就是想调用本地函数一样调用远程服务器提供的接口，因此能够屏蔽一些网络上的细节。
+- 本质上RPC只是一种设计理念，具体实现有很多种，例如gRPC和Thrift
+    - gRPC底层其实就是套HTTP/2.0
+- 大部分RPC都基于TCP，但也可以用UDP甚至套HTTP
+- HTTP vs RPC的实现
+    - RPC更多使用C/S架构，可定制性更高；HTTP则更多是B/S
+    - HTTP用DNS服务发现，RPC则有专门的中间服务去保存服务发现资料
+    - RPC内置连接池，不需要网络库的额外实现。HTTP则不内置连接池
+- 实际上，HTTP/2.0的性能已经在很多场合都比RPC高了。而由于历史遗留原因，很多RPC哪怕可以被优化也不会这么做
+- RPC优势
+    - 因为可定制性更高，可以协商好一种最简洁的协议，把一切可省略的重复的header、body啥的都省略，达到更好的性能
+        - 例如Accept、Content-Type啥的
+    - 使用体积更小的Protobuf来保存数据
+
 ## WebSocket协议
 - 本质上就是应用层的一个功能，可以视为HTTP的升级双向版，因此也有其大部分现代特性
 - 特点
@@ -617,34 +646,39 @@
 - 默认用UDP，适合快速查询
 - 大量传输时用TCP，但较少见
 ## FTP协议 File Transfer Protocol
-- TCP
+- 基于TCP
 - ftp://
 ## SMTP/POP3/IMAP协议
 - 都是email用的协议
 - SMTP(Simple Mail Transfer Protocol): 用于发送email
 - POP3(Post Office Protocol 3): 用于下载email
 - IMAP(Internet Message Access Protocol): 用于访问email
-- TCP
+- 基于TCP
 ## SSH协议 Secure Shell
 - 用于在不安全的网络上安全地访问计算机
-- TCP
+- 基于TCP
 ## Telnet协议
 - 用于远程使用命令行接口
-- TCP
+- 基于TCP
 ## NTP Network Time Protocol
 - 用于同步时间
-- UDP
+- 基于UDP
 ## DHCP协议 Dynamic Host Configuration Protocol
-- UDP
+- 基于UDP
 ## SNMP协议 Simple Network Management Protocol
 - 用于网络管理和监控
-- UDP
+- 基于UDP
 
 # 传输层
 - seq_num
     - 其实会不停循环分配，不然会overflow
     - 值得一提的是window size和seq_num有关联，具体在于类似哈希的避免同一个window中出现了相同的seq_num，因此seq_num要大于window size*2
 ## TCP
+- 三大特点
+    - 面向连接
+    - 可靠
+    - 基于字节流
+        - 也就是粘包问题的根源：TCP不负责parse字节，只负责传（这也是传输协议出现的原因）
 - 使用四个元素识别一条链接：
     - 源IP、目标IP、源端口、目标端口
 - 三次握手
@@ -704,10 +738,17 @@
 ## UDP
     - checksum具体的原理？
 
+# 互联网层/网络层
+## 服务发现
+- 就是要通过什么手段在互联网上发现某个endpoint
+- DNS就是很经典的服务发现组件
+- 其他例子：
+    - Consul、Etcd、Redis
 
 
 
 - to-do:
     - UDP（跳过
     - QUIC（跳过
-    - TLS 3.0（跳过
+    - TLS 1.3（跳过
+    - HTTP/3.0（跳过

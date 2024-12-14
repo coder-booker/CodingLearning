@@ -1,5 +1,6 @@
 # Experience
 - RESTful的抓包和破解尝试（包括更改url（path和query string），更改body，更改method等）
+    - 猜url是非常常见的事儿，也就是可以在没有进展的时候进行path_traversal
 - 查看html的hidden项
 - 同级和向上的入侵，尝试权限修改
 - 除了手动猜测之外，也要利用好网站自己就暴露出来的功能
@@ -9,6 +10,7 @@
 - file:///etc/passwd：linux中的系统用户配置文件
 - 学网安可以反向进行一些相当有趣的防护
 - openssl就是一个开源的SSL/TLS层，有各种加密功能
+- 邮件劫持？
 
 ### CIA + AAN
 - CIA
@@ -55,10 +57,27 @@
     - 从抓包中找到些资讯，然后尝试用在url上作为param或者query string
 ### A02 Hash & Cryptographic Failures
 - most commonly used algorithm
-    - MD5
-    - SHA256
+    - MD
+        - MD2/4/5被证明有漏洞
+        - 抗碰撞性较差（较容易重复）
+        - 但性能较好
+        - 但不推荐使用
+    - SHA
+        - SHA1被证明有漏洞
+        - SHA2/3是安全的
+        - SHA2家族：(数字代表最后生成了多少位的哈希值，斜杠代表虽然用的是斜杠前的算法，但斜杠后才是最后输出的哈希值位数)
+            - SHA-224、SHA-256、SHA-384
+            - SHA-512、SHA-512/224、SHA-512/256
+        - SHA3
+            - 抗碰撞性更强
+            - 基于不同的底层算法
+            - 包括 SHA3-224、SHA3-256、SHA3-384 和 SHA3-512
+- UUID Universal Unique Identifier
+    - 全局唯一标识符
+    - 有很多不同版本，基于的算法和结果的特性也很不一样
 - hash是可能被破解的，用些hash的识别网站就有可能
     - URL modifying
+
 - cookie
 - Unsalted Hash vs Salted Hash
     - Salted: 引入了随机数的哈希算法
@@ -91,12 +110,12 @@
         - Self-XSS
             - 没有触发服务器请求的XSS，比如单纯alert一下cookie
         - Reflected XSS (non-persistent XSS attack)
-            - reflect the injected script off the web server. That occurs when input sent to the web server is part of the request.
-            - non-persistent是因为只有那一种情况会运行恶意代码
-            - 简易流程（？得去看看Webgoat）
-                - 攻击者给用户发送一个恶意连接，内部包含一些script，会给攻击者主动发送信息
+            - 用户/网站的行为就是镜子，把恶意代码反射给服务端
+            - non-persistent是因为这些有恶意代码的场景都是特制的
+            - 简易流程
+                - 攻击者给用户发送一个恶意连接，内部包含一些script，比如会给攻击者主动发送信息
                 - 用户在其session中点击并向服务器发出了恶意请求
-                - 请求响应只会会返回给用户，然后恶意script被执行，给攻击者发送敏感信息
+                - 请求响应返回给用户，然后恶意script被执行，给攻击者发送敏感信息
             - 可能的使用场景：
                 - 在http请求中嵌入代码，如在query string写script
                 - 在表单的input写script
@@ -112,7 +131,6 @@
     - 直接在服务端的os运行代码
     - 类型：
         - 参数传到linux中并运行某命令，用;或者&&来在那一条行中运行多条命令
-
 - SQL injections
     - 基本上关键在于熟悉SQL语句的语法
     - experiences
@@ -161,13 +179,15 @@
                 - SQLMAP (open-source penetration testing tool)
             - ways to protect
                 - input validation
-                - parameterised queries (also known as prepared statements)（其实就是把query封装一下，让query可以用指定参数名而不是字符串拼接的方式填入session数据）
+                - parameterised/prepared queries (also known as prepared statements)（其实就是把query封装一下，让query可以用指定参数名而不是字符串拼接的方式填入session数据）
                 - character-escaping functions
                 - web application firewall to monitor requests and block malicious traffic.
 - 一些防范injection的手段：
     - cookie设置HttpOnly（防止DOM-based XSS）
     - CSRF token：动态生成会话唯一的token来标识合法http请求
         - 让攻击者在没有对应session的情况下无法伪造请求
+- experience
+    - FROM INFORMATION_SCHEMA.SYSTEM_USERS可以用来当select一个const时的语法补足：单纯select 'abc'会报错，select 'abc' FROM INFORMATION_SCHEMA.SYSTEM_USERS就不会
 
 ### A04 Insecure Design
 - 一些准则：
@@ -226,6 +246,12 @@
 - MFA fatigue or prompt bombing
     - 不停发MFA的验证请求让用户疲劳厌烦，最后同意其中一个MFA请求
     - 需要事先已经知道用户的账密才能有机会触发MFA验证请求
+- JWT
+    - 分为header、claims、signature
+    - header可以声明alg，因此如果对方没有验证alg，可以使用alg=None来伪造任意合法JWT
+    - header和claims其实只是单纯的base64url加密，重点是signature会使用密钥把header和claims签名
+    - 记得要改exp时间
+    - 配合 refresh token可以延长JWT的life span
 
 ### A08 Software and Data Integrity Failures
 - 简单来说就是数据或者软件被中途篡改了，但没有验证就被使用了
@@ -330,11 +356,21 @@
     - 一般参数用 `-p-`就行了，自动尝试不同协议和不同端口
 - sqlmap
     - 可以自动判断有没有sqli漏洞
-    - 一般来说直接把body写入--data参数就会被自动解析和检测
+    - 一般来说直接把form payload写入--data参数就会被自动解析和检测
+    - `sqlmap -u "http://example.com/login" --data="username=admin&password=1234"`
+    - `sqlmap -u "http://example.com/login" --data="username=admin&password=1234" --dbs`
+    - `sqlmap -u "http://example.com/login" --data="username=admin&password=1234" -D database_name --tables`
+    - `sqlmap -u "http://example.com/login" --data="username=admin&password=1234" -D <database_name> -T <table_name> --columns`
+    - `sqlmap -u "http://example.com/login" --data="username=admin&password=1234" -D <database_name> -T <table_name> -C "<column_name1>,<column_name2>"`
+    - `--dump`pretty输出查询到的内容，加上`--output-dir="/path/to/output"`可用保存到指定文件夹里，文件夹里会有对应的csv文件
+    - 如果没有--data，就会尝试注入一些常见的payload，例如id、user之类的
 - gobuster
     - 用wordlist遍历各种东西，例如路径、服务、sub-domain等
+    - `gobuster dir -u https://buffered.io -w ~/wordlists/shortlist.txt`
 - hash-identifier
     - cyber chief其实就行
+- hashcat
+    - `hashcat -a 0 -m 16500 D:\learning\PWC\wordlists\jwt.txt D:\learning\PWC\wordlists\google-10000-english-master\google-10000-english.txt -d 1`
 - websites tools: 
     - cyber chief
     - crack station
@@ -353,5 +389,5 @@
 
 
 # to-do
-- A7 JWT token，第七题
+<!-- - A7 JWT token，第七题 -->
 - Week 10 第10页

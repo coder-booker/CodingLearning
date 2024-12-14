@@ -22,6 +22,7 @@
     - 对象（例如 {}, []）
     - 函数（例如 function() {}, () => {}）
     - 非零 BigInt（例如 1n, -1n）
+- ...扩展运算符可以全部解出来
 ## 赋值
 - 数组解构
 - 对象解构
@@ -87,6 +88,15 @@
         - `set`：属性的 setter 函数。默认为 undefined。
             - 也就是该属性被修改时会把修改值当成参数输入set()中
 - 内置对象的所有属性都是不可配置的(configurable=false)
+- Object方法
+    - .entries(): 
+        - object.entries()，返回键值对数组(Array<Array<key, value>>)
+        - 注意数组就是iterable的，因此.entries()的返回值可以被of迭代
+    - .fromEntries():
+        - 就是.entries()反过来
+    - .values()：
+        - 返回value数组
+    
 
 ## 数组
 - 数组本质上就是经过特殊处理的可迭代对象
@@ -108,9 +118,6 @@
 - new Array(len).fill(0);
 - const a = Array.from(iterator/str); 从迭代器/字符串建立数组
 
-## 迭代器
-- for of 可以用，一个元素多个值用for let [a, b] of
-- ...扩展运算符可以全部解出来
 
 ## 字符串
 - let a = "asdasd";
@@ -119,6 +126,7 @@
 - a.length 获得长度
 - a.substring([start], [end?]) 不接受负数，如果start > end会自动交换这两个数
 - a.slice([start], [end?]) 接受负数为从末尾倒数的index，如果start > end会返回空字符串
+- a.padStart/End(number, str) 左侧或者右侧填充number个str
 
 ## json
 - 把已声明变量的名字用{}包起来，可以快捷建立拥有以变量名为键，变量值为值的键值对的字面量对象
@@ -126,18 +134,19 @@
 - `.json()`不只是解析json内容，同时还会转化为js的对象
 - 无论用那种语法传输，背后都是json字符串形式的？？？？
 
-## 循环 
+## 循环与迭代 
 - 传统循环：
     - `for ( const i = 0; i < n; i++ ) {};`
 - for in：
-    - `for ( let x in a_object ) {};`
-    - x代表对象属性
-    - 虽然父类属性会被跳过，但可能有部分父类的属性被设置为可遍历了。可以用`a_object.hasOwnProperty(x)`来判断避免
-    - 数组的属性是其索引
+    - `for ( let attr in a_object ) {};`
+    - attr代表对象里的键
+    - 虽然父类属性会被跳过，但可能有部分父类的属性被设置为可遍历了。可以用`a_object.hasOwnProperty(attr)`来判断避免
+    - 数组的属性就是其元素索引
 - for of：
     - `for ( let x of a_iterable ) {};`
     - x代表可迭代对象a_iterable的迭代值
     - 数组可迭代，迭代值是元素；常见json对象不可迭代
+    - 一个元素多个值用for let [a, b] of
 - .map()：
     - `arr.map((element, index, arr) => { return sth; }, a_object);`
     - 第一个参数是函数，接收 元素，索引，被map的对象本身三个参数；可以只声明一个来只接收元素
@@ -408,7 +417,8 @@
     - a.get(key);
     - a.delete(key);
     - a.forEach((key, val) => {});
-    - a.entries(); 返回键值对迭代器
+    - a.entries(); 
+        - 也可以反过来用键值对数组来构建新的map
     - a.keys(); 返回键迭代器
     - a.values(); 返回值迭代器
     - for ( let [key, val] of a.entries() );
