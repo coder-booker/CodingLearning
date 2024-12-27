@@ -8,7 +8,7 @@ npm install 安装未安装的库
 ### CommonJS规范 vs ES6 Modules 规范
 #### general
 - .js, .json, .node可以不用加后缀名
-- ES6的规范基本上是比commonjs多了个default和抛弃了"包裹所有模块"的对象
+- ES6的规范基本上是比commonjs多了个default和抛弃了包裹所有模块的export对象
 #### CommonJS
 - 导入：`const xxx = require('./yyy'); xxx.a; xxx.b;` or `const { aaa } = require('./yyy'); aaa;`
 - 导出：`module.exports = { a: a, b: b };` or `module.exports = { a, b };`

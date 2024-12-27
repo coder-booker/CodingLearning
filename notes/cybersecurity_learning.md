@@ -281,6 +281,7 @@
         - 后缀检查
         - request的Content-Type检查
         - file header检查（这和http的header没有关系）
+            - png
 - Reverse Shell
     - Netcat
 - sql各种现代函数
@@ -376,7 +377,6 @@
     - crack station
 
 
-
 # useful vocab
 - privilege
 - RBAC（Role-Based Access Control，基于角色的访问控制）
@@ -387,7 +387,21 @@
 - tier 层级
 - segregation 分隔
 
+# 思路
+- 20天 to final
+- Medium 33+17道题、Hard 12+0道
+    - total 62道题
+
+
+# Methodology
+1. 找可用之处
+    - path traversal
+        - 先手动找常见的path，比如robots.txt和.git
+        - 然后gobuster找热门wordlists来BF寻找
+
+
 
 # to-do
 <!-- - A7 JWT token，第七题 -->
 - Week 10 第10页
+- 所以每天三道picoCTP就差不多了

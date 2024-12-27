@@ -128,4 +128,4 @@
     - Accture
     - Jane street
     - big four: Deloitte, PWC, EY, KPMG
-    - banks: 
+    - banks: HSBC, Bank of China
