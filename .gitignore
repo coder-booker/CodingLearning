@@ -2,3 +2,4 @@
 .env
 beauty-of-design-pattern-master/*
 *.zip
+**/*/app/*
