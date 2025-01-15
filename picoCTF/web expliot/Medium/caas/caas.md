@@ -1,0 +1,1 @@
+简单的path注入，用xxx&&command就行了

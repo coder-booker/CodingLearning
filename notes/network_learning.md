@@ -157,7 +157,7 @@
 - 用Content-Legnth作为body的边界
 - 常用header
     - HTTP request/response e.g. 
-        ```
+        ``` http 
         POST /getflag.php HTTP/1.1
         Host: 10.0.0.102
         User-Agent: Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:131.0) Gecko/20100101 Firefox/131.0
@@ -168,14 +168,17 @@
         Content-Length: 75
         Origin: http://10.0.0.102
         Connection: keep-alive
-        Referer: http://10.0.0.102/message.php
+        Date: Mon, 02 Jan 2023 14:30:00 GMT <!-- 给服务器跨域参考的？ -->
+        Referer: http://10.0.0.102/message.php   <!-- 给服务器跨域参考的 -->
+        DNT: 1  <!-- Do Not Track flag，其实就是遮羞布说不要收集我的信息 -->
+        X-Forwarded-For: 203.0.113.195, 198.51.100.17   <!-- 用于标识客户端的原始 IP 地址,  client1, proxy1, proxy2  -->
         Cookie: PHPSESSID=a561bae723e2bf896352a27c9ee81917; Admin=admin
         <!-- 这里用两个换行符区分headers和body，然后Centent-Length控制body边界 -->
         csrf_token=d63e274d90a8cd33b1fac086669be5706f868a8b8bfc1b498e6bf449b774f2b9
         ```
-    - HTTP/1.1 200 OK，包含了协议名+版本、响应码+相应文本
-    - Content-Length: [length]
-    - Content-Type: 
+    - `HTTP/1.1 200 OK`，包含了协议名+版本、响应码+相应文本
+    - `Content-Length`: [length]
+    - `Content-Type`: 
         - json body: application/json
         - query string: application/x-www-form-urlencoded
     - 可以在分号加一个空格后append内容的编码格式
@@ -185,10 +188,18 @@
         - 相同优先级下，对选择越具体的指名，优先度越高，如`text/*;q=0.9`比`text/html;q=0.9`低
         - 用法：有选择的header一般用`, `分割不同选择。在选择后加`;q=x.x`就可以设置优先级
             - eg `Accept-Encoding: gzip;q=0.9, br, deflate;q=0.8`
+    - `referer`
+        - 有意思的是其实应该拼写为referrer，但html的规范也是referer
+        - 虽然`origin`字段也能做跨域判断的参考，但referer是更细吗？
+        请求头中referer与origin功能相似，但有如下几点不同：
+        - 和origin的区别：
+            1. 只有跨域请求，或者同域时发送post请求，才会携带origin请求头，而referer不论何种情况下，只要浏览器能获取到请求源都会携带，除了上面提到的几种情况。
+            2. 如果浏览器不能获取请求源，那么origin满足上面情况也会携带，不过其值为null。referer则不同，浏览器如果不能获取请求源，那么请求头中不会携带referer。
+            3. origin的值只包括协议、域名和端口，而referer还包括路径和参数。
     - 缓存：有两种，但第二种一般配合第一种使用；
         - 强制缓存
             - 有两种
-                - Cache-Control（由Response设置）
+                - `Cache-Control`（由Response设置）
                     - 优先级比expire高，且选择更精细
                     - 包含了过期时间
                     - 可用的值：
@@ -202,7 +213,7 @@
                         - no-transform：禁止缓存代理对资源进行任何转换或修改。
                         - immutable：表示资源是不可变的，客户端可以认为资源永远不会改变。
                         - stale-while-revalidate/stale-if-error=[xxx，秒]：在过期/过期且响应错误的xxx秒内先用着过期的内容
-                - Expires
+                - `Expires`
                     - 一坨指名过期时间的日期，优先级最低
         - 协商缓存
             - 协商缓存什么时候刷新缓存是由应用+浏览器+强制缓存的缓存策略决定的

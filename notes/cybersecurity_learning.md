@@ -60,6 +60,7 @@
     - MD
         - MD2/4/5被证明有漏洞
         - 抗碰撞性较差（较容易重复）
+            - 这两个文件的MD5是一样的：[hello和erase](https://www.mscs.dal.ca/~selinger/md5collision/)
         - 但性能较好
         - 但不推荐使用
     - SHA
@@ -72,12 +73,15 @@
             - 抗碰撞性更强
             - 基于不同的底层算法
             - 包括 SHA3-224、SHA3-256、SHA3-384 和 SHA3-512
+- 答题常见的加密解密
+    - JWT(SHA)
+    - base64（==结尾）
+    - XOR（参考：xakgK\Ns9=8:9l1?im8i<89?00>88k09=nj9kimnu 和 0x08 XOR得出结果）
 - UUID Universal Unique Identifier
     - 全局唯一标识符
     - 有很多不同版本，基于的算法和结果的特性也很不一样
 - hash是可能被破解的，用些hash的识别网站就有可能
     - URL modifying
-
 - cookie
 - Unsalted Hash vs Salted Hash
     - Salted: 引入了随机数的哈希算法
@@ -147,7 +151,7 @@
 - OS injection/Remote Code Execution (RCE)
     - 直接在服务端的os运行代码
     - 类型：
-        - 参数传到linux中并运行某命令，用;或者&&来在那一条行中运行多条命令
+        - 参数传到linux中并运行某命令，用`;`或者`&&`来在那一条行中运行多条命令
 - SQL injections
     - 基本上关键在于熟悉SQL语句的语法和找到一定能通过的语句
         - sql: OR 1=1
@@ -156,12 +160,23 @@
     - experiences
         - 留心开头和结尾的引号
             - e.g. `"SELECT * FROM user_data WHERE first_name = 'John' AND last_name = '" + lastName + "'";`如果要注入，得处理尾部的`'`（例如注释掉或者用另一个'接上）
-        - `--`在SQL中代表注释符
-            - eg：`https://example.com/search?query=admin';--` 可以把`SELECT * FROM users WHERE username = 'admin' AND password = 'password';`变成`SELECT * FROM users WHERE username = 'admin';-- AND password = 'password';`
+    - neutralizing a condition: 
+        - `--`/`/**/`在SQL中代表注释符
+            - `admin';--`
+            - `SELECT * FROM users WHERE username = '[admin';--] AND password = 'password';`
         - `OR`
-            - eg：`https://darklabacademy.com/score?student_id=10002'+OR+1=1;--` 可以bypass验证：`SELECT * FROM result WHERE student_id = '10002'OR 1=1--' AND released = 1`
-        - `a' IS NOT 'b`
-            - `SELECT * FROM users WHERE username = 'a' IS NOT 'b';`
+            - `10002'+OR+1=1;--`
+            - `SELECT * FROM result WHERE student_id = '[10002'OR1=1;--] AND released = 1`
+        - `except`(SQLite,Post)/`NOT IN`(MySQL)
+            - `admin' except select * from users where username=''`
+            - 变成`SELECT * FROM users WHERE username='admin' [except select * from users where username=''] AND password='yyy';`，
+            - 意思就是把所有username='admin'的字段全部返回，除了username为空且password为yyy的字段。这也意味着我们可以用无用的except来逃避password的检查，因为password的检查被except处理了。
+        - `glob`/`LIKE`/`SIMILAR TO`/`a' IS NOT 'b`
+            - 本质上就是给条件对比的值填入TRUE或者等价表达式，这样SQL就会匹配所有字段
+            - 类似LIKE，但会使用UNIX通配符，或者说基础的正则匹配
+            - `' glob '*`
+            - `SELECT * FROM users WHERE username='admin' AND password='[' glob '*]';`
+    - 躲避过滤：
         - `||`, `CONCAT`, `+`
             - 字符串拼接，可以用来逃过简单的filter
             - eg：`admin`被filter了，但`ad||min`没有
@@ -283,6 +298,7 @@
 ### A08 Software and Data Integrity Failures
 - 简单来说就是数据或者软件被中途篡改了，但没有验证就被使用了
     - 其实也意味着trust boundary没设置好，把不安全的source也trust了
+- 这也意味着要阅读源码或者知道源码的大致样子才能exploit
 - 分类Software Integrity Failures和Data Integrity Failures
 - Software Integrity Failures常见原因
     - 软件未验证
@@ -290,6 +306,55 @@
 - Data Integrity Failures常见原因
     - 传输数据没签名、验证
     - Serialization attack
+        - php的反序列化会自动把内容识别为类，如果后端有对应的类的定义就会直接认为反序列化的内容是这个类，相当白痴
+        - php序列化例子：
+            - eg
+            ```php
+            <?php
+                class Example {
+                    public $string;
+                    public $integer;
+                    public $float;
+                    public $boolean;
+                    public $null;
+                    public $array;
+                    public $object;
+
+                    public function __construct() {
+                        $this->string = "Hello, World!";
+                        $this->integer = 42;
+                        $this->float = 3.14159;
+                        $this->boolean = true;
+                        $this->null = null;
+                        $this->array = [11, 22, 33, "foo" => "bar"];
+                        $this->object = new stdClass();
+                        $this->object->property = "value";
+                    }
+                }
+
+                $example = new Example();
+                $serialized = serialize($example);
+                echo "Serialized: " . $serialized . "\n";
+
+                $unserialized = unserialize($serialized);
+                print_r($unserialized);
+            ?>
+            <!-- 输出：Serialized: O:7:"Example":7:{s:6:"string";s:13:"Hello, World!";s:7:"integer";i:42;s:5:"float";d:3.14159;s:7:"boolean";b:1;s:4:"null";N;s:5:"array";a:4:{i:0;i:11;i:1;i:22;i:2;i:33;s:3:"foo";s:3:"bar";}s:6:"object";O:8:"stdClass":1:{s:8:"property";s:5:"value";}} -->
+            Pretty parse：
+            Serialized: 
+                O:7:"Example":7:{
+                    s:6:"string"; s:13:"Hello, World!";
+                    s:7:"integer"; i:42;
+                    s:5:"float"; d:3.14159;
+                    s:7:"boolean"; b:1;
+                    s:4:"null"; N;
+                    s:5:"array"; a:4:{i:0;i:11; i:1;i:22; i:2;i:33; s:3:"foo"; s:3:"bar";}
+                    s:6:"object"; O:8:"stdClass":1:{
+                        s:8:"property";
+                        s:5:"value";
+                    }
+                }
+            ```
     - cookie没设计
     - 上传/下载文件没验证
     - 输入输出验证
@@ -399,7 +464,7 @@
 - hash-identifier
     - cyber chief其实就行
 - hashcat
-    - `hashcat -a 0 -m 16500 D:\learning\PWC\wordlists\jwt.txt D:\learning\PWC\wordlists\google-10000-english-master\google-10000-english.txt -d 1`
+    - `hashcat -a 0 -m 16500 D:\learning\PWC\wordlists\jwt.txt D:\learning\PWC\wordlists\rockyou.txt -d 1`
 - websites tools: 
     - cyber chief
     - crack station
@@ -455,7 +520,7 @@
         F.close()
 
         # convert
-        secret = run(f"flask-unsign --unsign --cookie {cookie} --wordlist wordlist.txt").stdout
+        secret = run(f"flask-unsign --unsign --cookie {cookie} --wordlist ./wordlist.txt").stdout
         payload = "\"{'very_auth':'admin'}\""
         sign = run(f"flask-unsign --sign --cookie {payload} --secret {secret}").stdout
 
@@ -483,6 +548,9 @@
 - firefox的开发者工具有些奇怪，有时候不会显示图片和css的source，用chrome好些
 - 对于path的过滤，如果不知道背后的过滤逻辑，就得尝试各种看起来自相矛盾的测试，比如可以../flag.txt但不能../../aaa/flag.txt
 - md，命名格式啥的也很重要，我们要有创造力，admin.phps昭示着可能的index.phps
+- 读源码的技巧：
+    - 检查所有import、include、fetch、`./xxxx`之类的访问文件的语句，这样或许会暴露更多信息
+    - 检查入口出口、判断语句、错误处理
 
 
 # Methodology
@@ -495,25 +563,35 @@
         - 然后gobuster找热门wordlists来BF寻找
             - wordlist: SecLists/Discovery/Web-Content/common.txt，或者就在桌面的wordlists里
     - 看源码
-        - css或者js的包的路径
+        - 不止html，还包括css和js的源码
     - 抓包
         - jwt、任何神秘json
 2. 根据反馈尝试expliot
     - 有事没事都base64一下任何奇怪的乱码
     - 现在见过的例子：
+        - common sense: 
+            - 简单到只要根据文字意思修改http header就行
+            - 恶心的CBC
         - XXE：抓包发现POST可以根据包地格式XXE
         - web shell：robots.txt发现了/instruction描述验证方法和/uploads/文件夹供上传文件的访问以此web shell 
         - sql injection：
             - 提供了源码，其中email和password用了JSON解析，因此可以exploit为`{"$ne": null}`
-            - 在部分关键字filter的情况下，可以用其他字句实现注入，具体而言就是`||`和`a' IS NOT 'b`（但还没搞明白为什么可以）
-        - JWT：
-            - 应用用jwt验证，看源码获得secret，crack jwt的数个字段就搞定了
-            - 改成none
-        - base64：把base64拆开了两半放在query string中，两者结合起来解码后就是flag（这个真是防不胜防，必须要时刻留意
+            - 在部分关键字filter的情况下，可以用其他字句实现注入，具体而言就是`||`和`a' IS NOT 'b`
+        - 神秘的乱码：
+            - JWT：
+                - 应用用jwt验证，看源码获得secret，crack jwt的几个字段就搞定了
+                - 改成none
+            - base64：把base64拆开了两半放在query string中，两者结合起来解码后就是flag（这个真是防不胜防，必须要时刻留意
+            - XOR（参考：xakgK\Ns9=8:9l1?im8i<89?00>88k09=nj9kimnu 和 0x08 XOR得出结果）
+            - CBC bit flip: [here](../picoCTF/web%20expliot/More%20Cookie/improved_script.py)
         - path traversal：通过源码发现css或者js的目录，以此递归遍历寻找 里面的flag
         - 抓包：发现用cookie明文来设置权限，改成1破解
         - 神秘的文件名字猜测：从robots.txt发现了admin.phps，以此猜测出index.phps的存在，然后接着递归寻找index.phps的其他源码
-        - 读php源码：相当可怕，理解源码之后发现有阅读文件的错误处理，通过使反序列化报错触发阅读文件
+        - 读源码：
+            - js: 简单粗暴在source code里面的base64 flag
+            - php: 理解代码之后，向对应文件发送对应的序列化攻击cookie，得到flag
+            - flask: 源码有secret，用flask自带的工具处理就行
+        - 
 
 
 
