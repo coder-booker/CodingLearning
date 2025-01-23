@@ -465,6 +465,7 @@
     - cyber chief其实就行
 - hashcat
     - `hashcat -a 0 -m 16500 D:\learning\PWC\wordlists\jwt.txt D:\learning\PWC\wordlists\rockyou.txt -d 1`
+    - hashcat -m 1400 -a 0 D:\learning\PWC\wordlists\token.txt D:\learning\PWC\wordlists\rockyou.txt
 - websites tools: 
     - cyber chief
     - crack station

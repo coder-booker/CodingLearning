@@ -61,6 +61,7 @@
 ### useMemo
 - 缓存某个函数的值
 - 参数是一个函数
+- 生命周期：
 ### useParams()
 - 获取以`/path/:param-name`形式访问的路径的`param-name`参数
 - `const { 'param-name': xxx } = useParams();`来指定要哪个参数

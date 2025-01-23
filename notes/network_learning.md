@@ -168,7 +168,7 @@
         Content-Length: 75
         Origin: http://10.0.0.102
         Connection: keep-alive
-        Date: Mon, 02 Jan 2023 14:30:00 GMT <!-- 给服务器跨域参考的？ -->
+        Date: Mon, 02 Jan 2023 14:30:00 GMT
         Referer: http://10.0.0.102/message.php   <!-- 给服务器跨域参考的 -->
         DNT: 1  <!-- Do Not Track flag，其实就是遮羞布说不要收集我的信息 -->
         X-Forwarded-For: 203.0.113.195, 198.51.100.17   <!-- 用于标识客户端的原始 IP 地址,  client1, proxy1, proxy2  -->
