@@ -1,5 +1,14 @@
 # Other learning
 
+### vscode snippet
+- ToolBar -> File -> Preference -> Configure Snippets
+- settings.json:  
+    ```
+    "[<filename>]":  {
+        "editor.quickSuggestions": true
+    }
+    ```
+
 ### regex
 - 复健练习
     - /(\w+):\/\/([^/:]+)(:\d*)?([^# ]*)/ 这是用来匹配和划分协议、域名、端口、子路径的正则
@@ -150,3 +159,23 @@
 - arm/arm64
     - arm架构的32/64位CPU
     - 一般是手机平板苹果用的
+
+
+
+
+# other other
+- 算法
+
+- 计算机基础
+- sql
+- 设计模式/架构
+- 多线程/并发
+
+- 应用开发框架
+
+- 视频
+- 可视化
+- 登录
+- 聊天窗口
+- 文件上传
+- 懒加载

@@ -1,27 +1,28 @@
-package.json, package-lock.json
-    前者是metadata限制和简述，后者是实际安装的详细metadata
-    学习：https://juejin.cn/post/7205007227559673913
-    devDependence实际上不太会被使用，因为部署的时候无论dev不dev都会把库编码成静态代码，加什么dependence都无所谓
+### package.json, package-lock.json
+- 前者是metadata限制和简述，后者是实际安装的详细metadata
+- 学习：https://juejin.cn/post/7205007227559673913
+- devDependence实际上不太会被使用，因为部署的时候无论dev不dev都会把库编码成静态代码，加什么dependence都无所谓
 
-npm install 安装未安装的库
+## General
+- `Polyfill`: 意思是"一段用于在旧版本环境模拟新版本特性的兼容用代码"
 
-### CommonJS规范 vs ES6 Modules 规范
-#### general
+## CommonJS规范 vs ES6 Modules 规范
+### general
 - .js, .json, .node可以不用加后缀名
 - ES6的规范基本上是比commonjs多了个default和抛弃了包裹所有模块的export对象
-#### CommonJS
+### CommonJS
 - 导入：`const xxx = require('./yyy'); xxx.a; xxx.b;` or `const { aaa } = require('./yyy'); aaa;`
 - 导出：`module.exports = { a: a, b: b };` or `module.exports = { a, b };`
 - 对于`export a;`的导出，想象有个大对象包住了所有export，因此行为一致。但`export default b`的导出需要使用`xxx.default;` or `xxx.default();`
-#### ES6
+### ES6
 - 导入：`import xxx from './yyy';` or `import { aaa } from './yyy';`;
 - 导出：`export xxx;` or `export default xxx;`
 - 对于.json文件，需要`import xxx from './yyy' assert { type: 'json' };xxx.a;xxx.b`
 
-### Express
+## Express
 - req.query.key_name 可以自动解析和获得query string key_name的值
 
-### Sequelize
+## Sequelize
 - 在第一次对数据库进行操作时才会建立连接
 - exmaple: 
 ```js
@@ -54,15 +55,15 @@ async function validate(account, password) {
 },
 ```
 
-### CORS
+## CORS
 - http-proxy-middleware
 - 用绝对路径无法代理
 
-### concurrently
+## concurrently
 - 同时启动多个服务
 
 
-### react-Spring
+## react-Spring
 - 主要是用来控制动画的，画图还是原生元素
 - 常用配置：
 - reset: boolean (default false)
@@ -72,7 +73,7 @@ async function validate(account, password) {
 - friction, velocity, delay, duration(如果超过就立刻结束动画)
 
 
-### redux
+## redux
 - dispatch
     - 用于分发广播action
     - 根据action的type属性分发到指定路径/name
@@ -121,13 +122,13 @@ async function validate(account, password) {
 - createSelector 创建 memoized selector，用于提取复杂的 state和优化性能。
 
 
-### react-quill
+## react-quill
 - 用于自定义文本模块
 
-### Prisma
+## Prisma
 - `npx prisma init --datasource-provider mongodb`
 
-### useSWR
+## useSWR
 - 来自swr库
 - 可以用来替代fetch，这玩意就是一个封装好的带有缓存和去重功能的fetch
 - 但在next中，client不能使用async和await，因此fetcher要用.then

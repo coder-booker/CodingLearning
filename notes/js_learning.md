@@ -1,12 +1,11 @@
+$\def\hello#1{<code>#1asdasd<code>}
+\hello{bruh}$
 
 # 基础
 ## Basic
 - 六大基本类型/原始值
     - undefined、null、boolean、number、string、symbol
 - 变量二进制的低三位代表其类型：000: 对象，001：整数，100：字符串等
-- === 不做类型转换
-    类型对比 -> 如一样则对比值，如果是对比数字就得额外判断NaN，如果是对比对象或函数则对比引用
-- typeof xxx查询, instanceof XxxYyy判断
 - false：
     - 0（数字零）
     - -0（负零）
@@ -16,7 +15,6 @@
     - undefined 
     - NaN（Not-a-Number）
 - true: 
-    - true
     - 非零数字（例如 1, -1, 3.14）
     - 非空字符串（例如 "hello", "false", "0"）
     - 对象（例如 {}, []）
@@ -26,7 +24,7 @@
 ## 赋值
 - 数组解构
 - 对象解构
-    - eg: `const {a, b, c} = { a: 10, b: 10, c: 10};`
+    - eg: `const {a, b, c} = { a: 10, b: 10, c: 10 };`
 - 解构默认值
     - 数组: `const [ a, b = 20, c = 50 ] = [ 10 ];` -> `a=10, b=20, c=50` (必须按顺序)
     - 对象: `const { a = 10, b = 20, c = 30 } = {a: 20, b, c: 20}` -> `a=20, b=20, c=20` (以键来标识)
@@ -40,6 +38,7 @@
         - 对象与对象：对比地址
         - eg `'1'<2`返回true，`'5'==5`返回true
         - 注意`===`是严格相等，不会进行类型转换
+        
     - 数学运算
         - 全都尝试变成数字
         - `+`例外：如果`+`一个字符串，会变成字符串拼接
@@ -48,6 +47,8 @@
     - 逻辑运算(比如条件判断和`!`的场景)转换成true和false
         - 骚操作：因此`!!`可以转换成对应的boolean
     - 对象参与运算时，如果需要转换类型，会尝试用`toString()`或者`valueOf()`方法将运算元转换成原始值primitive再运算，如果两个方法都没有返回原始值则报错
+- 要判断类型可以用typeof xxx查询, instanceof XxxYyy判断
+
 ## 对象
 - 万物皆对象
 - `this`指向调用者的上下文
@@ -96,7 +97,135 @@
         - 就是.entries()反过来
     - .values()：
         - 返回value数组
-    
+
+
+# 函数
+- 默认隐性返回undefined，除非显性返回了某些值
+- 上下文
+    - outline
+        - function函数的上下文由其调用时的形式决定，箭头函数的上下文由其定义时的上下文决定
+        - 下面这些case容易混淆：
+            - 类的构造函数：虽然没有obj的传递，但在构造时用了类名，所以this仍然是类的实例
+            - 解构：或者说是赋值。但仍然取决于赋值之后怎么调用的，常用的方法会使被解构的函数变成默认函数
+    - 绑定优先级（从高到低）
+        1. new 绑定：new Func() → this 指向新实例。
+        2. 显式绑定：call/apply/bind → 手动指定 this。
+        3. 隐式绑定：obj.func() → this 指向 obj。
+        4. 默认绑定：func() → 全局对象或 undefined。
+    - new 绑定 ：
+        - 新创建的实例对象
+        - eg
+            ```js
+            function Person(name) {
+                this.name = name;
+            }
+            const alice = new Person("Alice");
+            console.log(alice.name); // Alice
+            ```
+    - 显式绑定：
+        - 通过 call, apply, bind 指定
+        - 语法：
+            ```js
+            function greet(a, b) {
+                console.log(`${a} ${b}`);
+            }
+            const context_object = { attr1: "attr1" };
+            const a = "a";
+            const b = 1
+
+            greet.call(context_object, a, b);    // a 1
+            greet.apply(context_object, [a, b]);   // a 1
+
+            const boundGreet = greet.bind(context_object);
+            boundGreet(a, b);          // a 1
+            ```
+        - bind只有第一次生效
+        - eg
+            ```js
+            function greet() {
+                console.log(`Hello, ${this.name}`);
+            }
+            const person = { name: "Alice" };
+
+            greet.call(person);    // Hello, Alice
+            greet.apply(person);   // Hello, Alice
+
+            const boundGreet = greet.bind(person);
+            boundGreet();          // Hello, Alice
+            ```
+    - 隐式绑定：
+        - 调用函数的对象
+        - 注意对象和类中的 func_name() {}定义和用function关键字定义是一样的
+        - eg
+            ```js
+            // class也可以
+            const obj = {
+                name: "Object",
+                logThis() {
+                    console.log(this.name); // "Object"
+                }
+            };
+            obj.logThis();
+
+            // 注意：隐式绑定的丢失
+            const logThis = obj.logThis;
+            logThis(); // 非严格模式：window.name | 严格模式：undefined
+            ```
+    - 默认绑定：
+        - 永远是全局对象（非严格模式）或 undefined（严格模式）
+        - 哪怕其定义嵌套在别的上下文中，只要调用是默认绑定，就会默认绑定
+        - eg
+            ```js
+            function showThis() {
+                console.log(this);
+            }
+            showThis(); // 非严格模式：window | 严格模式：undefined
+            ```
+    - 箭头函数
+        - 继承调用时的作用域的this（静态绑定）
+        - 箭头函数的上下文由其定义时的上下文决定
+        - 箭头函数不会捕获全局对象，但会间接捕获别人得到的全局对象（这个别人只会是定义时的上下文）
+        - 注意，对象中的直系箭头函数捕获不到东西，因为在对象内获得的上下文是挂载到对象的父级上的
+        - 箭头函数在回调中非常好用
+        - eg
+            ```js
+            function Timer() {
+                this.seconds = 0;
+                setInterval(() => {
+                    this.seconds++; // 正确捕获外层 this（Timer 实例）
+                }, 1000);
+            }
+            ```
+    - 立刻执行函数
+        - function或者等价关键字行为其实一样，只是限于立刻执行的语法，this会直接且只会得到全局上下文，因为语法无法在其调用前加上命名空间
+        - 箭头函数则一样捕获定义处的上下文
+    - 原型链this
+    - 模块this
+- eg func(anotherFunc) { anotherFunc(); }; func(obj.aaaa); 这里的anotherFunc调用后的this是全局对象，因为没有传递obj的this给func。
+- 独立函数：在全局对象下声明的函数
+- 匿名函数
+    - 定义时没有名称的函数
+    - 箭头函数就是一种简洁的匿名函数
+    - 立刻执行函数(IIFE)
+        - 只会是匿名函数
+        - 上下文是全局对象
+- 剩余参数 rest parameters
+    - 在参数的定义那里写...[name]就可以接受任意长度的参数并构建为一个数组
+    - eg
+    ```js
+    function (...args: any[]) {
+        try {
+            return await originalMethod.apply(this, args);
+        } catch (error) {
+            console.error(`Error in ${target.constructor.name}.${propertyKey}: ${error}`);
+        }
+    };
+    ```
+- 函数与对象
+    - 实例化函数对象会使用函数的返回对象作为返回结果。
+        - 如果没有返回、返回值不为对象(比如返回了个基础类型)、或返回值为this，则返回其父级对象
+        - 如果没有父级对象或者是匿名函数，非严格模式下会返回全局对象window，严格模式下返回`undefined`
+
 
 ## 数组
 - 数组本质上就是经过特殊处理的可迭代对象
@@ -270,7 +399,7 @@
     - 常见的原因：
         - 闭包引用的变量
         - 全局变量
-        - 事件未清除
+        - 事件监听器未清除
         - 删除根节点时，子元素存在引用而没被删除
 ## 构建工具
 - 对前端项目进行以下操作
@@ -292,62 +421,6 @@
 - dataTransfer
     - `event.dataTransfer.setData("text/plain", "a msg");`
     - `event.dataTransfer.getData("text/plain");`
-
-
-# 函数
-- 默认隐性返回undefined，除非显性返回了某些值
-- 上下文
-    - 函数的上下文在9成情况下是由其调用决定的
-        - 哪怕调用的函数体是一个有非全局对象的this的写法，只要调用的方法不传递this，函数内部的this就是全局对象
-        - 除了箭头函数，箭头函数会自己捕获上下文
-        - eg obj.func()中func的this就会变成obj，因为这种方法传递了一个obj的this
-        - eg new func()中的this就会变成一个func实例对象，因为这种方法传递了一个func实例的this
-        - eg func(anotherFunc) { anotherFunc(); }; func(obj.aaaa); 这里的anotherFunc调用后的this是全局对象，因为没有传递obj的this给func。
-    - 只有箭头函数会捕获上下文
-- 独立函数
-    - 在全局对象下声明的函数
-- 匿名函数
-    - 定义时没有名称的函数
-    - 箭头函数就是一种简洁的匿名函数
-        - 注意箭头函数会捕获上下文
-        - () => xxxx; 隐性返回xxxx
-        - () => {return xxxx;}; 显性返回xxxx
-    - 立刻执行函数(IIFE)
-        - 只会是匿名函数
-        - 给匿名函数的定义套上一层括号，然后调用就是立刻执行函数
-        - 上下文是全局对象
-- 构造函数
-    - 函数定义之后用new来调用
-    - 这样调用之后内部的this就会是这个函数的实例对象
-- `.call(this, ...args)` vs `.apply(this, args)` vs `func()`
-    - 调用函数的不同方法
-    - 所有函数都默认有这仨方法
-    - `.call(this, ...args)`
-        - 显性传入一个this为第一个参数
-        - 直接传递剩余参数
-    - `.apply(this, args)`
-        - 显性传入一个this为第一个参数
-        - 剩余的参数使用数组化的参数传递
-    - `func()`
-        - 隐性传入上下文中的this
-        - 任何地方、任何形式，只要用这种普通函数调用方式，this都会是全局对象
-- 剩余参数 rest parameters
-    - 在参数的定义那里写...[name]就可以接受任意长度的参数并构建为一个数组
-    - eg
-    ```js
-    function (...args: any[]) {
-        try {
-            return await originalMethod.apply(this, args);
-        } catch (error) {
-            console.error(`Error in ${target.constructor.name}.${propertyKey}: ${error}`);
-        }
-    };
-    ```
-- 函数与对象
-    - 实例化函数对象会使用返回值作为实例化后储存的对象。
-        - 如果没有返回、返回值不为对象(比如返回了个基础类型)、或返回值为this，则返回其父级对象（函数作为方法时的父级对象）
-        - 如果没有父级对象或者是匿名函数，非严格模式下会返回全局对象window，严格模式下返回`undefined`
-    - 所以函数内也可以使用this，只要用new实例化为一个独立的对象且返回值不是对象就行
 
 # null, undefined, NaN
 - null
