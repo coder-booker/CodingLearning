@@ -118,7 +118,6 @@
         - lazy表示懒加载
         - eager表示立刻加载，为默认值
 
-
 - `data-xxxx`
     - HTML5引入的自定义数据属性
 
@@ -194,3 +193,7 @@ document.body.appendChild(clone);
 <!-- 导入外部 HTML 文件 -->
 <link rel="import" href="my-component.html">
 ```
+
+
+# Other
+- 不间断空格：`&nbsp`

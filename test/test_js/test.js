@@ -193,12 +193,12 @@
 // obj.bruh(); // obj, 全局, 全局
 
 
-// bind被解构会消除上下文吗？
-const obj = {
-  test() {
-    console.log("test", this);
-  }
-}
-obj.test(); 
-const aaa = obj.test.bind(obj);// obj
-aaa();
+// // bind被解构会消除上下文吗？
+// const obj = {
+//   test() {
+//     console.log("test", this);
+//   }
+// }
+// obj.test(); 
+// const aaa = obj.test.bind(obj);// obj
+// aaa();

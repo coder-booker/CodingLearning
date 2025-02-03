@@ -97,9 +97,24 @@ $\def\hello#1{<code>#1asdasd<code>}
         - 就是.entries()反过来
     - .values()：
         - 返回value数组
+- 键 
+    - 字符串键和普通键完全等价
+    ```ts
+    (() => {
+        const c = "c";
+        const object = {
+            a: 1,   // 普通键
+            "b": 2, // 字符串键
+            [c]: 3  // 变量键
+        }
+        console.log(object.a, object["a"]);
+        console.log(object.b, object["b"]);
+        console.log(object.c, object["c"]);
+    })() // output: 112233
+    ```
 
 
-# 函数
+## 函数
 - 默认隐性返回undefined，除非显性返回了某些值
 - 上下文
     - outline
@@ -206,6 +221,7 @@ $\def\hello#1{<code>#1asdasd<code>}
 - 匿名函数
     - 定义时没有名称的函数
     - 箭头函数就是一种简洁的匿名函数
+    - 匿名函数可以new，除了箭头函数
     - 立刻执行函数(IIFE)
         - 只会是匿名函数
         - 上下文是全局对象
@@ -214,11 +230,7 @@ $\def\hello#1{<code>#1asdasd<code>}
     - eg
     ```js
     function (...args: any[]) {
-        try {
-            return await originalMethod.apply(this, args);
-        } catch (error) {
-            console.error(`Error in ${target.constructor.name}.${propertyKey}: ${error}`);
-        }
+        console.log(args); // 把参数以数组的形式打印出来
     };
     ```
 - 函数与对象
@@ -226,6 +238,16 @@ $\def\hello#1{<code>#1asdasd<code>}
         - 如果没有返回、返回值不为对象(比如返回了个基础类型)、或返回值为this，则返回其父级对象
         - 如果没有父级对象或者是匿名函数，非严格模式下会返回全局对象window，严格模式下返回`undefined`
 
+## 类
+- static的方法中的this指向的是类本身
+- `$`符号开头的变量/方法名
+    - 内部或私有方法
+        - 在某些库或框架中，$ 符号用于标识内部或私有方法，这些方法通常不建议直接调用。例如，AngularJS 中的内部服务和方法通常以 $ 开头。
+        - 这也是历史遗留问题和兼容问题，private关键字在以前不存在，都是用$来表示private的
+    - 特殊功能或方法
+        - $ 符号也可以用于标识具有特殊功能或行为的方法。例如，在 Prisma 中，$connect 和 $disconnect 方法用于管理数据库连接，这些方法具有特殊的用途和行为。
+    - 避免命名冲突
+        - 使用 $ 符号可以避免与用户定义的名称冲突。例如，某些库可能会使用 $ 符号来命名内部方法，以确保这些方法不会与用户定义的方法重名。
 
 ## 数组
 - 数组本质上就是经过特殊处理的可迭代对象

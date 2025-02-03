@@ -1,6 +1,10 @@
 {
     "markdown-preview-enhanced.previewTheme": "github-light.css",
     "[markdown]":  {
-        "editor.quickSuggestions": true
+        "editor.quickSuggestions": {
+            "comments": "on",
+            "strings": "on",
+            "other": "on"
+        }
     }
 }
