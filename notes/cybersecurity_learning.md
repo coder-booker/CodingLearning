@@ -129,6 +129,8 @@
         - DOM-based XSS
             - 和reflected XSS很像，但不使用http来攻击，而是用响应式js的动态DOM来运行恶意代码
             - 因此在服务端没法识别到这种攻击，因为往服务端发的http请求中没有痕迹
+    - 和Cross-site Request Forgery(CSRF)有些关系
+        - 诱导用户点击链接来在其session中执行请求
 - XML external entity injection (XXE) 
     - 在接受XML的应用服务中，利用XXE语言的特性来获得敏感信息
     - 首先要知道其可以被XXE

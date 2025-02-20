@@ -1,5 +1,6 @@
 
 # 软件工程
+### concept
 - General concept
     - 软件不只是程序，还包含文档、配置环境与资源、外围辅助材料
     - 软件工程有两个方面：技术+管理；和三个要素：方法+工具+过程 
@@ -36,6 +37,18 @@
         4. evaluate them and pick the best one
         5. implement
         6. evaluate the result
+
+### 实际开发知识
+- 模块的初始化时机
+    - 懒加载(lazy init)
+        - 用getInstance和if exist判断来初始化
+    - 预加载(Eager init)
+        - 在类中声明一个static属性instance并把类的实例赋值给他，这样应用启动的时候就会初始化这个模块
+- interface和abstract
+    - interface是“能够做什么”，abstract是“是什么”
+    - 类能够实现多个interface，但只能继承一个abstract。所以一个类可以组合多个interface
+    - abstract可以让类有公共方法、强制要求必须各自实现的方法（把方法声明为abstarct）、可供覆盖的方法
+    - ts和C#其实支持interface实现方法
 
 
 # 设计架构时的思路
@@ -80,6 +93,7 @@
         - 每个状态都得仔细思考下一个状态是什么
 ### Config和.env的优劣
 - 最好的做法应该是结合config和.env，把不变的敏感信息写在.env，把易变或者不重要的其他配置放在config文件内
+
 
 
 # IDK
