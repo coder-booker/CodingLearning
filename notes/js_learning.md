@@ -31,6 +31,7 @@ $\def\hello#1{<code>#1asdasd<code>}
 - 储存基本类型/原始值的变量被赋值给别的变量时，是复制了一份副本给这个新变量。而储存对象的变量则会赋值其引用给别的变量。
 ## 类型自动转换/宽松比较 loose type comparison
 - js是动态类型语言，所以变量的类型是运行时确定的，因此会有类型的自动转换
+    - 所以ts不会发生这种事
 - 转换可以手动也可以自动，但大多数情况下用自动
 - 场景
     - 对比运算
@@ -38,12 +39,11 @@ $\def\hello#1{<code>#1asdasd<code>}
         - 对象与对象：对比地址
         - eg `'1'<2`返回true，`'5'==5`返回true
         - 注意`===`是严格相等，不会进行类型转换
-        
     - 数学运算
         - 全都尝试变成数字
         - `+`例外：如果`+`一个字符串，会变成字符串拼接
-    - 字符串拼接
-        - 啥都尝试转成字符串
+    - 字符串拼接`+`
+        - 只要运算元有任意一个为非数字，就会把这次运算视为字符串拼接
     - 逻辑运算(比如条件判断和`!`的场景)转换成true和false
         - 骚操作：因此`!!`可以转换成对应的boolean
     - 对象参与运算时，如果需要转换类型，会尝试用`toString()`或者`valueOf()`方法将运算元转换成原始值primitive再运算，如果两个方法都没有返回原始值则报错
@@ -290,8 +290,9 @@ $\def\hello#1{<code>#1asdasd<code>}
         - 在索引a的位置插入c, d，甚至efgh，没有限制数量
         - 不返回
     - `const result = arr.at(<number>)` `<number>`可以为负数，`[-1]`等价`[length-1]`
-    - `const result = Array.prototype.reduce((accumulator, item) => <newAccumulatorExpression>, <initialValue>)`
-        - `<newAccumulatorExpression>`为`accumulator + item`且`<initialValue>`为0就会返回一个`number[]`的sum
+    - `const result = Array.prototype.reduce((accumulator, item) => <nextAccumulator>, <initialValue>)`
+        - `<nextAccumulator>`为`accumulator + item`且`<initialValue>`为0就会返回一个`number[]`的sum
+        - `<nextAccumulator>`为`Math.max(accumulator, item)`且`<initialValue>`为`-Infinity`可以给过大的数组算max
 - `Array()`
     - Array其实是一个封装好的可迭代对象
         - 内部结构：
@@ -325,13 +326,10 @@ $\def\hello#1{<code>#1asdasd<code>}
     - 快速去重：`Array.from(new Set(array));`
 - 浅拷贝数组：
     - `[...oldArr]`
+        - **拓展运算符其实效率相比对ref内容的直接改动低不少**
     - `oldArr.slice()`空参数
     - `Array.from(oldArr)`
-- 有意思的
 - 一般用const修饰，因为const的是引用而非数组内的值，所以数组const仍可修改
-- 复制可以用[...target]
-- **拓展运算符其实效率相比对ref内容的直接改动低不少**
-
 
 ## 字符串
 - let a = "asdasd";
@@ -378,12 +376,6 @@ $\def\hello#1{<code>#1asdasd<code>}
 
 
 
-# Event
-### DragEvent
-- dataTransfer
-    - `event.dataTransfer.setData("text/plain", "a msg");`
-    - `event.dataTransfer.getData("text/plain");`
-
 # null, undefined, NaN
 - null
     - 应该在人为希望为空的变量/属性设置
@@ -399,32 +391,21 @@ $\def\hello#1{<code>#1asdasd<code>}
 - NaN (Not a Number)
     - typeof NaN -> number
     - NaN不会等于任何东西，包括其自身
-- eg
-    ```ts
-    // 下面的返回值全是undefined
-    let a = [];
-    console.log(a?.name);
-
-    let b = "";
-    console.log(b?.name);
-
-    let c = null;
-    console.log(c?.name);
-
-    let d  = undefined;
-    console.log(d?.name)
-    ```
 
 
 # ***内置对象与方法***
 ### Math
-- Math.max(...[all numebrs]); 如果a和b没法转换成number，返回NaN
-    - Number(value); 所有变量，失败返回NaN
+- `Math.max(...<item_arr>);` 如果a和b没法转换成number，返回NaN
+    - 还有很多方法可以找一堆参数的最大值
+        - `const max = arr.reduce((accumulator, item) => Math.max(accumulator, item), -Infinity);`逐个对比和保存最大值。这个方法在过大的数组中也能用
+        - `Math.max.apply(null, numArray);`和`Math.max(...<item_arr>);`一个意思，但是数组过大就会报错
+    <!-- - Number(value); 所有变量，失败返回NaN
     - parseInt(value); 字符串，失败返回NaN
     - +name; 所有变量，失败返回NaN
-    - * 1; 所有变量，失败返回NaN
+    - * 1; 所有变量，失败返回NaN -->
 - `Math.pow([base], [exponent]);` or `**`
 - `Math.abs()`
+- `Math.floor()`/`Math.ceil()`/`Math.round()`取整
 ### Promise
 - `new Promise((resolve, reject) => { resolve("value"); reject("error") })`
     - resolve和reject都是函数体，调用就会终止promise异步操作，但resolve表成功，reject表失败
@@ -496,7 +477,9 @@ $\def\hello#1{<code>#1asdasd<code>}
     console.log(url.toString());   // 'https://example.com:8080/path/name?query=string#hash'
     console.log(url.toJSON());     // 'https://example.com:8080/path/name?query=string#hash'
     ```
-
+### localStorage
+- `localStorage.setItem("key", value)`
+- `localStorage.getItem("key")`
 ### Request
 - 属性  
     - method：请求方法（如 GET、POST、PUT、DELETE 等）。
@@ -577,6 +560,12 @@ const observedElement = document.getElementById("aaa");
 // observe 一个元素，要多个就多次observe
 resizeObserver.observe(observedElement);
 ```
+
+# Event
+### DragEvent
+- dataTransfer
+    - `event.dataTransfer.setData("text/plain", "a msg");`
+    - `event.dataTransfer.getData("text/plain");`
 ### Server-Sent Event (SSE)
 - let frontend receive passively data from backend
 - front: 
@@ -645,9 +634,7 @@ function sendMsg() {
     });
 }
 ```
-### localStorage
-- `localStorage.setItem("key", value)`
-- `localStorage.getItem("key")`
+
 
 # other
 ### 导入模块
