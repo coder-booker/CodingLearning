@@ -1,6 +1,5 @@
 
-# 软件工程
-### concept
+# concept
 - General concept
     - 软件不只是程序，还包含文档、配置环境与资源、外围辅助材料
     - 软件工程有两个方面：技术+管理；和三个要素：方法+工具+过程 
@@ -59,20 +58,10 @@
         - 例子：供应链管理系统（SCM）、供应商门户。
     - P端（Partner端）：合作伙伴使用的系统或平台，用于协作和资源共享。
         - 例子：合作伙伴关系管理（PRM）系统、联合营销平台。
-### 实际开发知识
-- 模块的初始化时机
-    - 懒加载(lazy init)
-        - 用getInstance和if exist判断来初始化
-    - 预加载(Eager init)
-        - 在类中声明一个static属性instance并把类的实例赋值给他，这样应用启动的时候就会初始化这个模块
-- interface和abstract
-    - interface是“能够做什么”，abstract是“是什么”
-    - 类能够实现多个interface，但只能继承一个abstract。所以一个类可以组合多个interface
-    - abstract可以让类有公共方法、强制要求必须各自实现的方法（把方法声明为abstarct）、可供覆盖的方法
-    - ts和C#其实支持interface实现方法
 
 
-# 设计架构时的思路
+
+# 架构设计/设计模式
 ### 大致架构
 - MVC：view -> controller -> model
     - view: only frontend design detail, no logic or only simple responsive logic
@@ -92,7 +81,8 @@
 ### 类与接口
 - 抽象类和实际类
     - 抽象类主要是用来继承和组织接口的。如果只是不需要被实例化但有自己的一些静态资源，用实际类就好
-### 奇奇怪怪不知道怎么分类的模式
+### 依赖注入
+- 把类所需的依赖解耦至其创建者/使用者，可以用构造函数或者setter实现
 - 策略模式 (行为型模式)
     - 把行为给抽象成一个上下文类中的成员，并用策略类向这个成员赋值
     - 和继承的区别在于
@@ -112,6 +102,22 @@
         - 每个状态的行为名字要一样
         - 每个状态都要有状态机的上下文
         - 每个状态都得仔细思考下一个状态是什么
+### 工厂模式
+- 把对象的创建托管给一个工厂函数，返回值就是创建好的实例
+- 例子：
+    - 单例模式：对象的创建封装了一层判断有没有存在的实例，有就返回实例
+    - 多态：一个工厂可以用于创建多个子类实例，通过传入的参数决定创建哪个
+### 奇奇怪怪不知道怎么分类的模式
+- 模块的初始化时机
+    - 懒加载(lazy init)
+        - 用getInstance和if exist判断来初始化
+    - 预加载(Eager init)
+        - 在类中声明一个static属性instance并把类的实例赋值给他，这样应用启动的时候就会初始化这个模块
+- interface和abstract
+    - interface是“能够做什么”，abstract是“是什么”
+    - 类能够实现多个interface，但只能继承一个abstract。所以一个类可以组合多个interface
+    - abstract可以让类有公共方法、强制要求必须各自实现的方法（把方法声明为abstarct）、可供覆盖的方法
+    - ts和C#其实支持interface实现方法
 ### Config和.env的优劣
 - 最好的做法应该是结合config和.env，把不变的敏感信息写在.env，把易变或者不重要的其他配置放在config文件内
 

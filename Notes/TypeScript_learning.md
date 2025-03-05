@@ -45,10 +45,6 @@
     }
     ```
 
-
-- add `[]` after type key words make them an array
-    - but write type key words in `[]` make them **tuple**. i.e. specified **length** and **type** of every elements in it
-
 ### type
 - type guard：
     - 如果某值不允许undefined，只要用任何方法排除undefined的情况即可，哪怕不是在那个花括号内，而是在父元素排除的都可以
@@ -220,24 +216,15 @@
 
 ### interface
 - 和type基本上一样，官方文档也说两者大部分情况都可互用
-- 交叉类型要用`extends`关键字
-    ```ts
-    interface AAA {
-        id: string;
-        name: string;
-    }
-
-    interface BBB extends AAA {
-        uid: string;
-        name: number;
-    }
-    ```
-- `extend`的性能比type的`intersaction`好
-- 定义了多个同名interface时，所有其中的键会被合并集中为一个interface，不会有error
+- `extends`关键字
+    - ***`extend`的性能比type的`intersaction`好***
+    - 交叉类型用的
+    - 可以和type互相拓展，关键字也可以互相用（`extends`, `&`）
+- 合并声明：
+    - 定义了多个同名interface时，所有其中的键会被合并集中为一个interface，不会有error
     - 因此或可少用interface，避免不想要的合并
-- 可以和type互相拓展
 - interface多用于类外部接口，type多用于union type
-
+- 类可以实现（implements）type和interface
 
 ### 装饰器
 - 记住，装饰器本质上就是个高阶函数的语法糖
@@ -298,6 +285,12 @@ fetchData(); // 此处调用就相当于descriptor()
     }
     ```
 
+
+
+# Advanced features
+### declare，.d.ts
+### T
+### Symbol
 
 
 

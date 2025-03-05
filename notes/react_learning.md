@@ -1,3 +1,7 @@
+# Basic
+- 原来在jsx中直接用数组就能正确渲染所有里面的item
+
+
 ### project structure
 - /src:
     - /components
@@ -101,6 +105,11 @@
         );
     };
     ```
+### useDeferredValue
+- 先显示旧内容，后台进行新内容的更新，更新完再显示新内容
+- 很神奇，明明只是用钩子返回的值，却能够让组件知道自己要延迟渲染
+### useReducer
+- 类似局部的redux reducer，详情可以看文档
 ## 自定义钩子
 - 复用逻辑，复杂状态管理，复杂的副作用逻辑
 

@@ -1,38 +1,24 @@
-$\def\hello#1{<code>#1asdasd<code>}
-\hello{bruh}$
 
-# 基础
-## Basic
-- 六大基本类型/原始值
-    - undefined、null、boolean、number、string、symbol
-- 变量二进制的低三位代表其类型：000: 对象，001：整数，100：字符串等
-- false：
-    - 0（数字零）
-    - -0（负零）
-    - 0n（BigInt 零）
-    - ""（空字符串）
-    - null 
-    - undefined 
-    - NaN（Not-a-Number）
-- true: 
-    - 非零数字（例如 1, -1, 3.14）
-    - 非空字符串（例如 "hello", "false", "0"）
-    - 对象（例如 {}, []）
-    - 函数（例如 function() {}, () => {}）
-    - 非零 BigInt（例如 1n, -1n）
-- ...扩展运算符可以全部解出来
-## 赋值
-- 数组解构
-- 对象解构
-    - eg: `const {a, b, c} = { a: 10, b: 10, c: 10 };`
+# 赋值
+- 数组解构：`const [x, y] = [0, 0];`
+- 对象解构: `const {a, b, c} = { a: 10, b: 10, c: 10 };`
 - 解构默认值
     - 数组: `const [ a, b = 20, c = 50 ] = [ 10 ];` -> `a=10, b=20, c=50` (必须按顺序)
     - 对象: `const { a = 10, b = 20, c = 30 } = {a: 20, b, c: 20}` -> `a=20, b=20, c=20` (以键来标识)
-- 储存基本类型/原始值的变量被赋值给别的变量时，是复制了一份副本给这个新变量。而储存对象的变量则会赋值其引用给别的变量。
-## 类型自动转换/宽松比较 loose type comparison
+- 储存基本类型/原始值的变量被赋值给别的变量时，是复制了一份副本给这个新变量。
+
+
+# 类型自动转换/宽松比较 loose type comparison
 - js是动态类型语言，所以变量的类型是运行时确定的，因此会有类型的自动转换
     - 所以ts不会发生这种事
 - 转换可以手动也可以自动，但大多数情况下用自动
+- 转换方式
+    - `.toPrimitive`, `.valueOf`, `.toString`
+    - toPrimitive > valueOf > toString
+- 有三种转换
+    - 字符串转换：期望的类型是字符串。`toPrimitive` -> `toString`
+    - 数字转换：期望的类型是数字。`toPrimitive` -> `valueOf`
+    - 默认转换：没有指定期望类型。`.toPrimitive` -> `.valueOf` -> `.toString`
 - 场景
     - 对比运算
         - 字符串与数字混合：转成数字
@@ -49,218 +35,100 @@ $\def\hello#1{<code>#1asdasd<code>}
     - 对象参与运算时，如果需要转换类型，会尝试用`toString()`或者`valueOf()`方法将运算元转换成原始值primitive再运算，如果两个方法都没有返回原始值则报错
 - 要判断类型可以用typeof xxx查询, instanceof XxxYyy判断
 
-## 对象
-- 万物皆对象
-- `this`指向调用者的上下文
-- 全局对象
-    - 非严格模式下为window，全局变量和独立函数、匿名函数都为其属性与方法，它们的this也会指向widnow
-    - 严格模式下this返回的是undefined
-    - `var`声明的不在函数内的变量会属于全局对象，而`let`不会
-- 字面量对象
-    - 直接用花括号初始化的变量就是字面量对象
-- 原型链
-    - 每个对象都有一个private属性，指向自己的prototype(也可以理解为继承的类)，而prototype也有自己的prototype
-    - 可以一直往上追溯，直到某个prototype的prototype属性为null
-- 对象除非特殊处理过，否则布可迭代（数组就是特殊的可迭代对象）
-- `delete`操作符
-    - delete 操作符用于删除对象的某个属性；如果没有指向这个属性的引用，那它最终会被释放。
-    - 如果你试图删除的属性不存在，那么delete将不会起任何作用，但仍会返回true
-    - 如果对象的原型链上有一个与待删除属性同名的属性，那么删除属性之后，对象会使用原型链上的那个属性（也就是说，delete操作只会在自身的属性上起作用）
-    - 任何使用 var 声明的属性不能从全局作用域或函数的作用域中删除。
-        - 但在对象中的函数是能够用delete操作删除的。
-    - 任何用let或const声明的属性不能够从它被声明的作用域中删除。
-    - configurable为false属性不能被移除。这意味着像Math, Array, Object内置对象的属性以及使用Object.defineProperty()方法设置为不可设置的属性不能被删除。
-    - 参数是神秘的字面量（例如数字啥的）也不能delete，只会返回true
-- `Object.defineProperty([obj], [prop], [descriptor])`
-    - 用来给某个对象详细设置属性的内置函数
-    - 具体可以设置什么通过descriptor来定义
-    - `obj`：要被定义属性的对象
-    - `prop`：要定义的属性名
-    - `descriptor`：属性描述符对象
-        - `value`：属性的值。默认为 undefined。
-        - `writable`：属性是否可写。默认为 false。
-            - 如果是false，所有的修改对此属性的修改都会不起作用
-        - `enumerable`：属性是否可枚举。默认为 false。
-            - 用`for in`或者`Object.keys`枚举的时候会不会显示这个属性
-        - `configurable`：属性是否可配置。默认为 false。
-            - 能否被`Object.defineProperty`再次定义
-        - `get`：属性的 getter 函数。默认为 undefined。
-            - 也就是该属性被调用时会使用这个get()的返回值
-        - `set`：属性的 setter 函数。默认为 undefined。
-            - 也就是该属性被修改时会把修改值当成参数输入set()中
-- 内置对象的所有属性都是不可配置的(configurable=false)
-- Object方法
-    - .values()：
-        - 返回value数组
-    - .hasOwnProperty(attr)
-        - 判断有无该属性/键，不包含原型链
-    - attr in obj
-        - 判断有无该属性/键，包含原型链
-- 键 
-    - 对象只有字符串和Symbol键
-    ```ts
-    (() => {
-        const c = "c";
-        const object = {
-            a: 1,   // 普通键
-            "b": 2, // 字符串键
-            [c]: 3, // 变量键
-            [4]: 4, // 数字键
-        }
-        console.log(object.a, object["a"]);
-        console.log(object.b, object["b"]);
-        console.log(object.c, object["c"]);
-        console.log(object[4]); // 点运算符不支持toString
-    })() // output: 1122334
-    ```
-    - `.`运算符
-        - 把后面的文字toString。如果有同名外部变量并不会影响
-        - 数字字面量不能使用`.`
-    - `[]`索引运算符
-        - 数字内容会toString
-        - 变量内容会把变量的值toString
-        - 字符串内容则不变
-- 可迭代对象
-    - 字符串、Set、Map、数组
-- 伪数组对象
-    - 有`.length`属性和数字字符串键的对象
 
-## 函数
-- 默认隐性返回undefined，除非显性返回了某些值
-- 上下文
-    - outline
-        - function函数的上下文由其调用时的形式决定，箭头函数的上下文由其定义时的上下文决定
-        - 下面这些case容易混淆：
-            - 类的构造函数：虽然没有obj的传递，但在构造时用了类名，所以this仍然是类的实例
-            - 解构：或者说是赋值。但仍然取决于赋值之后怎么调用的，常用的方法会使被解构的函数变成默认函数
-    - 绑定优先级（从高到低）
-        1. new 绑定：new Func() → this 指向新实例。
-        2. 显式绑定：call/apply/bind → 手动指定 this。
-        3. 隐式绑定：obj.func() → this 指向 obj。
-        4. 默认绑定：func() → 全局对象或 undefined。
-    - new 绑定 ：
-        - 新创建的实例对象
+# 六大基本类型/原始值
+- 六大基本类型/原始值
+    - undefined、null、boolean、number、string、symbol
+- 变量二进制的低三位代表其类型：000: 对象，001：整数，100：字符串等
+### boolean
+- false：
+    - 0（数字零）
+    - -0（负零）
+    - 0n（BigInt 零）
+    - ""（空字符串）
+    - null 
+    - undefined 
+    - NaN（Not-a-Number）
+- true: 
+    - 非零数字（例如 1, -1, 3.14）
+    - 非空字符串（例如 "hello", "false", "0"）
+    - 对象（例如 {}, []）
+    - 函数（例如 function() {}, () => {}）
+    - 非零 BigInt（例如 1n, -1n）
+### null & undefined & NaN
+- null
+    - 应该在人为希望为空的变量/属性设置
+    - 解除引用回收垃圾
+    - 将会被使用(被有效值赋值)的变量初始化为null
+    - null的类型是object（typeof null -> object）
+    - 而null就是32个0
+- undefined
+    - 变量的“原始状态”
+    - 未初始化变量，未声明(不存在的)属性，未传递实参，未声明变量的类型，void类型的变量，return; 都是undefined
+    - typeof undefined -> undefined
+    - null == undefined，但null !== undefined
+- NaN (Not a Number)
+    - typeof NaN -> number
+    - NaN不会等于任何东西，包括其自身
+### 字符串
+- let a = "asdasd";
+- for of 或 a.split('').forEach/.map 可以遍历
+- a.charCodeAt(i); 打印a[i]处字符的ascii code
+- a.length 获得长度
+- a.substring([start], [end?]) 不接受负数，如果start > end会自动交换这两个数
+- `a.slice([start[, end])` 接受负数为从末尾倒数的index，如果start > end会返回空字符串
+- a.padStart/End(number, str) 左侧或者右侧填充number个str
+- `Array<string>.join(<separator);`
+    - 可以拼接string字符串
+    - 分隔符默认用`,`
+- `a.repeat(<length>)`可以把`<length>`个`a`拼在一起，注意是`a`的值而非字符`'a'`
+### Symbol
+- 特点
+    - Symbol在全局有一片自己的空间，任何地方定义的Symbol都会在这里去重
+    - Symbol自己就可以跨模块共享，不用导出，只要import过让声明语句运行就行
+    - ES6，也就是ES2015才引入的
+- 主要作用：
+    - 用来标识全局唯一的值，避免命名空间污染和保持唯一性
+- js规范用内置Symbol值来重写对象的特定内置行为
+    - `Symbol.iterator`：迭代行为
         - eg
-            ```js
-            function Person(name) {
-                this.name = name;
-            }
-            const alice = new Person("Alice");
-            console.log(alice.name); // Alice
-            ```
-    - 显式绑定：
-        - 通过 call, apply, bind 指定
-        - 语法：
-            ```js
-            function greet(a, b) {
-                console.log(`${a} ${b}`);
-            }
-            const context_object = { attr1: "attr1" };
-            const a = "a";
-            const b = 1
-
-            greet.call(context_object, a, b);    // a 1
-            greet.apply(context_object, [a, b]);   // a 1
-
-            const boundGreet = greet.bind(context_object);
-            boundGreet(a, b);          // a 1
-            ```
-        - bind只有第一次生效
-        - eg
-            ```js
-            function greet() {
-                console.log(`Hello, ${this.name}`);
-            }
-            const person = { name: "Alice" };
-
-            greet.call(person);    // Hello, Alice
-            greet.apply(person);   // Hello, Alice
-
-            const boundGreet = greet.bind(person);
-            boundGreet();          // Hello, Alice
-            ```
-    - 隐式绑定：
-        - 调用函数的对象
-        - 注意对象和类中的 func_name() {}定义和用function关键字定义是一样的
-        - eg
-            ```js
-            // class也可以
-            const obj = {
-                name: "Object",
-                logThis() {
-                    console.log(this.name); // "Object"
+            ```ts
+            const iterable = {
+                [Symbol.iterator]() {
+                    let step = 0;
+                    return {
+                        next() {
+                            step++;
+                            if (step <= 3) {
+                                return { value: step, done: false };
+                            } else {
+                                return { value: undefined, done: true };
+                            }
+                        }
+                    };
                 }
             };
-            obj.logThis();
-
-            // 注意：隐式绑定的丢失
-            const logThis = obj.logThis;
-            logThis(); // 非严格模式：window.name | 严格模式：undefined
-            ```
-    - 默认绑定：
-        - 永远是全局对象（非严格模式）或 undefined（严格模式）
-        - 哪怕其定义嵌套在别的上下文中，只要调用是默认绑定，就会默认绑定
-        - eg
-            ```js
-            function showThis() {
-                console.log(this);
-            }
-            showThis(); // 非严格模式：window | 严格模式：undefined
-            ```
-    - 箭头函数
-        - 继承调用时的作用域的this（静态绑定）
-        - 箭头函数的上下文由其定义时的上下文决定
-        - 箭头函数不会捕获全局对象，但会间接捕获别人得到的全局对象（这个别人只会是定义时的上下文）
-        - 注意，对象中的直系箭头函数捕获不到东西，因为在对象内获得的上下文是挂载到对象的父级上的
-        - 箭头函数在回调中非常好用
-        - eg
-            ```js
-            function Timer() {
-                this.seconds = 0;
-                setInterval(() => {
-                    this.seconds++; // 正确捕获外层 this（Timer 实例）
-                }, 1000);
+            for (const value of iterable) {
+                console.log(value); // 1, 2, 3
             }
             ```
-    - 立刻执行函数
-        - function或者等价关键字行为其实一样，只是限于立刻执行的语法，this会直接且只会得到全局上下文，因为语法无法在其调用前加上命名空间
-        - 箭头函数则一样捕获定义处的上下文
-    - 原型链this
-    - 模块this
-- eg func(anotherFunc) { anotherFunc(); }; func(obj.aaaa); 这里的anotherFunc调用后的this是全局对象，因为没有传递obj的this给func。
-- 独立函数：在全局对象下声明的函数
-- 匿名函数
-    - 定义时没有名称的函数
-    - 箭头函数就是一种简洁的匿名函数
-    - 匿名函数可以new，除了箭头函数
-    - 立刻执行函数(IIFE)
-        - 只会是匿名函数
-        - 上下文是全局对象
-- 剩余参数 rest parameters
-    - 在参数的定义那里写...[name]就可以接受任意长度的参数并构建为一个数组
-    - eg
-    ```js
-    function (...args: any[]) {
-        console.log(args); // 把参数以数组的形式打印出来
-    };
-    ```
-- 函数与对象
-    - 实例化函数对象会使用函数的返回对象作为返回结果。
-        - 如果没有返回、返回值不为对象(比如返回了个基础类型)、或返回值为this，则返回其父级对象
-        - 如果没有父级对象或者是匿名函数，非严格模式下会返回全局对象window，严格模式下返回`undefined`
+    - `Symbol.asyncIterator`：异步迭代器
+    - `Symbol.hasInstance`：instanceof的行为
+    - `Symbol.toStringTag`：toString行为
+    - `Symbol.toPrimitive`：转换为原始值的行为
+    - `Symbol.split`
+    - `Symbol.search`
+    - `Symbol.replace`
+    - `Symbol.match`：字符串匹配方法
+    - `Symbol.isConcatSpreadable`
+- 内置方法和属性
+    - `const a = Symbol(<description>)`&`a.description`
+        - 构造函数可传入一个字符串或者可被toString的值
+        - 这个描述字符串会变成其属性`.description`
+    - `.for()`：寻找或创建Symbol
+    - `.keyFor()`：寻找被创建了的Symbol，没有就返回undefined
 
-## 类
-- static的方法中的this指向的是类本身
-- `$`符号开头的变量/方法名
-    - 内部或私有方法
-        - 在某些库或框架中，$ 符号用于标识内部或私有方法，这些方法通常不建议直接调用。例如，AngularJS 中的内部服务和方法通常以 $ 开头。
-        - 这也是历史遗留问题和兼容问题，private关键字在以前不存在，都是用$来表示private的
-    - 特殊功能或方法
-        - $ 符号也可以用于标识具有特殊功能或行为的方法。例如，在 Prisma 中，$connect 和 $disconnect 方法用于管理数据库连接，这些方法具有特殊的用途和行为。
-    - 避免命名冲突
-        - 使用 $ 符号可以避免与用户定义的名称冲突。例如，某些库可能会使用 $ 符号来命名内部方法，以确保这些方法不会与用户定义的方法重名。
-
-## 数组
+# 数组
 - 数组本质上就是经过特殊处理的可迭代对象
 - 内置方法
     - `.push()` 追加，多个参数代表追加多个元素
@@ -331,26 +199,221 @@ $\def\hello#1{<code>#1asdasd<code>}
     - `Array.from(oldArr)`
 - 一般用const修饰，因为const的是引用而非数组内的值，所以数组const仍可修改
 
-## 字符串
-- let a = "asdasd";
-- for of 或 a.split('').forEach/.map 可以遍历
-- a.charCodeAt(i); 打印a[i]处字符的ascii code
-- a.length 获得长度
-- a.substring([start], [end?]) 不接受负数，如果start > end会自动交换这两个数
-- `a.slice([start[, end])` 接受负数为从末尾倒数的index，如果start > end会返回空字符串
-- a.padStart/End(number, str) 左侧或者右侧填充number个str
-- `Array<string>.join(<separator);`
-    - 可以拼接string字符串
-    - 分隔符默认用`,`
-- `a.repeat(<length>)`可以把`<length>`个`a`拼在一起，注意是`a`的值而非字符`'a'`
+# 对象
+- 万物皆对象
+- `this`指向调用者的上下文
+- 全局对象
+    - 非严格模式下为window，全局变量和独立函数、匿名函数都为其属性与方法，它们的this也会指向widnow
+    - 严格模式下this返回的是undefined
+    - `var`声明的不在函数内的变量会属于全局对象，而`let`不会
+- 字面量对象
+    - 直接用花括号初始化的变量就是字面量对象
+- 原型链
+    - 每个对象都有一个private属性，指向自己的prototype(也可以理解为继承的类)，而prototype也有自己的prototype
+    - 可以一直往上追溯，直到某个prototype的prototype属性为null
+- 对象除非特殊处理过，否则布可迭代（数组就是特殊的可迭代对象）
+- `delete`操作符
+    - delete 操作符用于删除对象的某个属性；如果没有指向这个属性的引用，那它最终会被释放。
+    - 如果你试图删除的属性不存在，那么delete将不会起任何作用，但仍会返回true
+    - 如果对象的原型链上有一个与待删除属性同名的属性，那么删除属性之后，对象会使用原型链上的那个属性（也就是说，delete操作只会在自身的属性上起作用）
+    - 任何使用 var 声明的属性不能从全局作用域或函数的作用域中删除。
+        - 但在对象中的函数是能够用delete操作删除的。
+    - 任何用let或const声明的属性不能够从它被声明的作用域中删除。
+    - configurable为false属性不能被移除。这意味着像Math, Array, Object内置对象的属性以及使用Object.defineProperty()方法设置为不可设置的属性不能被删除。
+    - 参数是神秘的字面量（例如数字啥的）也不能delete，只会返回true
+- `Object.defineProperty([obj], [prop], [descriptor])`
+    - 用来给某个对象详细设置属性的内置函数
+    - 具体可以设置什么通过descriptor来定义
+    - `obj`：要被定义属性的对象
+    - `prop`：要定义的属性名
+    - `descriptor`：属性描述符对象
+        - `value`：属性的值。默认为 undefined。
+        - `writable`：属性是否可写。默认为 false。
+            - 如果是false，所有的修改对此属性的修改都会不起作用
+        - `enumerable`：属性是否可枚举。默认为 false。
+            - 用`for in`或者`Object.keys`枚举的时候会不会显示这个属性
+        - `configurable`：属性是否可配置。默认为 false。
+            - 能否被`Object.defineProperty`再次定义
+        - `get`：属性的 getter 函数。默认为 undefined。
+            - 也就是该属性被调用时会使用这个get()的返回值
+        - `set`：属性的 setter 函数。默认为 undefined。
+            - 也就是该属性被修改时会把修改值当成参数输入set()中
+- 内置对象的所有属性都是不可配置的(configurable=false)
+- Object方法
+    - .values()：
+        - 返回value数组
+    - .hasOwnProperty(attr)
+        - 判断有无该属性/键，不包含原型链
+    - attr in obj
+        - 判断有无该属性/键，包含原型链
+- 键 
+    - 对象只有字符串键和Symbol键
+    - eg
+    ```ts
+    (() => {
+    const c = "c";
+    const object = {
+        a: 1,   // 普通键
+        "b": 2, // 字符串键
+        [c]: 3, // 变量键
+        [4]: 4, // 数字键
+    }
+    console.log(object.a, object["a"]);
+    console.log(object.b, object["b"]);
+    console.log(object.c, object["c"]);
+    console.log(object['4'], object[4]); // 因为点运算符不支持数字toString
+    })() // output: 11223344
+    ```
+    - `.`运算符
+        - 对后面的文字进行字符串转换。如果有同名外部变量并不会影响
+        - 数字字面量不能使用`.`
+    - `[]`索引运算符
+        - 对内容物的值进行字符串转换
+        - 变量内容会得到其中的值
+- 方法声明语法
+    - `test1() {},`
+    - `test2: () => {},`
+    - `test3: function() {},`
+- 可迭代对象
+    - 字符串、Set、Map、数组
+- 伪数组对象
+    - 有`.length`属性和数字字符串键的对象
 
-## json
-- 把已声明变量的名字用{}包起来，可以快捷建立拥有以变量名为键，变量值为值的键值对的字面量对象
-- `JSON.stringify()`把对象转变为json字符串样式
-- `.json()`不只是解析json内容，同时还会转化为js的对象
-- 无论用那种语法传输，背后都是json字符串形式的？？？？
+# 类
+- static的方法中的this指向的是类本身
+- 方法声明语法: `test() {};`
+- `$`符号开头的变量/方法名
+    - 内部或私有方法
+        - 在某些库或框架中，$ 符号用于标识内部或私有方法，这些方法通常不建议直接调用。例如，AngularJS 中的内部服务和方法通常以 $ 开头。
+        - 这也是历史遗留问题和兼容问题，private关键字在以前不存在，都是用$来表示private的
+    - 特殊功能或方法
+        - $ 符号也可以用于标识具有特殊功能或行为的方法。例如，在 Prisma 中，$connect 和 $disconnect 方法用于管理数据库连接，这些方法具有特殊的用途和行为。
+    - 避免命名冲突
+        - 使用 $ 符号可以避免与用户定义的名称冲突。例如，某些库可能会使用 $ 符号来命名内部方法，以确保这些方法不会与用户定义的方法重名。
+# 函数
+- 默认隐性返回undefined，除非显性返回了某些值
+- 上下文
+    - outline
+        - function函数的上下文由其调用时的形式决定，箭头函数的上下文由其定义时的上下文决定
+        - 下面这些case容易混淆：
+            - 类的构造函数：虽然没有obj的传递，但在构造时用了类名，所以this仍然是类的实例
+            - 解构：或者说是赋值。但仍然取决于赋值之后怎么调用的，常用的方法会使被解构的函数变成默认函数
+    - 绑定优先级（从高到低）
+        1. new 绑定：new Func() → this 指向新实例。
+        2. 显式绑定：call/apply/bind → 手动指定 this。
+        3. 隐式绑定：obj.func() → this 指向 obj。
+        4. 默认绑定：func() → 全局对象或 undefined。
+    - new 绑定 ：
+        - 新创建的实例对象
+        - eg
+            ```js
+            function Person(name) {
+                this.name = name;
+            }
+            const alice = new Person("Alice");
+            console.log(alice.name); // Alice
+            ```
+    - 显式绑定：
+        - 通过 call, apply, bind 指定
+            - call：传入上下文和逐一传入参数并立刻运行
+            - apply：传入上下文和参数数组并立刻运行
+            - bind：绑定上下文和一部分参数并返回一个新函数。这个新函数的参数会优先接收绑定的参数再顺序接收调用传入的参数
+        - 语法：
+            ```js
+            function greet(a, b) {
+                console.log(`${a} ${b}`);
+            }
+            const context_object = { attr1: "attr1" };
+            const a = "a";
+            const b = 1
 
-## 循环与迭代 
+            greet.call(context_object, a, b);    // a 1
+            greet.apply(context_object, [a, b]);   // a 1
+
+            const boundGreet = greet.bind(context_object, a);
+            boundGreet(b);          // a 1
+            ```
+        - 对一个函数的重复bind只有第一次上下文绑定生效，剩下的几次都会原封不动返回
+            - 因为bind底层就和嵌套call/apply差不多，最后目标函数只会得到倒数第二层，也就是第一次bind的上下文
+            - 注意参数的绑定可以顺序继续生效
+    - 隐式绑定：
+        - 调用函数的对象
+        - 注意对象和类中的 func_name() {}定义和用function关键字定义是一样的
+        - eg
+            ```js
+            // class也可以
+            const obj = {
+                name: "Object",
+                logThis() {
+                    console.log(this.name); // "Object"
+                }
+            };
+            obj.logThis();
+
+            // 注意：隐式绑定的丢失
+            const logThis = obj.logThis;
+            logThis(); // 非严格模式：window.name | 严格模式：undefined
+            ```
+    - 默认绑定：
+        - 永远是全局对象（非严格模式）或 undefined（严格模式）
+        - 哪怕其定义嵌套在别的上下文中，只要调用是默认绑定，就会默认绑定
+        - eg
+            ```js
+            function showThis() {
+                console.log(this);
+            }
+            showThis(); // 非严格模式：window | 严格模式：undefined
+            ```
+    - 箭头函数
+        - 继承调用时的作用域的this（静态绑定）
+        - 箭头函数的上下文由其定义时的上下文决定
+        - 箭头函数不会捕获全局对象，但会间接捕获别人得到的全局对象（这个别人只会是定义时的上下文）
+        - 注意，对象中的直系箭头函数捕获不到东西，因为在对象内获得的上下文是挂载到对象的父级上的
+        - 箭头函数在回调中非常好用
+        - eg
+            ```js
+            function Timer() {
+                this.seconds = 0;
+                setInterval(() => {
+                    this.seconds++; // 正确捕获外层 this（Timer 实例）
+                }, 1000);
+            }
+            ```
+    - 立刻执行函数
+        - function或者等价关键字行为其实一样，只是限于立刻执行的语法，this会直接且只会得到全局上下文，因为语法无法在其调用前加上命名空间
+        - 箭头函数则一样捕获定义处的上下文
+    - 原型链this
+    - 模块this
+- 箭头函数
+    - 捕获上下文
+    - 不可以作为构造函数使用
+    - 没有arguments属性
+- 独立函数：在全局对象下声明的函数
+- 匿名函数
+    - 定义时没有名称的函数
+    - 箭头函数就是一种简洁的匿名函数
+    - 匿名函数可以new，除了箭头函数
+    - 立刻执行函数(IIFE)
+        - 只会是匿名函数
+        - 上下文是全局对象
+- 剩余参数 rest parameters
+    - 在参数的定义那里写...[name]就可以接受任意长度的参数并构建为一个数组
+    - eg
+    ```js
+    function (...args: any[]) {
+        console.log(args); // 把参数以数组的形式打印出来
+    };
+    ```
+- arguments属性
+    - 函数的自带属性，但箭头函数没有
+    - 包裹着函数接收参数的Array-like的对象，只有length和索引键
+- 函数与对象
+    - 实例化函数对象会使用函数的返回对象作为返回结果。
+        - 如果没有返回、返回值不为对象(比如返回了个基础类型)、或返回值为this，则返回其父级对象
+        - 如果没有父级对象或者是匿名函数，非严格模式下会返回全局对象window，严格模式下返回`undefined`
+
+
+# 循环与迭代 
 - 传统循环：
     - `for ( const i = 0; i < n; i++ ) {};`
 - for in：
@@ -374,49 +437,90 @@ $\def\hello#1{<code>#1asdasd<code>}
     - 类似map，但只返回内部函数返回了true的索引位置的元素
 
 
+# with
+- eg
+    ```ts
+    with (obj) {
+        console.log(foo); // 1
+        console.log(bar); // ReferenceError: bar is not defined
+    }
+    ```
 
 
-# null, undefined, NaN
-- null
-    - 应该在人为希望为空的变量/属性设置
-    - 解除引用回收垃圾
-    - 将会被使用(被有效值赋值)的变量初始化为null
-    - null的类型是object（typeof null -> object）
-    - 而null就是32个0
-- undefined
-    - 变量的“原始状态”
-    - 未初始化变量，未声明(不存在的)属性，未传递实参，未声明变量的类型，void类型的变量，return; 都是undefined
-    - typeof undefined -> undefined
-    - null==undefined，但null!==undefined
-- NaN (Not a Number)
-    - typeof NaN -> number
-    - NaN不会等于任何东西，包括其自身
+# 事件循环
+- nodejs是基于Libuv这个库开发的事件循环
+- 本质上就是不停循环执行多个宏任务，每个宏任务查询执行多个异步任务队列，这些任务队列各自属于不同的阶段，分别处理不同的异步操作。
+- 事件循环开始前，所有同步任务会先被执行
+- 阶段/宏任务
+    1. Timers 阶段
+    - 检查并处理固定时间的回调任务队列，例如 setTimeout 和 setInterval 的回调。
+    2. Pending Callbacks 阶段
+    - 检查并处理一些系统操作的回调任务队列（如 TCP 错误、文件系统错误等）。
+    3. Idle, Prepare 阶段
+    - 内部使用的阶段，通常不需要关注。
+    - Idle用于执行一些内部任务，例如Libuv的资源清理
+    - Prepare用于准备事件循环的下一个阶段，例如初始化一些内部状态
+    4. Poll 阶段
+    - 检查并处理 I/O 事件的任务队列（如文件读取、网络请求等）。
+    5. Check 阶段
+    - 检查并处理 setImmediate 的回调。
+    6. Close Callbacks 阶段
+    - 处理关闭事件的回调（如 socket.on('close', ...)）。
+- 任务队列：
+    - 每个事件循环的阶段都会有一个自己的任务队列供异步操作
+    - 微任务有一个自己的任务队列
+- 宏任务(Macrotask)、微任务(Microtask)
+    - 宏任务
+        - 系统自带的一些回调方法的任务，例如setTimeout的回调这一类
+        - 每个阶段都会尝试清空这个阶段的宏任务的任务队列
+        - 宏任务的任务队列没有优先级
+    - 微任务：
+        - 用户定义的一些任务，例如Promise的回调
+        - 一个宏任务或者事件循环阶段结束，系统就会检查并处理所有微任务
+        - 有两个微任务队列：
+            - process.nextTick，会被优先清空
+            - Promise
+- 值得注意的点：
+    - setTimeout这一类宏任务在被定义时，实际上只是把任务插入了队列中。所以setTimeout(func, 0)并不一定会立马执行，可能会被推到下个事件循环才执行
 
 
-# ***内置对象与方法***
+
+# 内置对象与方法
 ### Math
 - `Math.max(...<item_arr>);` 如果a和b没法转换成number，返回NaN
     - 还有很多方法可以找一堆参数的最大值
         - `const max = arr.reduce((accumulator, item) => Math.max(accumulator, item), -Infinity);`逐个对比和保存最大值。这个方法在过大的数组中也能用
         - `Math.max.apply(null, numArray);`和`Math.max(...<item_arr>);`一个意思，但是数组过大就会报错
-    <!-- - Number(value); 所有变量，失败返回NaN
-    - parseInt(value); 字符串，失败返回NaN
-    - +name; 所有变量，失败返回NaN
-    - * 1; 所有变量，失败返回NaN -->
 - `Math.pow([base], [exponent]);` or `**`
 - `Math.abs()`
 - `Math.floor()`/`Math.ceil()`/`Math.round()`取整
 ### Promise
+- Promise 的出现是为了解决**回调地狱（Callback Hell）**问题，使异步代码更易读、更易维护。它通过链式调用（.then）和错误捕获（.catch）来简化异步操作。
 - `new Promise((resolve, reject) => { resolve("value"); reject("error") })`
     - resolve和reject都是函数体，调用就会终止promise异步操作，但resolve表成功，reject表失败
+    - resolve 把 Promise 从 Pending 变为 Fulfilled（已成功）。
     - value是.then()会接受的值
     - error是.catch()可以接收的值
 - `async`, `await`
     - await本质上就是把promise转换成了正常的返回值，也就是封装好了then
-### setTimeout, setInteraval
+- 三种状态：
+    - Pending（等待中）：初始状态，既不是成功也不是失败。
+    - Fulfilled（已成功）：操作成功完成。
+    - Rejected（已失败）：操作失败。
+### 异步任务API
+- `process.nextTick(func);`
+    - 创建在当前事件循环阶段完成后立刻执行的微任务
+    - 优先级比Promise高
 - `setTimeout(func, time)`
-    - 会在time ms后执行func()
-- `let xxx = setInterval(func, time)` + `clearInterval(xxx)`
+    - 创建一个每一定时间内持续执行的宏任务并返回一个标识符
+    - 取消该任务：`clearTimeout(<标识符>)`
+- `setInterval(func, time)`
+    - 创建一个每一定时间就执行的宏任务并返回一个标识符
+    - 取消该任务：`clearInterval(<标识符>)`
+- `setImmediate(func)`
+    - 在事件循环的Check阶段被运行
+    - 为了让IO事件结束后能有一个api来让IO的结果立刻被回调（Check之前就是Poll）
+    - 还可以确保代码的执行顺序
 ### Set/Map
 - general
     - 用引用作为key并不会对比引用的内容
@@ -446,6 +550,11 @@ $\def\hello#1{<code>#1asdasd<code>}
     - `a.keys()`; 返回键迭代器
     - `a.values()`; 返回值迭代器
     - 访问不存在的键不会生成默认值
+### JSON
+- 把已声明变量的名字用{}包起来，可以快捷建立拥有以变量名为键，变量值为值的键值对的字面量对象
+- `JSON.stringify()`把对象转变为json字符串样式
+- `.json()`不只是解析json内容，同时还会转化为js的对象
+- 无论用那种语法传输，背后都是json字符串形式的？？？？
 ### URL类
 - 封装好各种获得URL参数的方法
 - 其中的属性/方法：
@@ -649,8 +758,16 @@ function sendMsg() {
 - `a = b ?? c` vs `a = b || c`
     - `??`只会在null和undefined的时候返回右侧，`||`则只要false就返回
 
+# 模块命名空间
+- 模块命名空间对象是一个描述模块所有导出的对象。它是一个静态对象，在模块被求值（要求导入）时创建。
+- 有两种方式可以访问模块的模块命名空间对象：通过命名空间导入（import * as name from moduleName）或通过动态导入的兑现值。
+- 模块命名空间对象是一个密封的、具有 null 原型的对象。
+    - 对象的所有字符串键对应于模块的导出，并且永远不会有额外的键。
+    - 所有键都是以字典序可枚举的（即 Array.prototype.sort() 的默认行为）
+- 默认导出以名为 default 的键可用。
+- 模块命名空间对象具有一个值为 "Module" 的 [Symbol.toStringTag] 属性，在 Object.prototype.toString() 中被使用。
 
-# js运行环境
+# runtime
 ## General concept
 - v8和Nodejs的区别
     - 两者完全不在一个层级
@@ -666,13 +783,17 @@ function sendMsg() {
         - 增加了 JSON 支持。
         - 增加了 Object.defineProperty 等方法。
     - ES2015（ES6，ECMAScript 2015）：
-        - 引入了 let 和 const 关键字。
+        - 引入了 let 和 const 块级作用域变量声明。
         - 引入了箭头函数（arrow functions）。
-        - 引入了类（class）和模块（module）。
         - 增加了模板字符串（template strings）。
         - 增加了解构赋值（destructuring assignment）。
-        - 增加了 Promise 对象。
+        - 增加了默认参数
+        - 增加了拓展运算符
+        - 引入了类（class）、extends
         - 增加了import export的ECMAScript Module(ESM)规范
+        - 增加了 Promise 对象。
+        - 增加了Symbol
+        - 增加了Set 和 Map：新的数据结构。
     - ES2016（ES7，ECMAScript 2016）：
         - 增加了 Array.prototype.includes 方法。
         - 增加了指数运算符（**）。
@@ -691,6 +812,7 @@ function sendMsg() {
         - 引入了可选链操作符（optional chaining operator，?.）。
         - 引入了空值合并操作符（nullish coalescing operator，??）。
         - 增加了 BigInt 数据类型。
+        - 增加了 private 字段
 - CommonJS和ESM规范
     - 就是两种js用的模块化声明规范。
     - CommonJS
@@ -760,11 +882,11 @@ function sendMsg() {
     - Memory Churn：内存系统频繁分配和回收内存
 - 内存泄露
     - 意思就是有没用的内存被保留或者创建了，或者说内存出现在了其不该出现的生命周期中
-    - 常见的原因：
-        - 闭包引用的变量
+    - 原因：
+        - 事件监听器、Timer未清除
         - 全局变量
-        - 事件监听器未清除
-        - 删除根节点时，子元素存在引用而没被删除
+        - 闭包引用外部变量
+        - 循环引用
 ## 构建工具
 - 对前端项目进行以下操作
     - 编译
@@ -783,6 +905,3 @@ function sendMsg() {
 
 
 - to-do
-    - 搞清楚所谓"this指向调用者的上下文"是什么意思
-        - 这涉及到.call()隐性传入的this是什么
-    - symbol是什么

@@ -92,7 +92,7 @@ async function validate(account, password) {
         - 注意，slice里的和reducer同名的action creator是沟槽的隐性定义的，***和slice里的reducer没有半点关系***
 - selector
     - 就是读取目前最新state
-    - 背后逻辑是通过浅对比机制随时加载最新的state。浅对比的对象是selector的返回值
+    - 背后逻辑是通过Reselect库浅对比selector的输入来判断要不要更新useSelector的返回值。这个库内置在redux toolkit中无需再导入
     - eg
     ```js
     const mySelector = state => state.data
@@ -109,6 +109,7 @@ async function validate(account, password) {
     ```
 - Slice
     - action creator + 对应reducer的语法糖
+    - name没有用，只是一个标识符
     - 内部设置好的reducer会自动被生成一个同路径的action creator
         - 导出这个reducer实际上是导出其action creator，这个action creator隐性定义了type，只要接收一个object成为payload就能创建好一个action
         - eg slice设置了个setUser的reducer，对应的action creator要则这么调用：`setUser({userName: 'mike'})`
@@ -120,7 +121,10 @@ async function validate(account, password) {
         - 内部撰写的代码返回rejectWithValue(xxx)的返回值就是rejected action的payload，返回其他值就是fulfilled的action payload。pending action没有payload
         - 在对应slice中，需要用extraReducers来设定其reducer。
 - createSelector 创建 memoized selector，用于提取复杂的 state和优化性能。
-
+- Store
+    - 最终把redux状态树配置起来。
+    - combineReducer
+    - 如果store中定义的状态路径和slice中定义的不一样，
 
 ## react-quill
 - 用于自定义文本模块
