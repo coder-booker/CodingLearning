@@ -71,17 +71,31 @@
     - typeof NaN -> number
     - NaN不会等于任何东西，包括其自身
 ### 字符串
-- let a = "asdasd";
-- for of 或 a.split('').forEach/.map 可以遍历
-- a.charCodeAt(i); 打印a[i]处字符的ascii code
-- a.length 获得长度
-- a.substring([start], [end?]) 不接受负数，如果start > end会自动交换这两个数
-- `a.slice([start[, end])` 接受负数为从末尾倒数的index，如果start > end会返回空字符串
-- a.padStart/End(number, str) 左侧或者右侧填充number个str
-- `Array<string>.join(<separator);`
-    - 可以拼接string字符串
-    - 分隔符默认用`,`
-- `a.repeat(<length>)`可以把`<length>`个`a`拼在一起，注意是`a`的值而非字符`'a'`
+- `for ( c of a )` 或 `a.split('').forEach/.map` 可以遍历
+- 属性
+    - `a.length` 获得长度
+- 方法
+    - 子字符
+        - `a.at()`
+        - `a.charAt()`
+    - 子串
+        - `a.substring([start], [end?])` 不接受负数，如果start > end会自动交换这两个数
+        - `a.slice([start[, end])` 接受负数为从末尾倒数的index，如果start > end会返回空字符串
+    - 正则
+        - `a.match([regex]) -> Array<string>`
+        - `a.matchAll([regex]) -> Array<string>`
+    - 格式化
+        - `a.padStart/End(number, str)` 左侧或者右侧填充number个str
+        - `a.repeat(<length>)`可以把`<length>`个`a`拼在一起，注意是`a`的值而非字符`'a'`
+    - `a.charCodeAt(i);` 打印`a[i]`处字符的ascii code
+- 静态方法
+    - `String.fromCharCode`
+    - `String.fromCodePoint`
+    - `String.raw`修饰符，和python的r"\n"类似。有趣的是这个raw是es6的模板字符串的底层之一，用来把变量修饰成纯字符串而不会有奇怪的转义
+- other
+    - `Array<string>.join(<separator);`
+        - 可以拼接string字符串
+        - 分隔符默认用`,`
 ### Symbol
 - 特点
     - Symbol在全局有一片自己的空间，任何地方定义的Symbol都会在这里去重
@@ -209,8 +223,19 @@
 - 字面量对象
     - 直接用花括号初始化的变量就是字面量对象
 - 原型链
-    - 每个对象都有一个private属性，指向自己的prototype(也可以理解为继承的类)，而prototype也有自己的prototype
+    - js实现继承的核心原理
     - 可以一直往上追溯，直到某个prototype的prototype属性为null
+    - 访问/修改方式：
+        - `.getPrototypeOf()`：
+            - ES5中用来获取obj对象的原型对象的标准方法
+            - 优先使用
+        - `.__proto__`：
+            - 获取obj对象的原型对象的非标准方法
+            - 不支持ES5的环境可以用
+            - 但好像有性能问题
+        - `.prototype`：
+            - 用于建立由 new obj() 创建的对象的原型
+            - 一般不用
 - 对象除非特殊处理过，否则布可迭代（数组就是特殊的可迭代对象）
 - `delete`操作符
     - delete 操作符用于删除对象的某个属性；如果没有指向这个属性的引用，那它最终会被释放。
@@ -431,10 +456,12 @@
     - 第一个参数是函数，接收 元素，索引，被map的对象本身三个参数；可以只声明一个来只接收元素
     - 第二个参数是供在第一个参数的函数内调用`this`的指向。可以因此 达成用a的元素索引b 的操作
     - 不会修改原数组，只会返回一个修改后的新数组
-- .forEach()：
+- `.forEach()：`
     - 类似map，但不返回值
-- .filter()：
+    - 其实有些类似链式调用
+- `.filter()：`
     - 类似map，但只返回内部函数返回了true的索引位置的元素
+    - 其实有些类似链式调用
 
 
 # with
@@ -446,26 +473,25 @@
     }
     ```
 
-
 # 事件循环
 - nodejs是基于Libuv这个库开发的事件循环
 - 本质上就是不停循环执行多个宏任务，每个宏任务查询执行多个异步任务队列，这些任务队列各自属于不同的阶段，分别处理不同的异步操作。
 - 事件循环开始前，所有同步任务会先被执行
 - 阶段/宏任务
     1. Timers 阶段
-    - 检查并处理固定时间的回调任务队列，例如 setTimeout 和 setInterval 的回调。
+        - 检查并处理固定时间的回调任务队列，例如 setTimeout 和 setInterval 的回调。
     2. Pending Callbacks 阶段
-    - 检查并处理一些系统操作的回调任务队列（如 TCP 错误、文件系统错误等）。
+        - 检查并处理一些系统操作的回调任务队列（如 TCP 错误、文件系统错误等）。
     3. Idle, Prepare 阶段
-    - 内部使用的阶段，通常不需要关注。
-    - Idle用于执行一些内部任务，例如Libuv的资源清理
-    - Prepare用于准备事件循环的下一个阶段，例如初始化一些内部状态
+        - 内部使用的阶段，通常不需要关注。
+        - Idle用于执行一些内部任务，例如Libuv的资源清理
+        - Prepare用于准备事件循环的下一个阶段，例如初始化一些内部状态
     4. Poll 阶段
-    - 检查并处理 I/O 事件的任务队列（如文件读取、网络请求等）。
+        - 检查并处理 I/O 事件的任务队列（如文件读取、网络请求等）。
     5. Check 阶段
-    - 检查并处理 setImmediate 的回调。
+        - 检查并处理 setImmediate 的回调。
     6. Close Callbacks 阶段
-    - 处理关闭事件的回调（如 socket.on('close', ...)）。
+        - 处理关闭事件的回调（如 socket.on('close', ...)）。
 - 任务队列：
     - 每个事件循环的阶段都会有一个自己的任务队列供异步操作
     - 微任务有一个自己的任务队列
@@ -483,6 +509,11 @@
 - 值得注意的点：
     - setTimeout这一类宏任务在被定义时，实际上只是把任务插入了队列中。所以setTimeout(func, 0)并不一定会立马执行，可能会被推到下个事件循环才执行
 
+# 闭包原理、作用、应用场景
+- 保存状态：闭包可以保存函数执行时的状态，即使函数已经执行完毕。
+- 实现私有变量：通过闭包，可以模拟私有变量，避免外部直接访问和修改。
+- 延迟执行：闭包可以用于实现延迟执行（如回调函数、定时器）。
+- 模块化：闭包可以用于创建模块，封装私有方法和变量。
 
 
 # 内置对象与方法
@@ -494,15 +525,41 @@
 - `Math.pow([base], [exponent]);` or `**`
 - `Math.abs()`
 - `Math.floor()`/`Math.ceil()`/`Math.round()`取整
-### Promise
-- Promise 的出现是为了解决**回调地狱（Callback Hell）**问题，使异步代码更易读、更易维护。它通过链式调用（.then）和错误捕获（.catch）来简化异步操作。
+### Promise与异步操作
+- 回调地狱（Callback Hell）问题
+- promise是用来封装和管理异步编程的，它本身不是异步的，只是封装异步操作的话可以很方便地管理成功失败和异步顺序。
 - `new Promise((resolve, reject) => { resolve("value"); reject("error") })`
-    - resolve和reject都是函数体，调用就会终止promise异步操作，但resolve表成功，reject表失败
-    - resolve 把 Promise 从 Pending 变为 Fulfilled（已成功）。
-    - value是.then()会接受的值
-    - error是.catch()可以接收的值
+    - 接收一个executor函数，这个函数可以选择pending Promise传入的`resolve`和`reject`状态改变函数。
+        - `resolve`把Promise变为fulfilled态，`reject`则变为rejected态，然后把各自的.then或者.catch中的回调函数推入微任务队列等待执行
+        - executor可以忽略`reject`，只接受`resolve`
+    - 会立刻执行executor函数，然后把里面的异步函数和一个新的微任务绑定起来，这个微任务的作用就是尽快处理异步操作的下一个阶段
+    - 因为executor的运行是同步的，但插入的微任务是异步的，所以出现"新建微任务在同步代码前"的现象是正常的
+    - **所以Promise本身并不是微任务，resolve或者reject才会创建微任务**。
+- `.then(func1, func2)`
+    - 给Promise注册状态改变后的回调函数
+    - .then本身也是Promise
+        - return了value就会`resolve`成fulfilled，抛出错误就会`reject`成rejected
+    - .then可以选择接收并注册两个函数
+        - 第一个函数是Promise resolve后会调用并传入resolve参数的onFulfilled回调函数
+        - 第二个函数时Promise reject后会调用并传入reject参数的onRejected回调函数
+    - 隐式返回undefined
+- `.catch(func1)`
+    - `.then(null, func2)`的简写而已，代表只处理reject的链式调用
+- `.finally(func1)`
+- 静态方法
+    - `Promise.all([promise, ...])`: 返回promise结果数组。任意一个reject就全reject，reason为第一个reject的
+    - `Promise.race([promise, ...])`：返回最快更改状态的那个promise
+    - `Promise.any([promise, ...])`：返回最快fulfilled的那个promise
 - `async`, `await`
-    - await本质上就是把promise转换成了正常的返回值，也就是封装好了then
+    - async本质就是把函数内的代码作为executor传入一个Promise并尝试返回这个Promise。return时就是resolve调用时。所以async也是立刻执行的
+    - 会默认返回undefined的resolve
+    - await的原理
+        - 暂停async的运行并运行await后的代码，返回一个Promise
+        - Promise的状态脱离pending就会创建一个**返回这个作用域这一行后继续运行**的微任务。注意最后await获得的值是：fulfilled就返回resolve传递的值，rejected就直接抛出错误。
+        - await与后一行之间可能会被同步代码插队。
+        - 底层是用的**yield**
+    - await只能保证其所在作用域的顺序执行，不能保证外部其他操作会不会在await的作用域内的代码间插队执行
+    - 如果函数的返回值已经是Promise，不会变成Promise.resolve
 - 三种状态：
     - Pending（等待中）：初始状态，既不是成功也不是失败。
     - Fulfilled（已成功）：操作成功完成。
@@ -555,6 +612,112 @@
 - `JSON.stringify()`把对象转变为json字符串样式
 - `.json()`不只是解析json内容，同时还会转化为js的对象
 - 无论用那种语法传输，背后都是json字符串形式的？？？？
+### Intersection API
+- 可用于懒加载
+- 监听元素视窗进入点和退出点
+- eg
+    ```ts
+    const observer = new IntersectionObserver(entries => {
+        for (const i of entries) {
+            if (i.isIntersecting) { // 当目标元素出现在视图内
+                const img = i.target;
+                const trueSrc = img.getAttribute("data-src");
+                setTimeout(() => {
+                    img.setAttribute("src", trueSrc); // 方便展示懒加载效果
+                }, 1000);
+                observer.unobserve(img); // 停止监听此元素
+            }
+        }
+    });
+    ```
+### History API & hashChange
+- 用于路由
+- History API
+    - `history.pushState({}, '', path);`：更改路径并跳转
+        - history.pushState 接收三个参数：
+        - state：一个状态对象，与新的 URL 关联。可以是任意可序列化的数据。
+        - title：新页面的标题。目前大多数浏览器忽略此参数。
+        - url：新的 URL。
+    - `window.popstate`：监听 popstate 事件（浏览器前进/后退时触发）。
+- hashChange
+    - `window.location.hash`
+- routePairs对象：保存路径与对应组件的关系，匹配到path就返回对应的组件
+- pathToRegex函数：解析路径与捕获参数。react的路径定义方法有些语法糖，比如`:id`要变成`"id": <value>`。需要分析哪一段是把接收的path的id捕获出来放进
+- matchPath函数：把输入的path解析并匹配，返回对应keys和components
+- render函数：清除现有DOM，挂载新DOM
+- navigate函数：`history.pushState({}, '', path);`后，render保存的对应组件
+- handleRouteChange函数：匹配当前`window.location.pathname`并渲染对应组件
+- 事件监听：
+    - 在document监听`DOMContentLoaded`以首屏加载
+    - 在window监听`popstate`
+- eg
+    ```ts
+    // 路由配置
+    const routes = [
+        { path: '/', component: Home },
+        { path: '/about', component: About },
+        { path: '/user/:id', component: User },
+        { path: '*', component: NotFound } // 404 页面
+    ];
+    // 路径转正则表达式（简化版）
+    function pathToRegexp(path, keys) {
+        const pattern = path.replace(/:(\w+)/g, (_, key) => {
+            keys.push({ name: key });
+            return '([^\/]+)';
+        });
+        return new RegExp(`^${pattern}$`);
+    }
+    // 路由匹配
+    function matchRoute(path, routes) {
+        for (const route of routes) {
+            const keys = [];
+            const regex = pathToRegexp(route.path, keys);
+            const match = regex.exec(path);
+
+            if (match) {
+                const params = keys.reduce((acc, key, index) => {
+                    acc[key.name] = match[index + 1];
+                    return acc;
+                }, {});
+                return { ...route, params };
+            }
+        }
+        return null;
+    }
+    // 动态组件渲染
+    function render(component, params) {
+        const app = document.getElementById('app');
+        app.innerHTML = '';
+        const element = document.createElement('div');
+        element.innerHTML = component(params);
+        app.appendChild(element);
+    }
+    // 导航
+    function navigate(path) {
+        history.pushState({}, '', path);
+        handleRouteChange();
+    }
+    // 处理路由变化
+    function handleRouteChange() {
+        const path = window.location.pathname;
+        const matchedRoute = matchRoute(path, routes);
+
+        if (matchedRoute) {
+            render(matchedRoute.component, matchedRoute.params);
+        } else {
+            render(NotFound);
+        }
+    }
+    // 初始化
+    window.addEventListener('popstate', handleRouteChange);
+    document.addEventListener('DOMContentLoaded', handleRouteChange);
+    // 组件定义
+    function Home() {return '<h1>Home</h1>';}
+    // ...
+
+    // 初始化渲染
+    handleRouteChange();
+    ```
 ### URL类
 - 封装好各种获得URL参数的方法
 - 其中的属性/方法：

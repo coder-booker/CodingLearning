@@ -125,6 +125,19 @@ async function validate(account, password) {
     - 最终把redux状态树配置起来。
     - combineReducer
     - 如果store中定义的状态路径和slice中定义的不一样，
+- Redux设计理念：
+    - 统一状态管理
+    - 把复杂的状态管理逻辑组合封装为一个个行为，提高可读性（也就是用文字的action来封装复杂的setState）
+- redux手动实现
+    - listener队列：包含着所有订阅者的通知用回调函数（也就是selector）
+    - subcribe函数：把订阅者的通知用回调函数传入listener队列。这个回调函数需要与组件声明周期挂钩，如useState的setter，useEffect的依赖数组值改变等等
+    - reducer函数：传入action和state，并对action做出对应修改
+    - dispatch函数：更改state，通知listener队列里对应的selector
+    - useSelector钩子：封装subscribe和getState的钩子
+        - 嵌套钩子原来也会重新渲染组件
+    - getState函数：获得state
+    - store：包含了state、reducer、listener的对应关系
+    - 通过action的type和订阅时的type分片，只让指定的
 
 ## react-quill
 - 用于自定义文本模块

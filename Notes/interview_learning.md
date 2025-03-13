@@ -113,38 +113,100 @@
 - problem
     - career advice
 
-# company target
-- Tech
-    - international
-        - Microsoft
-        - Google
-        - Meta
-    - Mainland
-        - 华为
-        - 阿里
-        - 字节
-        - 大疆
-        - 腾讯
-        - 宁德时代
-        - 比亚迪
-        - 科大讯飞
-        - 网易
-        - 美团
-        - 蚂蚁
-        - mihoyo
-        - 小米
-        - 百度
-- Bank/finance
-    - Accture
-    - Jane street
-    - big four: Deloitte, PWC, EY, KPMG
-    - banks: HSBC, Bank of China
 
 
 # Interview prepare
-### introduce myself
+### General/HR 面
 
-### CorpusChat
+- 个人经历
+    - 自我介紹
+        - 基础资讯
+        - 在两地都生活过
+        - 全栈偏前端
+            - 技术栈：js/ts react
+        - 实习/工作经历比较丰富
+            - 工作经历：Corpus兼职工作、RAG概念
+            - 实习：大公司、小公司
+            - 提及一下创新的项目
+    - 期望薪资
+    - 为什么投这个岗位？
+        1. 个人发展
+            - 前端的开发
+            - 转正机会、前沿的商业化工业化的技术
+        2. 字节跳动
+            - 始终创业 Always Day 1：展示了谦逊、上进心和初心
+    - 拷打实习经历: 你从中学到了什么、实习中有什么困难之处
+    - 报学校专业是怎么考虑的？
+        - 本身比较擅长理科。大类收生、发现比较擅长和喜欢计算机
+    - 缺点和优点？
+        - 缺点：比较急
+        - 优点：善于反思
+    - 有没有哪段时间或者某件事情让你受挫/压力大/有挑战？
+        - 朋友在大二就有不少offer
+    - 你现在的技术薄弱点在哪里，怎么去突破？
+        - 缺乏实操
+    - 职业规划
+        - 短期计划：大三找能够深入学习、有mentor的长期技术实习，学习成熟先进的技术，并寻求转正机会。
+        - 长期计划：5年内深入了解毕业公司的技术架构和提升这一行业中的认知，成为业内的专业人士。
+        - 更长期的计划：在我对业内的了解越来越多，自然就会慢慢显现出来
+- 公司相关
+    - 为什么选择这家公司
+        - 科技公司，我一定能在其中学习到很多
+        - 同时也能为有为行业贡献的机会
+        - 平等和创新
+    - 对之前几次面试的感受
+    - 有没有了解过我们组的具体工作内容
+    - 能为公司带来什么？
+        - 学习能力比较强、自学经验比较多
+    - 字节的工作压力比较大, 你认为能适应吗? 
+    - 你期望的工作环境/公司是怎么样的
+    - 你对下一份实习有什么期望
+    - 什么情况下会考虑辞一份工作
+    - 你能为公司带来什么
+    - 你认为实习时可预见的困难
+- other
+    - 出来面试都了解过哪些企业？
+    - 目前手上有 offer 吗？是否谈过薪资等？哪些因素决定你们选择这家公司?
+        - 有，hk的企业。但这个机会我比较看重，且
+    - 团队合作中遇到什么问题？
+    - 对互联网加班有什么看法？
+        - 无可厚非，且我之前也加班过，直接过夜了
+    - 现在进度最快的公司是哪家？
+        - HKSTP和字节
+    - 反问
+        - 培训
+        - 内部架构、实际工作内容
+        - 什么时候出结果
+        - 薪资？
+### 项目
+- CorpusChat亮点：
+    - 1. 真实项目，需要与客户沟通、设计整套软件流程。还涉及了一部分的UI设计
+    - 2. 实现了一个很热门的概念：RAG，因此比较了解AI服务的一些前端要点
+    - 3. 全栈
+    - 3. Redux框架的使用：解耦数据的跨组件传递，让代码更清晰可维护
+        - Context缺点
+            - 大量switch来判断fetch操作
+            - 性能问题：当 Context 的值发生变化时，所有消费该 Context 的组件都会重新渲染，即使它们只依赖 Context 的一部分数据。需要通过 useMemo 或 useCallback 优化性能。
+            - 不适合复杂状态管理：缺乏 Redux 中的中间件、时间旅行调试等功能。且状态更新逻辑分散在各个组件中，难以集中管理。
+            - 调试困难：没有 Redux DevTools 这样的强大调试工具。
+        - Redux优点
+            - 集中式状态管理：所有状态存储在单一的 Store 中，状态更新逻辑集中在 Reducer 中，加上状态分片，易于管理、追踪和测试。
+            - 强大的中间件支持：支持中间件（如 redux-thunk、redux-saga），可以处理异步操作、日志记录等。
+            - 时间旅行调试：通过 Redux DevTools，可以回溯和重放状态变化，方便调试。
+            - 性能优化：通过 useSelector 选择性订阅状态，浅对比返回值，避免不必要的重新渲染。
+    - 4. 云服务
+- CorpusChat亮点难点：
+    - 使用了Azure的beta功能：AI 助理。实际开发中有很多不可控的因素，例如
+        - 需要配合Azure云服务的数据结构，自己封装AI的输入与输出并与前端交互
+            - 比如AI输出的内容是纯文字，我需要将其渲染为可读性更强的
+        - beta功能有不完善的地方，源码有时会出现问题，需要在保证响应速度的同时妥善处理可能的错误信息
+            - 比如AI assistant有时会输出到一半卡死报错，必须设置妥善前端逻辑来在流式输出时删除信息
+        - 文档不清晰的地方常常需要阅读一部分源码
+            - 比如后端需要
+        - 客户要求有时候难以靠现有功能完成，只能自己解决
+            - 这个比较后端，看看面试官想不想知道吧
+    - redux学习路线比较陡峭
+- 你要知道你为什么用这个库和库的大致设计理念，甚至能够用js实现一个简易版本
 - why Python but nodejs? 
     1. py开发效率高
     2. 客户要求
@@ -281,107 +343,214 @@
             - 解决方案选择：
                 - 采用了multi-agent flow
             - 反思
-- 前端(todo)
-    - 将状态管理从 React Context 迁移到 Redux，利用 Redux Thunk 封装异步请求
-        - 事实上react自己就有useReducer的钩子
-            - 但很多东西都需要自己手动定义，例如action的type
-            - redux还封装好了全局的state，而非仅当前组件内的state
-        - 用action承载用以更改的数据，在reducer中把action里的数据更新到state中并通过selector广播
-        - Slice：
-            - name、initial state、reducers、extraReducers
-            - name就是这个slice中所有同步action的type 前缀，后缀则是reducer的名字。
-            - createSlice：reducer、action、action creator的语法糖
-            - extraReducers：处理异步thunk的状态
-                - 内置一些常用的一部状态，包括pending、fulfilled、rejected
-        - Thunk：
-            - 第一个参数是action type前缀。至于后缀则是thunk名
-            - 第二个参数是一些给thunk用的redux API
-                - 因为异步操作的复杂性，它的处理都是独立于其他同步reducer的，state也只能通过api获得。
-            - 调用就是直接用thunk，但传入的参数会被传给第二个定义时的函数。
-                - eg
-                    ```ts
-                    // incrementAsync(123)就是给amount传入123
-                    export const incrementAsync = createAsyncThunk(
-                        'counter/incrementAsync',
-                        async (amount, { dispatch, getState, rejectWithValue }) => {
-                            // 模拟异步操作
-                            await new Promise((resolve) => setTimeout(resolve, 1000));
-                            dispatch(incrementByAmount(amount)); // 调用同步Action
-                        }
-                    );
-                    ```
-        - Store
-            - 注册reducer、state、和他们的关系，让redux知道有哪些reducer和state被定义了，以及配置它们的对应关系，让reducer只会接到一小段配置给它的子state
-            - store提供dispatch。每次dispatch都会遍历注册的reducer，让输入的action能找到其匹配的reducer
-        - Selector
-            - 使用useSelector从store中提取状态（如count和status）。
-            - 得配合定义好的selector才能暴露给组件使用
-                - eg
-                    ```ts
-                    // selector.ts
-                    const selectOpenAIChatModels = (state) => state.entities.openAIChatModels;
-
-                    // components.tsx
-                    const openAIChatModels = useSelector(selectOpenAIChatModels)
-                    ```
-    - useMemo 和 useCallback, React.lazy 和 Suspense 的动态路由加载
-        - useMemo
-            - 一个目标函数，一个依赖数组
-            - 当依赖数组的值发生改变就会重新计算目标函数的返回值
-        - useCallback
-            - 缓存函数用的
-            - 一个目标函数，一个依赖数组
-            - 使用场景：
-                - useEffect的依赖数组如果有函数，用useCallback的返回值来替代原本的函数能避免useEffect的错误触发（当然也可以直接用useEffect内的护卫语句来达到类似的效果）
-                - 子组件使用了React.memo之类的优化方式时，useCallback可以缓存传入子组件的函数。
-        - React.lazy
-            - 接收一个thenable的函数，这个函数需要最终返回一个可以被解析为React组件类型的值，例如函数、memo或forwardRef 组件。lazy会抛出包裹这个值的Promise给Suspense捕获
-            - import()
-                - import()是个动态导入语法（Dynamic Import），返回`Promise<React组件>`，但解析后会成为组件
-                - lazy依赖于import()
-                - 用途：
-                    - 代码分割（Code Splitting）：将应用的代码拆分成多个小块，按需加载，减少初始加载时间。
-                    - 懒加载组件
-                    - 条件加载模块：根据某些条件（如用户权限、设备类型）动态加载模块。
-                    - 加载非模块代码，例如.json：`import("./data.json", { with: { type: "json" } });`
+前端：
+- Redux
+    - 事实上react自己就有useReducer的钩子
+        - 但很多东西都需要自己手动定义，例如action的type
+        - redux还封装好了全局的state，而非仅当前组件内的state
+    - Redux设计理念：
+        - 统一状态管理
+        - 把复杂的状态管理逻辑组合封装为一个个行为，提高可读性（也就是用文字的action来封装复杂的setState）
+    - redux手动实现
+        - listener队列：包含着所有订阅者的通知用回调函数（也就是selector）
+        - subcribe函数：把订阅者的通知用回调函数传入listener队列。这个回调函数需要与组件声明周期挂钩，如useState的setter，useEffect的依赖数组值改变等等
+        - reducer函数：传入action和state，并对action做出对应修改
+        - dispatch函数：更改state，通知listener队列里对应的selector
+        - useSelector钩子：封装subscribe和getState的钩子
+            - 嵌套钩子原来也会重新渲染组件
+        - getState函数：获得state
+        - store：包含了state、reducer、listener的对应关系
+        - 通过action的type和订阅时的type分片，只让指定的
+    - 用action承载用以更改的数据，在reducer中把action里的数据更新到state中并通过selector广播
+    - Slice：
+        - name、initial state、reducers、extraReducers
+        - name就是这个slice中所有同步action的type 前缀，后缀则是reducer的名字。
+        - createSlice：reducer、action、action creator的语法糖
+        - extraReducers：处理异步thunk的状态
+            - 内置一些常用的一部状态，包括pending、fulfilled、rejected
+    - Thunk：
+        - 第一个参数是action type前缀。至于后缀则是thunk名
+        - 第二个参数是一些给thunk用的redux API
+            - 因为异步操作的复杂性，它的处理都是独立于其他同步reducer的，state也只能通过api获得。
+        - 调用就是直接用thunk，但传入的参数会被传给第二个定义时的函数。
             - eg
-            ```tsx
-                // lazy在外面以避免被重新加载
-                const Component = lazy(()=>import("./Component.tsx"));
-                function bruh() {
-                    return (
-                        <Suspense fallback={<div>Loading...<div/>}>
-                            <Component />
-                        <Suspense />
-                    )
+                ```ts
+                // incrementAsync(123)就是给amount传入123
+                export const incrementAsync = createAsyncThunk(
+                    'counter/incrementAsync',
+                    async (amount, { dispatch, getState, rejectWithValue }) => {
+                        // 模拟异步操作
+                        await new Promise((resolve) => setTimeout(resolve, 1000));
+                        dispatch(incrementByAmount(amount)); // 调用同步Action
+                    }
+                );
+                ```
+    - Store
+        - 注册reducer、state、和他们的关系，让redux知道有哪些reducer和state被定义了，以及配置它们的对应关系，让reducer只会接到一小段配置给它的子state
+        - store提供dispatch。每次dispatch都会遍历注册的reducer，让输入的action能找到其匹配的reducer
+    - Selector
+        - 使用useSelector从store中提取状态（如count和status）。
+        - 得配合定义好的selector才能暴露给组件使用
+            - eg
+                ```ts
+                // selector.ts
+                const selectOpenAIChatModels = (state) => state.entities.openAIChatModels;
+
+                // components.tsx
+                const openAIChatModels = useSelector(selectOpenAIChatModels)
+                ```
+- useMemo 和 useCallback, React.lazy 和 Suspense 的动态路由加载
+    - useMemo
+        - 一个目标函数，一个依赖数组
+        - 当依赖数组的值发生改变就会重新计算目标函数的返回值
+    - useCallback
+        - 缓存函数用的
+        - 一个目标函数，一个依赖数组
+        - 使用场景：
+            - useEffect的依赖数组如果有函数，用useCallback的返回值来替代原本的函数能避免useEffect的错误触发（当然也可以直接用useEffect内的护卫语句来达到类似的效果）
+            - 子组件使用了React.memo之类的优化方式时，useCallback可以缓存传入子组件的函数。
+    - React.lazy
+        - 接收一个thenable的函数，这个函数需要最终返回一个可以被解析为React组件类型的值，例如函数、memo或forwardRef 组件。lazy会抛出包裹这个值的Promise给Suspense捕获
+        - import()
+            - import()是个动态导入语法（Dynamic Import），返回`Promise<React组件>`，但解析后会成为组件
+            - lazy依赖于import()
+            - 用途：
+                - 代码分割（Code Splitting）：将应用的代码拆分成多个小块，按需加载，减少初始加载时间。
+                - 懒加载组件
+                - 条件加载模块：根据某些条件（如用户权限、设备类型）动态加载模块。
+                - 加载非模块代码，例如.json：`import("./data.json", { with: { type: "json" } });`
+    - Suspense
+        - 通过捕获children抛出的Promsie对象来判断要不要用fallback
+        - thrown一个Promise并不会导致报错，只是简单地运行这个Promise并让Suspense捕获而已
+        - 复习下scrollTop
+            - 子元素的offsetTop和非static position的父容器的scrollTop对比下就能实现懒加载
+            - offsetWidth包含padding不包含滚动条。scroll也只到padding不需要考虑滚动条
+- 基于 SSE 的实时聊天交互、机器人回复的流式显示
+    - 长连接，缓存块，pesudoMessage
+- 基于 JWT 和 React Router 实现了智能路由认证，支持动态路由渲染和基于角色的 UI 展示。
+    - decorator
+- 自定义Hooks来抽象数据获取和表单处理逻辑，提升了代码的可读性和可维护性。
+    - 为什么要自定义hook？
+        - 复用、封装逻辑
+        - 分离逻辑：把和UI没有直接关系的运算、数据获取逻辑全部封装成钩子，让组件只关心怎么用数据渲染UI，而不用理会数据的预处理
+- 路由
+    - 那你就要知道路由用纯JS怎么实现，监听hashChange和History API两种方式的话，又怎么写代码呢？
+    - History API
+        - `history.pushState({}, '', path);`：更改路径并跳转
+            - history.pushState 接收三个参数：
+            - state：一个状态对象，与新的 URL 关联。可以是任意可序列化的数据。
+            - title：新页面的标题。目前大多数浏览器忽略此参数。
+            - url：新的 URL。
+        - `window.popstate`：监听 popstate 事件（浏览器前进/后退时触发）。
+    - `hashchange`事件 & `window.onhashchange`
+        - `window.location.hash`访问hash
+        - `HashChangeEvent.newURL` 用事件来访问
+            - 只读
+            - 一个字符串，表示窗口导航到的新 URL。
+        - `HashChangeEvent.oldURL` 用事件来访问
+            - 只读
+            - 一个字符串，表示导航窗口的上一个 URL。
+        - eg
+            ```ts
+            function locationHashChanged() {
+                if (location.hash === "#cool-feature") {
+                    console.log("你正在访问一个很酷的功能！");
                 }
+            }
+            window.onhashchange = locationHashChanged;
+            // or
+            window.addEventListener(
+                "hashchange",
+                (HashChangeEvent) => {
+                    console.log("哈希已更改:", HashChangeEvent.newURL);
+                },
+                false,
+            );
             ```
-        - Suspense
-            - 通过捕获children抛出的Promsie对象来判断要不要用fallback
-            - thrown一个Promise并不会导致报错，只是简单地运行这个Promise并让Suspense捕获而已
-            - 复习下scrollTop
-                - 子元素的offsetTop和非static position的父容器的scrollTop对比下就能实现懒加载
-                - offsetWidth包含padding不包含滚动条。scroll也只到padding不需要考虑滚动条
-    - web应用的基础知识
-        - Promise的所有操作
-        - ES6
-            - Promise
-    - react的面经
-    - 基于 SSE 的实时聊天交互、机器人回复的流式显示
-        - 长连接，缓存块，pesudoMessage
-    - 基于 JWT 和 React Router 实现了智能路由认证，支持动态路由渲染和基于角色的 UI 展示。
-        - decorator
-    - 自定义Hooks来抽象数据获取和表单处理逻辑，提升了代码的可读性和可维护性。
-        - 为什么要自定义hook？
-            - 复用、封装逻辑
-            - 分离逻辑：把和UI没有直接关系的运算、数据获取逻辑全部封装成钩子，让组件只关心怎么用数据渲染UI，而不用理会数据的预处理
-    - 给上面的各种知识点找例子
+    - routePairs对象：保存路径与对应组件的关系，匹配到path就返回对应的组件
+    - pathToRegex函数：解析路径与捕获参数。react的路径定义方法有些语法糖，比如`:id`要变成`"id": <value>`。需要分析哪一段是把接收的path的id捕获出来放进
+    - matchPath函数：把输入的path解析并匹配，返回对应keys和components
+    - render函数：清除现有DOM，挂载新DOM
+    - navigate函数：`history.pushState({}, '', path);`后，render保存的对应组件
+    - handleRouteChange函数：匹配当前`window.location.pathname`并渲染对应组件
+    - 事件监听：
+        - 在document监听`DOMContentLoaded`以首屏加载
+        - 在window监听`popstate`
+    - eg
+    ```ts
+    // 路由配置
+    const routes = [
+        { path: '/', component: Home },
+        { path: '/about', component: About },
+        { path: '/user/:id', component: User },
+        { path: '*', component: NotFound } // 404 页面
+    ];
+    // 路径转正则表达式（简化版）
+    function pathToRegexp(path, keys) {
+        const pattern = path.replace(/:(\w+)/g, (_, key) => {
+            keys.push({ name: key });
+            return '([^\/]+)';
+        });
+        return new RegExp(`^${pattern}$`);
+    }
+    // 路由匹配
+    function matchRoute(path, routes) {
+        for (const route of routes) {
+            const keys = [];
+            const regex = pathToRegexp(route.path, keys);
+            const match = regex.exec(path);
 
-    - 工程化
-    - webpack、ajax
-    - 怎么测试的（研究点测试的术语）
+            if (match) {
+                const params = keys.reduce((acc, key, index) => {
+                    acc[key.name] = match[index + 1];
+                    return acc;
+                }, {});
+                return { ...route, params };
+            }
+        }
+        return null;
+    }
+    // 动态组件渲染
+    function render(component, params) {
+        const app = document.getElementById('app');
+        app.innerHTML = '';
+        const element = document.createElement('div');
+        element.innerHTML = component(params);
+        app.appendChild(element);
+    }
+    // 导航
+    function navigate(path) {
+        history.pushState({}, '', path);
+        handleRouteChange();
+    }
+    // 处理路由变化
+    function handleRouteChange() {
+        const path = window.location.pathname;
+        const matchedRoute = matchRoute(path, routes);
 
-CSS：
+        if (matchedRoute) {
+            render(matchedRoute.component, matchedRoute.params);
+        } else {
+            render(NotFound);
+        }
+    }
+    // 初始化
+    window.addEventListener('popstate', handleRouteChange);
+    document.addEventListener('DOMContentLoaded', handleRouteChange);
+    // 组件定义
+    function Home() {return '<h1>Home</h1>';}
+    // ...
+
+    // 初始化渲染
+    handleRouteChange();
+    ```
+
+
+- 工程化
+- webpack、ajax
+- 怎么测试的（研究点测试的术语）
+### 八股
+CSS
 - css实现水平居中的方式，多说几种
     - margin: 0 auto;
     - jusitify-content: center;
@@ -397,17 +566,9 @@ CSS：
     - 隔离父盒子和子盒子
     - 父级变成BFC
 - ES6新特性有哪些
-- promise的状态
-    - pending，fulfilled，rejected
-- resolve是什么状态
-    - resolve之后就是fulfilled状态
-- promise的出现是为了解决什么问题
-    - 回调地狱
-- 闭包是什么
-    - 闭包允许函数访问其***定义时的作用域***，即使函数在其定义的作用域之外执行。
-    - 所以约等于箭头函数？
 - 说下原型链
 - 普通函数和箭头函数有什么区别
+    - args、this、构造函数
 - 修改this的几种方式
     - 因为this的使用永远和函数或者方法有关，所以只考虑call apply bind就行
     - call：传入上下文和逐一传入参数并立刻运行
@@ -424,73 +585,11 @@ CSS：
     - 定义类型：都可以用来定义对象、函数、类等的类型。
     - 扩展：都可以通过 extends 或 & 进行扩展。
     - 实现：都可以被类实现（implements）。
-- General(todo)
-    - 计算机基础
-        - os
-            - 内存模型
-            - 进程线程
-            - 内核
-        - network
-            - 分层模型
-            - HTTP/HTTPS
-            - TCP，RPC
-            - 
-    - 个人介绍
-        - 大三学生
-        - 有过多段实习
-        - 有过完整的software开发经验
-    - 项目介绍
-        - Corpus
-        - 实习
-
-
-说一下项目中的难点、亮点
-- CorpusChat：
-    - 亮点：
-        - 1. 真实项目，需要与客户沟通、设计整套软件流程。还涉及了一部分的UI设计
-        - 2. 实现了一个很热门的概念：RAG，因此比较了解AI服务的一些前端要点
-        - 3. 全栈
-        - 3. Redux框架的使用：解耦数据的跨组件传递，让代码更清晰可维护
-            - Context缺点
-                - 大量switch来判断fetch操作
-                - 性能问题：当 Context 的值发生变化时，所有消费该 Context 的组件都会重新渲染，即使它们只依赖 Context 的一部分数据。需要通过 useMemo 或 useCallback 优化性能。
-                - 不适合复杂状态管理：缺乏 Redux 中的中间件、时间旅行调试等功能。且状态更新逻辑分散在各个组件中，难以集中管理。
-                - 调试困难：没有 Redux DevTools 这样的强大调试工具。
-            - Redux优点
-                - 集中式状态管理：所有状态存储在单一的 Store 中，状态更新逻辑集中在 Reducer 中，加上状态分片，易于管理、追踪和测试。
-                - 强大的中间件支持：支持中间件（如 redux-thunk、redux-saga），可以处理异步操作、日志记录等。
-                - 时间旅行调试：通过 Redux DevTools，可以回溯和重放状态变化，方便调试。
-                - 性能优化：通过 useSelector 选择性订阅状态，浅对比返回值，避免不必要的重新渲染。
-        - 4. 云服务
-    - 难点：
-        - 使用了Azure的beta功能：AI 助理。实际开发中有很多不可控的因素，例如
-            - 需要配合Azure云服务的数据结构，自己封装AI的输入与输出并与前端交互
-                - 比如AI输出的内容是纯文字，我需要将其渲染为可读性更强的
-            - beta功能有不完善的地方，源码有时会出现问题，需要在保证响应速度的同时妥善处理可能的错误信息
-                - 比如AI assistant有时会输出到一半卡死报错，必须设置妥善前端逻辑来在流式输出时删除信息
-            - 文档不清晰的地方常常需要阅读一部分源码
-                - 比如后端需要
-            - 客户要求有时候难以靠现有功能完成，只能自己解决
-                - 这个比较后端，看看面试官想不想知道吧
-        - redux学习路线比较陡峭
-
-你要知道你为什么用这个库，库的大致设计理念
-库的简易版
-- Redux设计理念：
-    - 统一状态管理
-    - 把复杂的状态管理逻辑组合封装为一个个行为，提高可读性（也就是用文字的action来封装复杂的setState）
-- redux手动实现
-    - store：包含了state、reducer、listener的对应关系
-    - getState函数：获得state
-    - listener队列：包含着所有订阅者的通知用回调函数（也就是selector）
-    - subcribe函数：把订阅者的通知用回调函数传入listener队列。这个回调函数需要与组件声明周期挂钩，如useState的setter，useEffect的依赖数组值改变等等
-    - reducer函数：传入action和state，并对action做出对应修改
-    - dispatch函数：更改state，通知listener队列里对应的selector
-    - useSelector钩子：封装subscribe和getState的钩子
-        - 嵌套钩子原来也会重新渲染组件
-    - 通过action的type和订阅时的type分片，只让指定的
 - 懒加载
+    - 关键在于进入点和停止监听点
     - 进阶一点就是懒加载用纯JS怎么实现
+        - 子元素offsetTop < 父元素clientHeight + 父元素scrollTop
+        - window.pageYOffset ? window.pageYOffset : window.document.documentElement.scrollTop
         - Intersection Observer API
             - eg
                 ```ts
@@ -507,116 +606,6 @@ CSS：
                     }
                 });
                 ```
-        - 子元素offsetTop < 父元素clientHeight + 父元素scrollTop
-        - window.pageYOffset ? window.pageYOffset : window.document.documentElement.scrollTop
-- 路由
-    - 那你就要知道路由用纯JS怎么实现，监听hashChange和History API两种方式的话，又怎么写代码呢？
-    - History API
-        - `history.pushState({}, '', path);`：更改路径并跳转
-            - history.pushState 接收三个参数：
-            - state：一个状态对象，与新的 URL 关联。可以是任意可序列化的数据。
-            - title：新页面的标题。目前大多数浏览器忽略此参数。
-            - url：新的 URL。
-        - `popstate`：监听 popstate 事件（浏览器前进/后退时触发）。
-    - hashChange
-        - window.location.hash
-    - 解析路径与捕获参数：react的路径定义方法有些语法糖，比如`:id`要变成`"id": <value>`。需要分析哪一段是把接收的path的id捕获出来放进
-    - 保存路径与对应组件的关系：obj就行
-    - navigate函数：`history.pushState({}, '', path);`后，render保存的对应组件
-    - render函数：清除现有DOM，挂载新DOM
-    - 首屏加载：监听`DOMContentLoaded`
-    - handleRouteChange
-        - window.location.pathname;
-        - eg
-        ```ts
-        // 路由配置
-        const routes = [
-            { path: '/', component: Home },
-            { path: '/about', component: About },
-            { path: '/user/:id', component: User },
-            { path: '*', component: NotFound } // 404 页面
-        ];
-        
-        // 路径转正则表达式（简化版）
-        function pathToRegexp(path, keys) {
-            const pattern = path.replace(/:(\w+)/g, (_, key) => {
-                keys.push({ name: key });
-                return '([^\/]+)';
-            });
-            return new RegExp(`^${pattern}$`);
-        }
-
-        // 路由匹配
-        function matchRoute(path, routes) {
-            for (const route of routes) {
-                const keys = [];
-                const regex = pathToRegexp(route.path, keys);
-                const match = regex.exec(path);
-
-                if (match) {
-                    const params = keys.reduce((acc, key, index) => {
-                        acc[key.name] = match[index + 1];
-                        return acc;
-                    }, {});
-                    return { ...route, params };
-                }
-            }
-            return null;
-        }
-
-        // 动态组件渲染
-        function render(component, params) {
-            const app = document.getElementById('app');
-            app.innerHTML = '';
-            const element = document.createElement('div');
-            element.innerHTML = component(params);
-            app.appendChild(element);
-        }
-
-        // 导航
-        function navigate(path) {
-            history.pushState({}, '', path);
-            handleRouteChange();
-        }
-
-        // 处理路由变化
-        function handleRouteChange() {
-            const path = window.location.pathname;
-            const matchedRoute = matchRoute(path, routes);
-
-            if (matchedRoute) {
-                render(matchedRoute.component, matchedRoute.params);
-            } else {
-                render(NotFound);
-            }
-        }
-
-        // 初始化
-        window.addEventListener('popstate', handleRouteChange);
-        document.addEventListener('DOMContentLoaded', handleRouteChange);
-
-        // 组件定义
-        function Home() {
-            return '<h1>Home</h1>';
-        }
-
-        function About() {
-            return '<h1>About</h1>';
-        }
-
-        function User(params) {
-            return `<h1>User: ${params.id}</h1>`;
-        }
-
-        function NotFound() {
-            return '<h1>404 Not Found</h1>';
-        }
-
-
-        // 初始化渲染
-        handleRouteChange();
-        
-        ```
 
 - 说几条性能优化的方案
 - 防抖与节流
@@ -631,7 +620,7 @@ CSS：
     - 接收 HTTP 响应：浏览器接收并解析 HTTP 响应。
     - 渲染网页：解析 HTML、CSS，构建 DOM 树和 CSSOM 树，生成渲染树，布局和绘制。
         - 解析 HTML：浏览器解析 HTML 文件，构建 DOM 树（Document Object Model）。
-        - 加载外部资源：浏览器根据 HTML 中的标签（如 <link>、<script>、<img>），加载 CSS、JavaScript、图片等外部资源。
+        - 加载外部资源：浏览器根据 HTML 中的标签（如 `<link>`、`<script>`、`<img>`），加载 CSS、JavaScript、图片等外部资源。
         - 解析 CSS：浏览器解析 CSS 文件，构建 CSSOM 树（CSS Object Model）。
         - 构建渲染树：浏览器将 DOM 树和 CSSOM 树合并，生成渲染树（Render Tree）。
         - 布局（Layout）：浏览器计算渲染树中每个节点的位置和大小（Layout 或 Reflow）。
@@ -640,36 +629,68 @@ CSS：
             - 网页交互：处理用户交互事件，动态更新页面。
             - 关闭连接：通过四次挥手关闭 TCP 连接。
             - 缓存：缓存静态资源，加速下次访问。
-
 - 闭包原理、作用、应用场景
     - 保存状态：闭包可以保存函数执行时的状态，即使函数已经执行完毕。
     - 实现私有变量：通过闭包，可以模拟私有变量，避免外部直接访问和修改。
     - 延迟执行：闭包可以用于实现延迟执行（如回调函数、定时器）。
     - 模块化：闭包可以用于创建模块，封装私有方法和变量。
-- 为什么想申请这个岗位
-    1. 个人发展
-        - 前端的开发
-        - 转正机会、前沿的商业化工业化的技术
-    2. 字节跳动
-        - 始终创业 Always Day 1：展示了谦逊、上进心和初心
-
-xss
+- 前端安全
+    - CSRF（Cross-Site Request Forgery）：
+        - 恶意伪造请求
+        - 攻击原理：诱导用户点击恶意链接，利用已登录的身份发起伪造请求（如转账）。
+        - 就在目标站内生成恶意链接当然不行，但在其他地方比如email就可能会造成CSRF。
+        - 防御方法：重点是防止跨站的请求
+            - Token 验证：服务端生成随机 Token，前端提交时携带。
+            - SameSite Cookie：设置 Cookie 的 SameSite 属性为 Strict 或 Lax。
+            - 验证 Referer：检查请求来源是否合法。
+    - XSS（Cross-Site Scripting）：
+        - 恶意运行脚本
+        - 攻击原理：向页面注入恶意脚本（如 JavaScript），窃取用户 Cookie 或篡改页面内容。
+        - 分类：
+            - 存储型 XSS：恶意脚本存储到数据库（如论坛评论），触发方式是被加载
+            - 反射型 XSS：通过 URL 参数注入（诱导用户点击链接），触发方式是用户主动点击
+            - DOM 型 XSS：前端 JavaScript 操作 DOM 时触发，具体来说是innerHTML被赋值时会运行其中的代码
+        - 防御方法：
+            - 输入过滤：对用户输入进行转义（如 < 转义为 &lt;）。
+            - 输出编码：根据输出场景（HTML/JS/URL）使用不同编码库。
+            - 设置 HTTP 头：Content-Security-Policy (CSP) 限制脚本来源。
 
 http和https在header上有区别吗
-
-自我介紹
-- 香港大学
-- 全栈偏前端
-    - 技术栈：js/ts react
-- 实习/工作经历比较丰富
-    - 工作经历：Corpus兼职工作、RAG概念
-    - 实习：大公司、小公司
-
 前端加密与http加密？？
-
-
-
 问webpack中loader和Plugin的区别
+
+如果有基础的话，可以试试更进阶的，比如 Codeforces 上面的div 2，可以给自己开virtual participation，如果2h的比赛可以稳定独立做出3~4个题，笔试和面试阶段的算法题应该不会难住你了。
+
+### 笔试
+- 为什么过不了test case？
+
+# company target
+- Tech
+    - international
+        - Microsoft
+        - Google
+        - Meta
+    - Mainland
+        - 华为
+        - 阿里
+        - 字节
+        - 大疆
+        - 腾讯
+        - 宁德时代
+        - 比亚迪
+        - 科大讯飞
+        - 网易
+        - 美团
+        - 蚂蚁
+        - mihoyo
+        - 小米
+        - 百度
+- Bank/finance
+    - Accture
+    - Jane street
+    - big four: Deloitte, PWC, EY, KPMG
+    - banks: HSBC, Bank of China
+    - morgan stanley
 
 # temp
 	hyperlink

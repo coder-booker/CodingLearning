@@ -1,15 +1,129 @@
-# 同源策略 Same-Origin Policy (SOP)
+# 一些描述性的知识
+### 同源策略 Same-Origin Policy (SOP)
 - 协议|域名|端口 不同的请求地址不能交叉请求
 - 为了防止源读取另一个源中的用户得到的响应信息所建立的策略
-
-# 出站入站ip
+### 出站入站ip
 - 出站就是本地访问外部时本地发出的source ip
 - 入站就是外部访问本地地目标ip
-# CORS
+### CORS
 - 浏览器会检测某response有没有`Access-Allow-Control-Origin`，有的话允许什么路径
 - 所以其实request不会被拦截，是response会。
+### 输入url发生什么
+- URL 解析：解析 URL，提取协议、域名、路径等信息。
+- DNS 解析：将域名解析为 IP 地址。
+- 建立 TCP 连接：通过三次握手建立连接，如果是 HTTPS 则进行 TLS/SSL 握手。
+- 发送 HTTP 请求：构造并发送 HTTP 请求。
+- 服务器处理请求：服务器处理请求并生成 HTTP 响应。
+- 接收 HTTP 响应：浏览器接收并解析 HTTP 响应。
+- 渲染网页：解析 HTML、CSS，构建 DOM 树和 CSSOM 树，生成渲染树，布局和绘制。
+    - 解析 HTML：浏览器解析 HTML 文件，构建 DOM 树（Document Object Model）。
+    - 加载外部资源：浏览器根据 HTML 中的标签（如 `<link>`、`<script>`、`<img>`），加载 CSS、JavaScript、图片等外部资源。
+    - 解析 CSS：浏览器解析 CSS 文件，构建 CSSOM 树（CSS Object Model）。
+    - 构建渲染树：浏览器将 DOM 树和 CSSOM 树合并，生成渲染树（Render Tree）。
+    - 布局（Layout）：浏览器计算渲染树中每个节点的位置和大小（Layout 或 Reflow）。
+    - 绘制（Paint）：浏览器将渲染树绘制到屏幕上（Paint）。
+    - 执行 JavaScript：浏览器执行 JavaScript 代码，可能会修改 DOM 或 CSSOM，触发重新布局和绘制。
+        - 网页交互：处理用户交互事件，动态更新页面。
+        - 关闭连接：通过四次挥手关闭 TCP 连接。
+        - 缓存：缓存静态资源，加速下次访问。
+### CSR, SSR, SSG, ISR
+- CSR: Client Side Rendering 
+    - 仅接受html文档，然后自己渲染
+- SSR: Server Side Rendering 
+    - 服务器帮你把html文档渲染好，返回一个类似数据流的渲染完成的html
+- SSG: Static Site Generation
+    - 用户磁盘保存
+- ISR: Incremental Site Rendering
+    - SSG，但是根据使用情况（例如热度）异步更新到CDN服务器
+- others: 
+    - CDN: Content Delivery Network或Content Distribution Network, 就是当地服务器在主服务器前的缓存用服务器
+    - html文档和渲染是分开的。
 
-# Cookie & localStorage
+### stateless & serverless
+- stateless：服务器无状态，也就是所有请求之间都没有关系，没有session资料会保存在服务器
+    - 如果是前后端分离的话，restful本身就是stateless的，状态都在前端
+- serverless：云服务部署就是serverless
+### 分层模型
+- OSI模型
+    - 应用层 application layer
+        - http
+    - 表示层 presentation layer
+        - 数据加密解密、格式转换等
+    - 会话层 session layer
+        - 控制会话
+    - 传输层 transport layer
+        - TCP(面向连接)/UDP(无连接)
+    - 网络层 network layer
+        - IP/DNS(无连接服务)/NAT
+    - 数据链路层 data link layer
+        - MAC
+    - 物理层 physical layer
+        - 物理介质
+- TCP/IP模型
+    - 应用层 application layer
+        - 应用+表示+会话
+    - 传输层 transport layer
+        - TCP(面向连接)/UDP(无连接)
+    - 互联网层 internet layer
+        - IP/DNS(无连接服务)/NAT
+    - 网络接口层 network interface layer
+        - 数据链路+物理
+### Duplex, Simplex Communication
+- Full-Duplex：双方同时发送和接受
+- Half-Duplex：单向通信
+- Simplex：双向不同时
+### RESTful
+- body, query string, params
+- body: 
+    - 一般是比较复杂或者庞大的数据，例如多条字段，大文件等
+- query string: 
+    - url后用`?`标识
+    - `+`代表空格
+    - 一般给GET或者DELETE用
+    - 一般用于查询某个资源
+- params:
+    - url后以params为子路径
+- 幂等
+    - 同一条http请求，每次执行的结果对资源来说都和第一次一样
+- POST VS PUT
+    - POST：
+        - 创建或提交(表单/数据)
+        - 一般用于生成数据，因此不一定指向一个目标，，因此不幂等
+    - PUT：
+        - 创建或更新资源
+        - 是幂等的，因为每次使用都必须指定一个目标
+### 本机ip
+### 面向连接服务，无连接服务
+- 面向连接服务就是TCP这一类得连接才能传输的协议
+- 无连接服务则是直接发送数据（“尽最大努力交付”(Best-Effort-Delivery)）
+### Client/Server (C/S) & Browser/Server (B/S)
+- client其实是一个很专的概念，指application
+- 早期的互联网的通信模型就是这样的，因此才会用RPC
+- 但后来出现了Browser这种特殊但很泛用的client，因此才慢慢转向HTTP
+- 现在这两者已经没那么分得开了，因为现在的产品都是***多端***的
+### 序列化协议
+- JSON
+- Protobuf (Protocol Buffers)
+- XML
+
+# URL
+- `#`：页面定位符，用来表示在当前url了哪个位置
+    - 浏览器可以自动把`#`和`name`相同的`a`标签关联，或者和`id`相同的标签关联
+    - eg：以下两者都可以关联到
+        ```html
+        <!-- #123 -->
+        <a name="123"></a>
+        <div id="123"></div>
+        ```
+    - `#`改变虽然不会请求新的页面，但会在history加一条记录
+    - 不管`#`后面跟的是什么，都会被浏览器识别到
+    - js操控
+        - HTML5的`window.hashchange`事件可以监听`#`的变化
+        - `window.location.hash`可以控制hash
+        - `HashChangeEvent.newURL`或者`window.location.hash`可以获得hash
+
+
+# Cookie & localStorage & sessionStorage
 ### cookie
 - pros:
     - 每次请求都会自动把当前域名下的cookie发送出去
@@ -35,11 +149,11 @@
     - 服务器与客户端需要共享数据
 ### localStorage
 - pros: 
-    - 存储容量大，通常可以存储 5MB 或更多的数据（取决于浏览器），适合存储较大的数据。
-    - 数据不会随页面关闭或浏览器重启而消失，除非手动清除或通过代码删除。
-    - 数据不会自动发送到服务器，适合存储纯客户端的数据，如用户界面状态、缓存数据等。
-    - 提供了原生的 API（如 setItem、getItem、removeItem），易于使用。
-    - 数据存储在本地，不会随 HTTP 请求发送，减少网络开销。
+    - 存储容量大，5MB 或更多的数据（取决于浏览器）
+    - 数据持久化
+    - 不会自动发送，减少网络开销，适合存储纯客户端的数据，如用户界面状态、缓存数据等。
+    - 原生API（如 setItem、getItem、removeItem），易于使用。
+    - 作用域：同域名跨标签页共享。
 - cons: 
     - 不支持跨域，数据仅限于当前域名，无法在不同域名之间共享。
     - 数据没有原生的访问限制，容易受到 XSS 攻击。
@@ -49,25 +163,9 @@
     - 数据量较大
     - 无需服务器交互的数据（如用户界面设置、缓存数据）
     - 邪道：把储存压力给到用户
-
-# CSR, SSR, SSG, ISR
-- CSR: Client Side Rendering 
-    - 仅接受html文档，然后自己渲染
-- SSR: Server Side Rendering 
-    - 服务器帮你把html文档渲染好，返回一个类似数据流的渲染完成的html
-- SSG: Static Site Generation
-    - 用户磁盘保存
-- ISR: Incremental Site Rendering
-    - SSG，但是根据使用情况（例如热度）异步更新到CDN服务器
-- others: 
-    - CDN: Content Delivery Network或Content Distribution Network, 就是当地服务器在主服务器前的缓存用服务器
-    - html文档和渲染是分开的。
-
-# stateless
-- 服务器无状态，也就是所有请求之间都没有关系，没有session资料会保存在服务器
-    - 如果是前后端分离的话，restful本身就是stateless的，状态都在前端
-# serverless
-- 云服务部署就是serverless
+### sessionStorage
+- 生命周期：页面会话期间有效，关闭页面后数据被清除。
+- 作用域：仅在当前标签页有效。
 
 # session & cookie
 ### session
@@ -103,76 +201,6 @@
     - issuer=ISSUER
     - audience=audience,  # 令牌的预期接收者
 
-# 分层模型
-### OSI模型
-- 应用层 application layer
-    - http
-- 表示层 presentation layer
-    - 数据加密解密、格式转换等
-- 会话层 session layer
-    - 控制会话
-- 传输层 transport layer
-    - TCP(面向连接)/UDP(无连接)
-- 网络层 network layer
-    - IP/DNS(无连接服务)/NAT
-- 数据链路层 data link layer
-    - MAC
-- 物理层 physical layer
-    - 物理介质
-### TCP/IP模型
-- 应用层 application layer
-    - 应用+表示+会话
-- 传输层 transport layer
-    - TCP(面向连接)/UDP(无连接)
-- 互联网层 internet layer
-    - IP/DNS(无连接服务)/NAT
-- 网络接口层 network interface layer
-    - 数据链路+物理
-
-
-# Duplex, Simplex Communication
-- Full-Duplex：双方同时发送和接受
-- Half-Duplex：单向通信
-- Simplex：双向不同时
-
-
-# RESTful
-- body, query string, params
-- body: 
-    - 一般是比较复杂或者庞大的数据，例如多条字段，大文件等
-- query string: 
-    - url后用`?`标识
-    - `+`代表空格
-    - 一般给GET或者DELETE用
-    - 一般用于查询某个资源
-- params:
-    - url后以params为子路径
-- 幂等
-    - 同一条http请求，每次执行的结果对资源来说都和第一次一样
-- POST VS PUT
-    - POST：
-        - 创建或提交(表单/数据)
-        - 一般用于生成数据，因此不一定指向一个目标，，因此不幂等
-    - PUT：
-        - 创建或更新资源
-        - 是幂等的，因为每次使用都必须指定一个目标
-
-# 本机ip
-
-# 面向连接服务，无连接服务
-- 面向连接服务就是TCP这一类得连接才能传输的协议
-- 无连接服务则是直接发送数据（“尽最大努力交付”(Best-Effort-Delivery)）
-
-# Client/Server (C/S) & Browser/Server (B/S)
-- client其实是一个很专的概念，指application
-- 早期的互联网的通信模型就是这样的，因此才会用RPC
-- 但后来出现了Browser这种特殊但很泛用的client，因此才慢慢转向HTTP
-- 现在这两者已经没那么分得开了，因为现在的产品都是***多端***的
-
-# 序列化协议
-- JSON
-- Protobuf (Protocol Buffers)
-- XML
 
 # 应用层
 - DNS的查询是一个DNS请求
@@ -195,7 +223,7 @@
 - 用Content-Legnth作为body的边界
 - 常用header
     - HTTP request/response e.g. 
-        ``` http 
+        ``` 
         POST /getflag.php HTTP/1.1
         Host: 10.0.0.102
         User-Agent: Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:131.0) Gecko/20100101 Firefox/131.0
@@ -214,60 +242,81 @@
         <!-- 这里用两个换行符区分headers和body，然后Centent-Length控制body边界 -->
         csrf_token=d63e274d90a8cd33b1fac086669be5706f868a8b8bfc1b498e6bf449b774f2b9
         ```
-    - `HTTP/1.1 200 OK`，包含了协议名+版本、响应码+相应文本
-    - `Content-Length`: [length]
-    - `Content-Type`: 
-        - json body: application/json
-        - query string: application/x-www-form-urlencoded
-    - 可以在分号加一个空格后append内容的编码格式
+    - 分号+空格：对此header设置更多属性
     - q因子/q值 (Quality value)
         - 在多个选择中标识优先级，常用于Accept相关字段
         - 取值[0.0, 1.0]，越大越先，不指名默认为1.0
         - 相同优先级下，对选择越具体的指名，优先度越高，如`text/*;q=0.9`比`text/html;q=0.9`低
         - 用法：有选择的header一般用`, `分割不同选择。在选择后加`;q=x.x`就可以设置优先级
             - eg `Accept-Encoding: gzip;q=0.9, br, deflate;q=0.8`
+    - `HTTP/1.1 200 OK`，包含了协议名+版本、响应码+相应文本
+    - `Content-Length`: [length]
+    - `Content-Type`: 
+        - json body: `application/json`
+        - query string: `application/x-www-form-urlencoded`
+    - `Access-Allow-Control-Origin`：允许的跨域访问
     - `referer`
         - 有意思的是其实应该拼写为referrer，但html的规范也是referer
         - 虽然`origin`字段也能做跨域判断的参考，但referer是更细吗？
-        请求头中referer与origin功能相似，但有如下几点不同：
-        - 和origin的区别：
+        - 请求头中referer与origin功能相似，但有如下几点不同：
             1. 只有跨域请求，或者同域时发送post请求，才会携带origin请求头，而referer不论何种情况下，只要浏览器能获取到请求源都会携带，除了上面提到的几种情况。
             2. 如果浏览器不能获取请求源，那么origin满足上面情况也会携带，不过其值为null。referer则不同，浏览器如果不能获取请求源，那么请求头中不会携带referer。
             3. origin的值只包括协议、域名和端口，而referer还包括路径和参数。
-    - 缓存：有两种，但第二种一般配合第一种使用；
-        - 强制缓存
-            - 有两种
-                - `Cache-Control`（由Response设置）
-                    - 优先级比expire高，且选择更精细
-                    - 包含了过期时间
-                    - 可用的值：
-                        - public/private：允许/不允许共享缓存
-                        - no-cache：缓存，但每次用缓存都得revalidate
-                        - no-store：不缓存
-                        - max-age=[xxx，秒]：指定缓存时间，只有有缓存的设定下才生效
-                        - s-maxage=[xxx，秒]：但仅适用于共享缓存的max-age（共享缓存是啥往上看）
-                        - must-revalidate：严格模式revalidate，在缓存过期时绝不会“先用着”
-                        - proxy-revalidate：但仅适用于共享缓存的must-revalidate
-                        - no-transform：禁止缓存代理对资源进行任何转换或修改。
-                        - immutable：表示资源是不可变的，客户端可以认为资源永远不会改变。
-                        - stale-while-revalidate/stale-if-error=[xxx，秒]：在过期/过期且响应错误的xxx秒内先用着过期的内容
-                - `Expires`
-                    - 一坨指名过期时间的日期，优先级最低
+    - `Content-Security-Policy` & `Content-Security-Policy-Report-Only`：
+        - 用来控制网页能够加载哪些资源的（记住，加载基本等于运行，无非就是看看有没有实际调用而言）
+        - response设置
+        - 有以下可选策略：
+            - default-src：默认资源加载策略（如脚本、图片、样式等）。
+            - script-src：限制 JavaScript 的加载来源。
+            - style-src：限制 CSS 的加载来源。
+            - img-src：限制图片的加载来源。
+            - connect-src：限制 AJAX 请求的来源。
+            - frame-ancestors：限制页面是否可以被嵌入到 iframe 中。
+            - report-uri：指定违规报告的上报地址。
+        - 常见选项：
+            - `default-src 'self' https://xxx.com`
+            - `'report-uri' /api/report`
+        - eg：`Content-Security-Policy: default-src 'self'; script-src 'self' https://trusted.com;`
+        - `Content-Security-Policy-Report-Only`则是用作debug的：不阻止资源加载，只是report出不遵守策略的资源
+        - eg `Content-Security-Policy-Report-Only: default-src 'self'; report-uri /csp-violation-report-endpoint;`
+    - 缓存：有两种，但第二种一般配合第一种使用
+        - 强制缓存：只从本地缓存读取，不会后台问要不要更新。有两种header
+            - `Cache-Control`
+                - 由Response设置
+                - 优先级比`Expires`高，且选择更精细
+                - 包含了过期时间
+                - 可用的值：
+                    - public/private：允许全部/单个用户共享缓存
+                    - no-cache：强制取消强制缓存，用协商缓存
+                    - no-store：不缓存
+                    - max-age=[xxx，秒]：指定缓存时间，只有有缓存的设定下才生效
+                    - s-maxage=[xxx，秒]：但仅适用于共享缓存的max-age（共享缓存是啥往上看）
+                    - must-revalidate：严格模式revalidate，在缓存过期时绝不会“先用着”
+                    - proxy-revalidate：但仅适用于共享缓存的must-revalidate
+                    - no-transform：禁止缓存代理对资源进行任何转换或修改。
+                    - immutable：表示资源是不可变的，客户端可以认为资源永远不会改变。
+                    - stale-while-revalidate/stale-if-error=[xxx，秒]：在过期/过期且响应错误的xxx秒内先用着过期的内容
+                - eg `Cache-Control: max-age=3600, public`
+            - `Expires`
+                - 一坨指名过期时间的日期，优先级最低
+                - eg `Expires: Wed, 21 Oct 2025 07:28:00 GMT`
         - 协商缓存
             - 协商缓存什么时候刷新缓存是由应用+浏览器+强制缓存的缓存策略决定的
                 - 例如浏览器页面刷新或者应用要validate数据，就会重新请求资源而非读取缓存
             - 有两种
-                - If-Modified-Since（Request设置）+ Last-Modified（Response设置）
-                    - 第一次后的所有请求都会把最近一次响应体的Last-Modified的值以If-Modified-Since字段发出
-                    - 服务器根据If-Modified-Since判断是否过期
+                - `If-Modified-Since`（Request设置）+ `Last-Modified`（Response设置）
+                    - 第一次后的所有请求都会把最近一次响应体的`Last-Modified`的值以`If-Modified-Since`字段发出
+                    - 服务器根据`If-Modified-Since`判断是否过期
                         - 没过期就304，过期了就发送新资源
-                    - Last-Modifed的时间精度无法小于秒级
-                - If-None-Match（Request设置）+ ETag（Response设置）
-                    - 第一次后的所有请求都会把最近一次响应体的ETag的值以If-None-Match字段发出
-                        - 服务器根据If-None-Match判断是否过期
+                    - `Last-Modifed`的时间精度无法小于秒级
+                    - eg `If-Modified-Since: Wed, 21 Oct 2023 07:28:00 GMT`, `Last-Modified: Wed, 21 Oct 2023 07:28:00 GMT`
+                - `If-None-Match`（Request设置）+ `ETag`（Response设置）
+                    - 第一次后的所有请求都会把最近一次响应体的ETag的值以`If-None-Match`字段发出
+                        - 服务器根据`If-None-Match`判断是否过期
                             - 没过期就304，过期了就发送新资源
-                    - ETag的时间精度在秒级以下
-                    - ETag的生成与文件内容、大小、版本号、修改时间有关，因此可以识别没有更新修改时间的修改
+                    - `ETag`的时间精度在秒级以下
+                    - `ETag`的生成与文件内容、大小、版本号、修改时间有关，因此可以识别没有更新修改时间的修改
+                    - eg `If-None-Match: "33a64df551425fcc55e4d42a148795d9f25f89d4"`, `ETag: "33a64df551425fcc55e4d42a148795d9f25f89d4"`
         - 缓存行为优先级：s-maxage > max-age > ETag > Last-Modified > Expires
         - 有时候缓存可能即使过期了也被使用
             - 例如断网了、客户端的优化策略时在服务器验证响应前先用着过期的缓存、stale-while-revalidate被设置了等
