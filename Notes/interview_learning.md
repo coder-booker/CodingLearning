@@ -117,24 +117,27 @@
 
 # Interview prepare
 ### General/HR 面
-
 - 个人经历
     - 自我介紹
-        - 基础资讯
-        - 在两地都生活过
-        - 全栈偏前端
-            - 技术栈：js/ts react
-        - 实习/工作经历比较丰富
-            - 工作经历：Corpus兼职工作、RAG概念
-            - 实习：大公司、小公司
-            - 提及一下创新的项目
+        1. 基础资讯
+        2. 软技能：
+            - 在两地都生活过，更开阔的眼界能给我带来innovation
+            - 自学能力高，所有内容都是我自学的，已经迭代出了一套自己的学习方法
+            - 实习/工作经历比较丰富
+                - 真实工作经历：Corpus兼职工作、RAG概念
+                - 多段实习：大公司、小公司都去过
+        3. 硬技术
+            - 全栈，而非只掌握某单一方向的技术
+                - 技术栈：基于js的框架（react和Node），Python也有过一部分经验
     - 期望薪资
     - 为什么投这个岗位？
         1. 个人发展
             - 前端的开发
             - 转正机会、前沿的商业化工业化的技术
-        2. 字节跳动
-            - 始终创业 Always Day 1：展示了谦逊、上进心和初心
+        2. 公司自己的优势
+            - 字节跳动：始终创业 Always Day 1：展示了谦逊、上进心和初心
+        3. 个人适配度：
+            - 软开、全栈相信能在这里有用武之地
     - 拷打实习经历: 你从中学到了什么、实习中有什么困难之处
     - 报学校专业是怎么考虑的？
         - 本身比较擅长理科。大类收生、发现比较擅长和喜欢计算机
@@ -195,7 +198,7 @@
             - 时间旅行调试：通过 Redux DevTools，可以回溯和重放状态变化，方便调试。
             - 性能优化：通过 useSelector 选择性订阅状态，浅对比返回值，避免不必要的重新渲染。
     - 4. 云服务
-- CorpusChat亮点难点：
+- CorpusChat难点：
     - 使用了Azure的beta功能：AI 助理。实际开发中有很多不可控的因素，例如
         - 需要配合Azure云服务的数据结构，自己封装AI的输入与输出并与前端交互
             - 比如AI输出的内容是纯文字，我需要将其渲染为可读性更强的
@@ -229,120 +232,6 @@
         - Python是**解释型语言**，执行效率较低，不适合高并发或实时性要求高的场景。
             - 但可以通过多进程或异步编程（如 asyncio）优化。
         - Python 的异步性能和事件驱动机制不如 Node.js，不适合开发实时应用（如 WebSocket、SSE）。
-- 后端
-    - SW在项目中的完整流程解说：
-        1. 需求分析和系统设计
-            - 目标：明确系统功能，如 AI 助手的问答功能、用户权限管理、聊天记录下载等。
-            - 输出：简单的架构图表，代码架构图。
-            - 数据库设计：设计知识库表结构；设计用户表，存储用户信息和权限。
-            - API 设计：定义 RESTful API，如 /api/chat 用于聊天交互
-        3. 编码与测试
-            - 前端开发：使用 React 实现用户界面，包括聊天窗口、登录页面等。
-            - 后端开发：实现 AI 助手数据流的核心逻辑，集成 Azure Services 进行自然语言处理。
-            - 测试：建立本地测试环境；编写简易单元测试和集成测试
-            - 安全性：使用 JWT 实现用户认证；参数化查询防止 SQL 注入；仅在 HTTPS 连接中发送 cookie，禁止 JavaScript 访问 cookie，防止跨站请求伪造 (CSRF)
-        4. 版本控制
-            - Git 使用：使用 Git 管理代码，创建分支开发新功能，合并到主分支后进行部署。
-        5. 部署与运维
-            - CI/CD：使用 Azure APP Service 持续集成和持续交付，自动化构建和部署。
-            - 监控：使用 Azure APP Service 监控系统日志和性能
-        6. 性能优化
-            - 前端优化：使用 React.lazy 和 Suspense 实现动态加载；状态管理方案升级为Redux
-            - 后端优化：本地缓存常用数据，实现简易消息队列
-        
-        - 面试准备建议
-            - 熟悉项目细节：清晰描述项目的每个阶段（需求分析、设计、开发、测试、部署）。
-            - 掌握基础知识：复习软件工程的核心概念（如敏捷开发、CI/CD、版本控制）。
-            - 准备技术问题：面试官可能会问具体技术问题（如 React 生命周期、Redux 工作原理、JWT 实现）。
-            - 展示解决问题的能力：准备一些你在项目中遇到的问题和解决方案（如性能优化、Bug 修复）。
-        
-        - 示例面试回答
-            - 面试官：请描述一下你在项目中的角色和贡献。你：我负责了从需求分析到测试上线的全流程开发。在需求分析阶段，我与学校教师和学生沟通，明确了 AI 助手的功能需求。在设计阶段，我选择了 MVC 架构，并使用 React 和 Node.js 实现了前后端。在开发阶段，我使用 Redux 管理状态，并通过 JWT 实现了用户认证和权限控制。最后，我使用 Azure DevOps 实现了 CI/CD，确保系统能够高效部署和运行。
-    
-    - Alibaba MVC架构，最重要的manager在项目中的应用
-        - manager就是一些service的通用逻辑
-        - 可以说一下我的理解：有一些逻辑并非service，且多个service都会使用，于是用manager封装。
-    - 网关全局异常处理了解一下（也就是具体Quart是怎么实现这一点的）
-        - 定义blueprint（也就是一组url），给blueprint挂载上errorhandler且指定特定error，把blueprint挂载上app，启动app
-        - 具体有哪些error：todo
-    - 延迟消息队列
-        - 是什么？怎么减轻压力的？
-            - 在一个独立的服务器上挂载，通过网络连接与生产者和消费者通信
-            - 高可用性和持久化机制
-            - 保证顺序
-        - 具体实现是什么样的？
-            - 生产者添加消息队列，消费者接收发布推送/长轮询
-            - 接收信息时同步进行持久化
-                - 磁盘、数据库、日志
-            - 集群模式，节点只要一个可用，服务就不会停止
-        - 为什么用MQ？
-            - 解耦系统的组件，组件之间不需要通信，只要和消息队列打交道就行
-            - 高负载场景的流量削峰
-    - 本地缓存
-        - 为什么要使用缓存？
-            - 保存一些有一定生命周期的资源
-                - email注册验证码
-            - 减少sql访问压力、服务器计算与流量压力
-                - openai_chat_model_cache
-                - azure_openai_resource_cache
-                - public_openai_assistant_cache
-                - sketch_engine_resource_cache
-    - JWT和权限控制
-        - JWT主要储存id、email、role、和过期策略
-        - email验证后发放，储存在localStorage中
-        - exp是120天，logout就删除
-        - 每次登录就刷新
-    - CSRF之类xxx only的内容
-        - httponly, samesite, secure
-    - 数据库设计
-        - 把azure的instance封装了起来
-        - ACID原则怎么体现的
-            - CosmosDB在单分区下支持ACID
-            - Atomicity：
-                - 可以用batch operation，但没必要
-                - 整个软件的设计就是一次更新事务不会涉及多次数据库更新操作（因为这个app并不复杂）
-                - 唯一需要的就是transaction，但因为是内部教育用app，并不会有客户的充值内容，只有老师主动transfer credit，所以不太需要consistency
-            - Consistency & Isolation：
-                - 会话一致性，而single instance mode保证了只有一个会话
-                - 所有的service都不会互相引用，因为特地设计过+有manager层
-                - CosmosDB在单分区下支持ACID
-            - Durability：
-                - Azure对每一个node都会有三分copy，且RTO RPO为0
-                - periodic backup 8 hours。Locally-redundant backup storage
-        - 为什么选择CosmosDB
-            - 客户的要求经常改变，NoSQL方便后续拓展
-            - SQL需要很多前期设计，但NoSQL不需要。出于开发周期考虑用NoSQL。
-            - SQL的场景需要强一致性，而这个app只是内部app并不需要强一致性
-    - api设计
-        - auth
-        - transaction
-        - users
-        - ai_resource、model、assistant、thread
-        - thread_run、message
-        - store、store_file
-        - sketch_engine_resource
-    - 全局网关的error
-        - api
-            - value error 400
-                - 主要是服务端数据库内容不匹配
-            - token error 401
-                - JWT验证token
-            - 外部功能的error
-                - sketch
-                - Azure提供的ERROR
-            - 测试用的error
-        - public
-            - 404
-        - General
-            - 500
-    - 准备一些遇到的问题和解决方案
-        - SQL to NoSQL
-        - Multi-corpus：
-            - 问题：
-            - 思考过程：
-            - 解决方案选择：
-                - 采用了multi-agent flow
-            - 反思
 前端：
 - Redux
     - 事实上react自己就有useReducer的钩子
@@ -399,18 +288,133 @@
                 // components.tsx
                 const openAIChatModels = useSelector(selectOpenAIChatModels)
                 ```
-- useMemo 和 useCallback, React.lazy 和 Suspense 的动态路由加载
-    - useMemo
+    - 性能优化：
+        - API：
+            - 因为Redux封装好了，直接算就行
+- 后端
+    - SW在项目中的完整流程解说：
+        1. 需求分析和系统设计
+            - 目标：明确系统功能，如 AI 助手的问答功能、用户权限管理、聊天记录下载等。
+            - 输出：简单的架构图表，代码架构图。
+            - 数据库设计：设计知识库表结构；设计用户表，存储用户信息和权限。
+            - API 设计：定义 RESTful API，如 /api/chat 用于聊天交互
+        2. 编码与测试
+            - 前端开发：使用 React 实现用户界面，包括聊天窗口、登录页面等。
+            - 后端开发：实现 AI 助手数据流的核心逻辑，集成 Azure Services 进行自然语言处理。
+            - 测试：建立本地测试环境；编写简易单元测试和集成测试
+            - 安全性：使用 JWT 实现用户认证；参数化查询防止 SQL 注入；仅在 HTTPS 连接中发送 cookie，禁止 JavaScript 访问 cookie，防止跨站请求伪造 (CSRF)
+        3. 版本控制
+            - Git 使用：使用 Git 管理代码，创建分支开发新功能，合并到主分支后进行部署。
+        4. 部署与运维
+            - CI/CD：使用 Azure APP Service 持续集成和持续交付，自动化构建和部署。
+            - 监控：使用 Azure APP Service 监控系统日志和性能
+        5. 后续更新
+            - 新功能：保持代码质量，保持弹性和可拓展性
+            - 优化：前端和后端
+        
+        - 面试准备建议
+            - 熟悉项目细节：清晰描述项目的每个阶段（需求分析、设计、开发、测试、部署）。
+            - 掌握基础知识：复习软件工程的核心概念（如敏捷开发、CI/CD、版本控制）。
+            - 准备技术问题：面试官可能会问具体技术问题（如 React 生命周期、Redux 工作原理、JWT 实现）。
+            - 展示解决问题的能力：准备一些你在项目中遇到的问题和解决方案（如性能优化、Bug 修复）。
+        
+        - 示例面试回答
+            - 面试官：请描述一下你在项目中的角色和贡献。你：我负责了从需求分析到测试上线的全流程开发。在需求分析阶段，我与学校教师和学生沟通，明确了 AI 助手的功能需求。在设计阶段，我选择了 MVC 架构，并使用 React 和 Node.js 实现了前后端。在开发阶段，我使用 Redux 管理状态，并通过 JWT 实现了用户认证和权限控制。最后，我使用 Azure DevOps 实现了 CI/CD，确保系统能够高效部署和运行。
+    
+    - Alibaba MVC架构，最重要的manager在项目中的应用
+        - manager就是一些service的通用逻辑
+        - 可以说一下我的理解：有一些逻辑并非service，且多个service都会使用，于是用manager封装。
+    - 网关全局异常处理了解一下（也就是具体Quart是怎么实现这一点的）
+        - 定义blueprint（也就是一组url），给blueprint挂载上errorhandler且指定特定error，把blueprint挂载上app，启动app
+        - 具体有哪些error：todo
+    - 延迟消息队列
+        - 是什么？怎么减轻压力的？
+            - 在一个独立的服务器上挂载，通过网络连接与生产者和消费者通信
+            - 高可用性和持久化机制
+            - 保证顺序
+        - 具体实现是什么样的？
+            - 生产者添加消息队列，消费者接收发布推送/长轮询
+            - 接收信息时同步进行持久化
+                - 磁盘、数据库、日志
+            - 集群模式，节点只要一个可用，服务就不会停止
+        - 为什么用MQ？
+            - 解耦系统的组件，组件之间不需要通信，只要和消息队列打交道就行
+            - 高负载场景的流量削峰
+    - 本地缓存
+        - 为什么要使用缓存？
+            - 保存一些有一定生命周期的资源
+                - email注册验证码
+            - 减少sql访问压力、服务器计算与流量压力
+                - openai_chat_model_cache
+                - azure_openai_resource_cache
+                - public_openai_assistant_cache
+                - sketch_engine_resource_cache
+    - JWT和权限控制
+        - JWT主要储存id、email、role、和过期策略
+        - email验证后发放，储存在localStorage中
+        - exp是120天，logout就删除
+        - 每次登录就刷新
+    - 数据库设计
+        - 把azure的instance封装了起来
+        - ACID原则怎么体现的
+            - CosmosDB在单分区下支持ACID
+            - Atomicity：
+                - 可以用batch operation，但没必要
+                - 整个软件的设计就是一次更新事务不会涉及多次数据库更新操作（因为这个app并不复杂）
+                - 唯一需要的就是transaction，但因为是内部教育用app，并不会有客户的充值内容，只有老师主动transfer credit，所以不太需要consistency
+            - Consistency & Isolation：
+                - 会话一致性，而single instance mode保证了只有一个会话
+                - 所有的service都不会互相引用，因为特地设计过+有manager层
+                - CosmosDB在单分区下支持ACID
+            - Durability：
+                - Azure对每一个node都会有三分copy，且RTO RPO为0
+                - periodic backup 8 hours。Locally-redundant backup storage
+        - 为什么选择CosmosDB
+            - 客户的要求经常改变，NoSQL方便后续拓展
+            - SQL需要很多前期设计，但NoSQL不需要。出于开发周期考虑用NoSQL。
+            - SQL的场景需要强一致性，而这个app只是内部app并不需要强一致性
+    - api设计
+        - auth
+        - transaction
+        - users
+        - ai_resource、model、assistant、thread
+        - thread_run、message
+        - store、store_file
+        - sketch_engine_resource
+    - 全局网关的error
+        - api
+            - value error 400
+                - 主要是服务端数据库内容不匹配
+            - token error 401
+                - JWT验证token
+            - 外部功能的error
+                - sketch
+                - Azure提供的ERROR
+            - 测试用的error
+        - public
+            - 404
+        - General
+            - 500
+    - 准备一些遇到的问题和解决方案
+        - SQL to NoSQL
+        - Multi-corpus：
+            - 问题：
+            - 思考过程：
+            - 解决方案选择：
+                - 采用了multi-agent flow
+            - 反思
+- `useMemo` 和 `useCallback`, `React.lazy` 和 `Suspense` 的动态路由加载
+    - `useMemo`
         - 一个目标函数，一个依赖数组
         - 当依赖数组的值发生改变就会重新计算目标函数的返回值
-    - useCallback
+    - `useCallback`
         - 缓存函数用的
         - 一个目标函数，一个依赖数组
         - 使用场景：
             - useEffect的依赖数组如果有函数，用useCallback的返回值来替代原本的函数能避免useEffect的错误触发（当然也可以直接用useEffect内的护卫语句来达到类似的效果）
             - 子组件使用了React.memo之类的优化方式时，useCallback可以缓存传入子组件的函数。
-    - React.lazy
-        - 接收一个thenable的函数，这个函数需要最终返回一个可以被解析为React组件类型的值，例如函数、memo或forwardRef 组件。lazy会抛出包裹这个值的Promise给Suspense捕获
+    - `React.lazy`
+        - 接收一个thenable的函数，这个函数需要最终返回一个可以被解析为React组件类型的值，例如函数组件、memo或forwardRef 组件。lazy会抛出包裹这个值的Promise给Suspense捕获
         - import()
             - import()是个动态导入语法（Dynamic Import），返回`Promise<React组件>`，但解析后会成为组件
             - lazy依赖于import()
@@ -419,16 +423,14 @@
                 - 懒加载组件
                 - 条件加载模块：根据某些条件（如用户权限、设备类型）动态加载模块。
                 - 加载非模块代码，例如.json：`import("./data.json", { with: { type: "json" } });`
-    - Suspense
+    - `Suspense`
         - 通过捕获children抛出的Promsie对象来判断要不要用fallback
-        - thrown一个Promise并不会导致报错，只是简单地运行这个Promise并让Suspense捕获而已
+        - suspense里面的代码thrown一个Promise并不会导致报错，只是简单地运行这个Promise并让Suspense捕获而已
         - 复习下scrollTop
             - 子元素的offsetTop和非static position的父容器的scrollTop对比下就能实现懒加载
             - offsetWidth包含padding不包含滚动条。scroll也只到padding不需要考虑滚动条
 - 基于 SSE 的实时聊天交互、机器人回复的流式显示
     - 长连接，缓存块，pesudoMessage
-- 基于 JWT 和 React Router 实现了智能路由认证，支持动态路由渲染和基于角色的 UI 展示。
-    - decorator
 - 自定义Hooks来抽象数据获取和表单处理逻辑，提升了代码的可读性和可维护性。
     - 为什么要自定义hook？
         - 复用、封装逻辑
@@ -550,85 +552,66 @@
 - webpack、ajax
 - 怎么测试的（研究点测试的术语）
 ### 八股
-CSS
-- css实现水平居中的方式，多说几种
-    - margin: 0 auto;
-    - jusitify-content: center;
-    - trans
-- 如何清除浮动
-    - 设置块状clear: both的空兄弟元素
-    - 父级变成BFC
-- 文字超出盒子的宽高，对其隐藏设置什么属性
-    - white-space: nowrap; /* 禁止换行 */
-    - overflow: hidden; /* 超出部分隐藏 */
-    - text-overflow: ellipsis; /* 显示省略号 */
-- 如何解决塌陷问题：例如 父元素里有子元素，给子元素设置margin-top:50;父盒子和子盒子一块塌陷 
-    - 隔离父盒子和子盒子
-    - 父级变成BFC
-- ES6新特性有哪些
-- 说下原型链
-- 普通函数和箭头函数有什么区别
-    - args、this、构造函数
-- 修改this的几种方式
-    - 因为this的使用永远和函数或者方法有关，所以只考虑call apply bind就行
-    - call：传入上下文和逐一传入参数并立刻运行
-    - apply：传入上下文和参数数组并立刻运行
-    - bind：绑定上下文和一部分参数并返回一个新函数。这个新函数的参数会优先接收绑定的参数再顺序接收调用传入的参数
-- sessionStorage和localStorage的区别
-    - sessionStorage：
-        - 生命周期：页面会话期间有效，关闭页面后数据被清除。
-        - 作用域：仅在当前标签页有效。
-    - localStorage：
-        - 生命周期：永久存储，除非手动清除。
-        - 作用域：跨标签页共享。
-- ts中type 和interface的相同点
-    - 定义类型：都可以用来定义对象、函数、类等的类型。
-    - 扩展：都可以通过 extends 或 & 进行扩展。
-    - 实现：都可以被类实现（implements）。
-- 懒加载
-    - 关键在于进入点和停止监听点
-    - 进阶一点就是懒加载用纯JS怎么实现
-        - 子元素offsetTop < 父元素clientHeight + 父元素scrollTop
-        - window.pageYOffset ? window.pageYOffset : window.document.documentElement.scrollTop
-        - Intersection Observer API
-            - eg
-                ```ts
-                const observer = new IntersectionObserver(entries => {
-                    for (const i of entries) {
-                        if (i.isIntersecting) { // 当目标元素出现在视图内
-                            const img = i.target;
-                            const trueSrc = img.getAttribute("data-src");
-                            setTimeout(() => {
-                                img.setAttribute("src", trueSrc); // 方便展示懒加载效果
-                            }, 1000);
-                            observer.unobserve(img); // 停止监听此元素
+- 前端
+    - css实现水平居中的方式，多说几种
+        - margin: 0 auto;
+        - jusitify-content: center;
+        - trans
+    - 如何清除浮动
+        - 设置块状clear: both的空兄弟元素
+        - 父级变成BFC
+    - 文字超出盒子的宽高，对其隐藏设置什么属性
+        - white-space: nowrap; /* 禁止换行 */
+        - overflow: hidden; /* 超出部分隐藏 */
+        - text-overflow: ellipsis; /* 显示省略号 */
+    - 如何解决塌陷问题：例如 父元素里有子元素，给子元素设置margin-top:50;父盒子和子盒子一块塌陷 
+        - 隔离父盒子和子盒子
+        - 父级变成BFC
+    - ES6新特性有哪些
+    - 说下原型链
+    - 普通函数和箭头函数有什么区别
+        - args、this、构造函数
+    - 修改this的几种方式
+        - 因为this的使用永远和函数或者方法有关，所以只考虑call apply bind就行
+        - call：传入上下文和逐一传入参数并立刻运行
+        - apply：传入上下文和参数数组并立刻运行
+        - bind：绑定上下文和一部分参数并返回一个新函数。这个新函数的参数会优先接收绑定的参数再顺序接收调用传入的参数
+    - sessionStorage和localStorage的区别
+        - sessionStorage：
+            - 生命周期：页面会话期间有效，关闭页面后数据被清除。
+            - 作用域：仅在当前标签页有效。
+        - localStorage：
+            - 生命周期：永久存储，除非手动清除。
+            - 作用域：跨标签页共享。
+    - ts中type 和interface的相同点
+        - 定义类型：都可以用来定义对象、函数、类等的类型。
+        - 扩展：都可以通过 extends 或 & 进行扩展。
+        - 实现：都可以被类实现（implements）。
+    - 懒加载
+        - 关键在于进入点和停止监听点
+        - 进阶一点就是懒加载用纯JS怎么实现
+            - 子元素offsetTop < 父元素clientHeight + 父元素scrollTop
+            - window.pageYOffset ? window.pageYOffset : window.document.documentElement.scrollTop
+            - Intersection Observer API
+                - eg
+                    ```ts
+                    const observer = new IntersectionObserver(entries => {
+                        for (const i of entries) {
+                            if (i.isIntersecting) { // 当目标元素出现在视图内
+                                const img = i.target;
+                                const trueSrc = img.getAttribute("data-src");
+                                setTimeout(() => {
+                                    img.setAttribute("src", trueSrc); // 方便展示懒加载效果
+                                }, 1000);
+                                observer.unobserve(img); // 停止监听此元素
+                            }
                         }
-                    }
-                });
-                ```
-
-- 说几条性能优化的方案
-- 防抖与节流
-    - 防抖：短时间内多次，只算最后一次
-    - 节流：短时间内多次，每一稳定时间区间只算一次
-- 输入url发生什么
-    - URL 解析：解析 URL，提取协议、域名、路径等信息。
-    - DNS 解析：将域名解析为 IP 地址。
-    - 建立 TCP 连接：通过三次握手建立连接，如果是 HTTPS 则进行 TLS/SSL 握手。
-    - 发送 HTTP 请求：构造并发送 HTTP 请求。
-    - 服务器处理请求：服务器处理请求并生成 HTTP 响应。
-    - 接收 HTTP 响应：浏览器接收并解析 HTTP 响应。
-    - 渲染网页：解析 HTML、CSS，构建 DOM 树和 CSSOM 树，生成渲染树，布局和绘制。
-        - 解析 HTML：浏览器解析 HTML 文件，构建 DOM 树（Document Object Model）。
-        - 加载外部资源：浏览器根据 HTML 中的标签（如 `<link>`、`<script>`、`<img>`），加载 CSS、JavaScript、图片等外部资源。
-        - 解析 CSS：浏览器解析 CSS 文件，构建 CSSOM 树（CSS Object Model）。
-        - 构建渲染树：浏览器将 DOM 树和 CSSOM 树合并，生成渲染树（Render Tree）。
-        - 布局（Layout）：浏览器计算渲染树中每个节点的位置和大小（Layout 或 Reflow）。
-        - 绘制（Paint）：浏览器将渲染树绘制到屏幕上（Paint）。
-        - 执行 JavaScript：浏览器执行 JavaScript 代码，可能会修改 DOM 或 CSSOM，触发重新布局和绘制。
-            - 网页交互：处理用户交互事件，动态更新页面。
-            - 关闭连接：通过四次挥手关闭 TCP 连接。
-            - 缓存：缓存静态资源，加速下次访问。
+                    });
+                    ```
+    - 说几条性能优化的方案
+    - 防抖与节流
+        - 防抖：短时间内多次，只算最后一次
+        - 节流：短时间内多次，每一稳定时间区间只算一次
 - 闭包原理、作用、应用场景
     - 保存状态：闭包可以保存函数执行时的状态，即使函数已经执行完毕。
     - 实现私有变量：通过闭包，可以模拟私有变量，避免外部直接访问和修改。
@@ -654,15 +637,126 @@ CSS
             - 输入过滤：对用户输入进行转义（如 < 转义为 &lt;）。
             - 输出编码：根据输出场景（HTML/JS/URL）使用不同编码库。
             - 设置 HTTP 头：Content-Security-Policy (CSP) 限制脚本来源。
+- 计算机网络
+    - 输入url发生什么
+        - URL 解析：解析 URL，提取协议、域名、路径等信息。
+        - DNS 解析：将域名解析为 IP 地址。
+        - 建立 TCP 连接：通过三次握手建立连接，如果是 HTTPS 则进行 TLS/SSL 握手。
+        - 发送 HTTP 请求：构造并发送 HTTP 请求。
+        - 服务器处理请求：服务器处理请求并生成 HTTP 响应。
+        - 接收 HTTP 响应：浏览器接收并解析 HTTP 响应。
+        - 渲染网页：解析 HTML、CSS，构建 DOM 树和 CSSOM 树，生成渲染树，布局和绘制。
+            - 解析 HTML：浏览器解析 HTML 文件，构建 DOM 树（Document Object Model）。
+            - 加载外部资源：浏览器根据 HTML 中的标签（如 `<link>`、`<script>`、`<img>`），加载 CSS、JavaScript、图片等外部资源。
+            - 解析 CSS：浏览器解析 CSS 文件，构建 CSSOM 树（CSS Object Model）。
+            - 构建渲染树：浏览器将 DOM 树和 CSSOM 树合并，生成渲染树（Render Tree）。
+            - 布局（Layout）：浏览器计算渲染树中每个节点的位置和大小（Layout 或 Reflow）。
+            - 绘制（Paint）：浏览器将渲染树绘制到屏幕上（Paint）。
+            - 执行 JavaScript：浏览器执行 JavaScript 代码，可能会修改 DOM 或 CSSOM，触发重新布局和绘制。
+                - 网页交互：处理用户交互事件，动态更新页面。
+                - 关闭连接：通过四次挥手关闭 TCP 连接。
+                - 缓存：缓存静态资源，加速下次访问。
+- 计算机系统
+    - 说一下系统的进程调度机制
+    - 各种类型的锁
+    - 
+- 软开
+    - 有做过程序性能调优吗，知道火焰图吗
+- 你觉得自己的优势在哪里，语言，操作系统，还是什么？
 
-http和https在header上有区别吗
-前端加密与http加密？？
+
 问webpack中loader和Plugin的区别
+假设你有一台内存4g硬盘50g的服务器，最多可以接收多少tcp连接。如果内存满了如何利用硬盘的空间。
+
+死锁是什么？如何避免？
+有哪些锁？
+多线程编程中如何保证线程安全？
+解释内存泄漏及其检测方法。
+    - 动态分配内存后忘记释放（如C/C++中的malloc/new未配对free/delete）。
+    - 静态集合长期持有对象引用。
+    - 未关闭资源（如文件句柄、数据库连接）。
+解释文件系统的层次结构。
+数据库的索引及其优缺点是什么？请举例说明
+如何设计一个高并发的系统？
+- 核心策略：
+    - 分布式架构：
+        - 水平扩展（如微服务、分片）。
+        - 无状态服务（Session存储到Redis）。
+    - 负载均衡：
+        - 使用Nginx或HAProxy分发请求。
+        - 一致性哈希分配流量。
+    - 缓存：
+        - 缓存热点数据（如Redis、Memcached）。
+        - CDN加速静态资源。
+    - 数据库优化：
+        - 读写分离（主从复制）。
+        - 分库分表（如ShardingSphere）。
+    - 异步处理：
+        - 消息队列（如Kafka）解耦请求。
+        - 批量处理减少I/O次数。
+    - 限流与熔断：
+        - 令牌桶限流（如Guava RateLimiter）。
+        - 熔断降级（如Hystrix）。
+性能分析工具的作用是什么？请详细说明其在性能调优中的作用
+    - CPU分析：统计耗时和使用率
+    - 内存分析：检测泄露、统计使用率、统计转储文件
+    - I/O分析：统计时间
+
+# todo
+- 算法
+	- 子串
+    - 排序
+    - 给定完全二叉树的叶子节点数量、该二叉树的总节点数量最多/最少是多少？
+    - 用中序和前序出tree
+    - 给定无向图G = {V, E}，深度优先遍历可能得到哪些序列？
+    - 最大团问题
+    - 常见哈希函数的原理和复杂度
+    - 算法题
+        - 字符串修改k次后的所有不重复可能性
+        - divisible by k的子串的和
+- 前端开发
+    - react架构还没学完
+    - 前端指标
+        - Performance API是什么怎么用
+        - 性能瓶颈的描述准备
+    - SEO基础：配合SEO优化页面结构、标签、内容等
+    - SSR底层原理：水和是啥，怎么实现的
+    - Next.js
+    - 个人网站的About
+    - 优化布局提升性能
+    - 频繁更新的可视化数据要怎么优化性能
+- Network
+    - 路由器、转换器的所有知识
+	    - 路由器转发分组的储存转发机制
+        - 路由器会选择哪个分组先
+    - 计算机网路各层的协议
+        - UDP、FTP、ARP、DHCP
+        - HDLC协议
+        - TCP协议中的停止等待协议
+        - SSL Telnet、PPTP、PGP、IP
+    - ip掩码长度
+    - HTTPS能防以下什么：hijacking、XSS、Dos、
+- general
+    - 模块的解耦程度
+    - class diagram的+，-，#的含义
+- OS
+    - utf-8编码
+    - 采用最佳适应算法下的内存分配
+    - sys failure的定义
+    - 12 platters（什么叫最外围不可用？）、100tracks、12sectors、521 bytes，最大容量
+    - RAM用direct insert时，最少对比几次？
+    - average turnaround time，3h 2h 4h的顺序
+- 硬件都来了
+    - 基带和频带
+    - 比特率和波特率
+- Corpus
+    - Bug Fix
+	- hyperlink
+	- new corpus（找一找Sketch Engine里有没有内置的）
+	- multi corpus（这倒是不着急）
+
 
 如果有基础的话，可以试试更进阶的，比如 Codeforces 上面的div 2，可以给自己开virtual participation，如果2h的比赛可以稳定独立做出3~4个题，笔试和面试阶段的算法题应该不会难住你了。
-
-### 笔试
-- 为什么过不了test case？
 
 # company target
 - Tech
@@ -691,38 +785,5 @@ http和https在header上有区别吗
     - big four: Deloitte, PWC, EY, KPMG
     - banks: HSBC, Bank of China
     - morgan stanley
-
-# temp
-	hyperlink
-	collocate
-	前端优化（control enter）
-	multi corpus
-	new corpus
-
-
-（Software版本
-Corpus（以下内容是机翻的）: 
-- 参与在 Azure 上开发学术用网络应用程序，涵盖从需求分析到测试和启动的整个过程，从前端到后端。利用自定义知识库实施人工智能助手，为学生提供特定领域的指导。
-- 设计高质量代码。例如，采用阿里巴巴的 MVC 架构，在网关级实现全局异常处理，解耦聊天机器人事件循环处理器等，以提高可维护性和性能。
-- 通过实施轻量级延迟消息队列来节省流量峰值，并在本地缓存常用和计算密集型数据，从而减轻服务器压力。
-- 扩展核心功能，包括用户身份验证、基于角色的访问控制、人工智能语料分析模块等。
-- 独立解决了 5 项需求，推出了 10 多个应用程序接口，确保了项目部署的及时性和稳定性。
-- 成功向公众发布了 3 个 1.1.0 版本。
-
-
-（Frontend 版本
-润色后的中文版本
-- 实现AI聊天平台核心功能，包括基于SSE的实时聊天交互、机器人响应流式传输显示及聊天记录下载等功能。
-- 将状态管理从React Context迁移至Redux，利用Redux Thunk封装异步请求，提升状态管理可维护性。
-- 基于JWT和React Router实现智能路由鉴权，支持动态路由渲染，根据不同用户角色展示不同界面。
-- 创建自定义Hooks（如useFetch、useForm），抽象数据获取和表单处理逻辑，提升代码复用性和可维护性。
-- 通过useMemo、useCallback优化渲染性能，结合React.lazy和Suspense实现动态路由加载，减少首屏加载时间，提升用户体验。
-
-英文翻译版本
-- Implemented core features of the AI chat platform, including real-time chat interaction based on SSE, streaming display of bot responses, chat history download functionality, etc.
-- Migrated state management from React Context to Redux, utilizing Redux Thunk to encapsulate asynchronous requests and improve state maintainability.
-- Implemented intelligent route authentication based on JWT and React Router, enabling dynamic route rendering and role-based UI display.
-- Created custom Hooks to abstract data fetching and form handling logic, enhancing code readibility and maintainability.
-- Optimized rendering performance with useMemo and useCallback, and implemented dynamic route loading using React.lazy and Suspense to reduce initial load time and improve user experience.
 
 

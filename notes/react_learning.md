@@ -248,217 +248,330 @@
 - RoutingContext
 - 嵌套钩子会使外部重新渲染吗
 
-1. Diff 算法
-    - 用来比较新旧虚拟 DOM 树，找出需要更新的部分的算法。它的目标是尽可能高效地更新真实 DOM，避免不必要的操作。
-    - 核心思想
-        - 相同类型的组件生成相似的树结构：
-        - 如果两个组件的类型相同（例如都是 div），React 会假设它们的子树结构也相似。
-        - 通过 key 属性标识元素的稳定性：
-            - 开发者可以通过 key 属性来标识列表中的元素，帮助 React 识别哪些元素是新增的、删除的或移动的。
-            - 基于这些假设，React 的 Diff 算法采用了一种 层级比较 的策略，而不是传统的深度优先遍历。
-        - 具体步骤
-            1. 比较根节点
-                - 如果根节点的类型不同，React 会直接销毁旧树，创建新树。
-                - 如果根节点的类型相同，React 会递归比较它们的属性和子节点。
-            2. 比较属性
-                - React 会比较新旧节点的属性（例如 className、style 等），并更新变化的属性。
-            3. 比较子节点
-                - 对于子节点的比较，React 使用了一种 双指针算法：
-                - 从左到右遍历：
-                    React 会同时遍历新旧子节点列表，比较相同位置的节点。
-                    如果节点类型相同，React 会递归比较它们的子树。
-                    如果节点类型不同，React 会停止遍历。（然后呢？
-                - 处理新增和删除的节点：
-                    如果新子节点列表比旧子节点列表长，React 会创建新增的节点。
-                    如果新子节点列表比旧子节点列表短，React 会删除多余的节点。
-                - 处理移动的节点：
-                    如果节点的位置发生变化（例如通过 key 标识），React 会移动节点到正确的位置。
-            4. Diff 算法的优化
-                - Key 的作用：
-                    - 在列表渲染中，key 属性可以帮助 React 识别哪些元素是新增的、删除的或移动的。
-                    - 如果没有 key，React 会默认使用索引（index）作为标识，这可能导致性能问题。
-                - 减少 DOM 操作：
-                    - Diff 算法会尽量减少对真实 DOM 的操作，例如合并多个属性更新。
-
-- Fiber 架构的源码级别工作流程
-    - React 16前的虚拟DOM更新采用的是Stack架构，也就是循环递归组件树。但组件树过大的话，单次更新递归过深就会导致线程阻塞、交互卡顿。因此出现了Fiber架构
-    - 核心概念: 
-        - 把循环+递归解耦出来，变成类似js链式调用思路的单纯的循环，如此每一个循环间都可以
-        - 核心就是用链表来封装虚拟DOM。把一次更新切分成多个子任务，完成一个任务之后可以暂停对比优先级决定要不要继续，用callback来返回这里继续运行
-            - 一个比较有意思的说法：浏览器是一帧一帧渲染的，如果任务完成后一帧还没过完，空闲时间就可以用来运行其他任务。
-            - 具体来说就是空闲时调用`requestIdleCallback`注册callback，然后就可以让出主线程了
-    - `requestIdleCallback(<callback>)`
-        - `<callback>`callback使接收一个`deadline`，表示其能够运行到什么时候/还剩多少运行实际，deadline过后就让出主线程
-    
-    - Fiber节点结构简化版：
-        ```ts
-        // 简易版 Fiber 对象
-        type Fiber = {
-            // 组件类型 div、span、组件构造函数
-            type: any,
-            // 真实 DOM 对象
-            stateNode: any,  
-            // 指向自己的父级 Fiber 对象
-            return: Fiber | null,
-            // 指向自己的第一个子级 Fiber 对象
-            child: Fiber | null,
-            // 指向自己的下一个兄弟 iber 对象
-            sibling: Fiber | null,
-            // 给任务链表用的标记
-            effectTag: "PLACEMENT",
+# 源码
+### 基础概念
+- react的SDK本质上就是一个控制台，底层是Fiber，最后作用出来的效果就是UI
+- Algebraic Effects 代数式效应：
+    - 将effect从函数逻辑中分离，使effect能想一个代数/参数一样被随意使用
+    - 其实就是把一个复杂的“过程”操作封装成可复用形式
+    - 经典的例子就是Hooks
+### React Components
+- HostRoot：表示根节点。
+- HostComponent、HostText：处理原生 DOM 元素和文本节点。
+- FunctionComponent、ClassComponent：处理函数组件和类组件。
+    - 注意，这俩Component的返回值就是HostComponent，只是会多了各种钩子、状态等额外信息而言。
+    - 所以这俩components本质上就是Host的封装
+- Fragment、Mode、ContextProvider、ContextConsumer：处理片段、严格模式和上下文。
+- ForwardRef、Suspense、MemoComponent、LazyComponent：处理 ref 转发、异步加载和性能优化。
+### React核心架构
+- 概念
+    - React 16前的虚拟DOM更新采用的是Stack架构，也就是循环递归组件树。但组件树过大的话，单次更新递归过深就会导致线程阻塞、交互卡顿。因此出现了Fiber架构。
+    - 由于GUI渲染和JS操作对线程的占用是互斥的，所以react会在浏览器每一帧的时间中，仅预留一部分时间给 JS 线程，React利用这部分时间更新组件。在源码中，预留给JS的初始时间是 **5ms**。
+    - 当预留的时间不够用时，React将线程控制权交还给浏览器使其有时间渲染 UI，React则等待下一帧时间到来继续被中断的工作。
+- 核心架构分为三层：
+    - Scheduler（调度器）—— 调度任务的优先级，高优任务优先进入Reconciler（React16才加入的）
+        - 需要一种机制让浏览器有剩余时间时通知react，一些浏览器实现了`requestIdleCallback`API，但react因其不稳定而放弃此API
+        - 而Scheduler就是React实现了的功能更完备的requestIdleCallback的polyfill
+    - Reconciler（协调器）—— 负责找出变化的组件
+        - 把循环+递归解耦出来，变成类似js链式调用思路的单纯的循环，如此每一个循环间都可以打断
+        - 核心就是用链表来封装虚拟DOM，然后用Fiber管理这些链表。所以Fiber就是新版虚拟DOM
+        - **双缓存技术**：
+            - 不先清除现有内容再更新，而是内存更新完后再清除替换
+            - 现有内容 - current树：当前页面的虚拟DOM/Fiber树
+            - 新内容 - WIP树：workInProgress树，是将要用作更新的Fiber树。WIP-Tree在后台更新，且能打断，以此让react 16拥有了更强的性能
+        - Fiber树与真实DOM之间有一次下行、一次上行的差距
+            - 下行是构建WIP树的时候，增量构建了stateNode、props、effectTag和sibling、return啥的，从上到下走
+            - 构建每一个fiber节点后work都可以被中断，因为上下文是储存在链表中的，等下一个循环恢复上下文就可以继续运行
+            - 下行遇到叶子节点就会开始上行：用sibling、return啥的从下往上走并根据effectTag构建任务链表
+            - 【todo】上行时，同级之间可以打断，父子的切换不行，反正只剩指针操作了也很快
+        - 增量构建：
+            - 生成了WIPRoot后就开始用WIP Fiber储存的子元素的信息，和current协调并继续生成下一个/层WIP Fiber
+        - 一些关键的工具函数或结构：
+            - `useFiber`函数复用current的子节点但用新的props生成WIP Fiber，同时接好alternate
+            - `createFiberFromElement`函数从JSXElement/ReactElement构建Fiber
+            - `effectList`任务链表：用beginWork标记的effectTag生成的任务链表，用于最后对真实DOM的操作
+            - `workInProgress.pendingPorps.children`JSX.Element的子组件数组
+            - `flags`、`subtreeFlags`标记当前和子树有无副作用，以此决定要往下递归还是直接复用
+    - Renderer（渲染器）—— 负责将变化的组件渲染到页面上
+        - 执行Reconsiler标记好的变化。
+        - 负责和真实DOM交互
+- JSX
+    - DOM节点本身不带有什么额外信息，props啥的都是JSX或者React Fiber处理的
+    - JSX在编译时会被Babel编译为React.createElement方法，并返回一个`React.Element`。
+    - JSX是一种描述当前组件内容的数据结构，但他不包含组件schedule、reconcile、render所需的相关信息。
+        - 比如如下信息就不包括在JSX中：
+            - 组件在更新中的优先级
+            - 组件的state
+            - 组件被打上的用于Renderer的标记
+        - 这些内容都包含在Fiber节点中。
+        - 所以，在组件mount时（初次运行，current为空），Reconciler根据JSX描述的组件内容生成组件对应的Fiber节点。
+        - 在update时（current不为空，需要协调），Reconciler将JSX与Fiber节点保存的数据对比，生成组件对应的Fiber节点，并根据对比结果为Fiber节点打上标记。
+### Fiber
+- Fiber并不是计算机术语中的新名词，他的中文翻译叫做纤程，与进程（Process）、线程（Thread）、协程（Coroutine）同为程序执行过程。
+- 在很多文章中将纤程理解为协程的一种实现。在JS中，协程的实现便是Generator。
+- 所以，我们可以将纤程(Fiber)、协程(Generator)理解为代数效应思想在JS中的体现。
+- React Fiber可以理解为：
+    - React内部实现的一套状态更新机制。支持任务不同优先级，可中断与恢复，并且恢复后可以复用之前的中间状态。
+    - 其中每个任务更新单元为React Element对应的Fiber节点。
+- Fiber节点结构简化版：
+    ```ts
+    // 简易版 Fiber 对象
+    function FiberNode(
+        this: $FlowFixMe,
+        tag: WorkTag,
+        pendingProps: mixed,
+        key: null | string,
+        mode: TypeOfMode,
+    ) {
+        // 作为静态数据结构的属性
+        this.tag = tag; // Fiber对应组件的类型 Function/Class/Host...
+        this.key = key; // React key
+        this.elementType = null; // 描述React元素的类型。例如，对于JSX<App />，elementType是App。和type大多情况下是一样的
+        this.type = null; // 组件类型；对于 FunctionComponent，指函数本身，对于ClassComponent，指class，对于HostComponent，指DOM节点tagName
+        this.stateNode = null; // 对于类组件，这是类的实例；对于DOM元素，它是对应的DOM节点。
+        
+        // 用于连接其他Fiber节点形成Fiber树
+        this.return = null; // 指向父Fiber
+        this.child = null; // 指向第一个子Fiber
+        this.sibling = null; // 指向其兄弟Fiber
+        this.index = 0; // 子Fiber中的索引位置
+        
+        this.ref = null; // 如果组件上有ref属性，则该属性指向它
+        this.refCleanup = null; // 如果组件上的ref属性在更新中被删除或更改，此字段会用于追踪需要清理的旧ref
+        
+        // 作为动态的工作单元的属性
+        // Props & State
+        this.pendingProps = pendingProps; // 正在等待处理的新props，也就是react组件更新传入的props
+        this.memoizedProps = null; // 上一次渲染时的props
+        this.updateQueue = null; // 一个队列，包含了该Fiber上的状态更新和副作用
+        this.memoizedState = null; // 上一次渲染时的state
+        this.dependencies = null; // 该Fiber订阅的上下文或其他资源的描述
+        // 工作模式
+        this.mode = mode; // 描述Fiber工作模式的标志（例如Concurrent模式、Blocking模式等）。
+        // Effects
+        this.flags = NoFlags; // 描述该Fiber发生的副作用的标志（十六进制的标识）
+        this.subtreeFlags = NoFlags; // 描述该Fiber子树中发生的副作用的标志（十六进制的标识）
+        this.deletions = null; // 在commit阶段要删除的子Fiber数组
+        
+        // 调度优先级相关
+        this.lanes = NoLanes; // 与React的并发模式有关的调度概念。
+        this.childLanes = NoLanes; // 与React的并发模式有关的调度概念。
+        
+        // 指向该fiber在另一次更新时对应的fiber
+        this.alternate = null; // Current Tree和Work-in-progress (WIP) Tree的互相指向对方tree里的对应单元
+        
+        // 如果启用了性能分析
+        if (enableProfilerTimer) {
+            // ……
         }
-        ```
-    - 源码核心概念
-        - Fiber其实就是新式虚拟DOM
-        - Fiber链表与真实DOM之间有两次遍历的差距
-            - render
-                - 第一次是初次构建fiber链表的时候，处理了stateNode、props、effectTag和sibling、return啥的，从上到下走
-                - 构建每一个fiber节点后work都可以被中断，因为上下文是储存在链表中的，等下一个循环恢复上下文就可以继续运行
-                - 第一次遍历完之后，指针到了链表末尾，于是开始第二次遍历：用sibling、return啥的从下往上遍历并根据effectTag构建任务链表
-                - 从下往上就可以实现从最底下的组件开始操作真实DOM，相当于把递归扁平化成了链表，表头是最最底下最最后的fiber，尾巴就回到root。
-                - 第二次遍历时，同级之间可以打断，父子的切换不行，反正只剩指针操作了也很快
-    - 大致工作阶段
-        - render/Reconciliation 阶段：构建 Fiber 对象，构建链表，设置effectTag，可中断。对一个fiber做这些所有操作被成为一个workUnit
-            - beginWork函数：
-                - 从上往下遍历
-                - 对当前fiber的操作：
-                    - 创建fiber的DOM，把属性塞进去，储存在stateNode中
-                - 对子元素的操作：
-                    - 把其所有子元素都初始化为Fiber
-                        ```ts
-                        let childFiber = {
-                            type: child.type,
-                            props: child.props,
-                            effectTag: "PLACEMENT", // 首次渲染的默认effectTag
-                            return: workInProgressFiber
-                        }
-                        ```
-                    - 接上链表，等后续的循环处理
-            - performUnitOfWork函数
-                - 从下往上遍历
-                - 对当前fiber的操作：
-                    - 识别effectTag并储存到任务链表中
-                - 对子/父元素的操作
-                    - 构建一个和元素顺序相反的任务链表，以符合DOM递归到最深处（或者说离DOM操作最近的元素）才开始渲染的逻辑
-        - commit 阶段：根据构建好的链表进行 DOM 操作，不可中断。
-            - commitRoot函数：遍历任务链表，执行 DOM 操作和生命周期方法。
-            - commitMutationEffects函数：处理具体的 DOM 操作（插入、更新、删除）。
-    - 任务/副作用链表
-        - 在render阶段构建好的，最小化的对真实DOM的操作的任务链表
-        - 对 effectTag非空的fiber或者说需要操作DOM的fiber 的额外封装
+        
+        // 开发模式中
+        if (__DEV__) {
+            // ……
+        }
+    }
+    ```
+- 核心工作流程
+    - 构建WIP-Tree：WIP树包含了当前更新受影响的最高节点直至其所有子孙节点。Current Tree是当前显示在页面上的视图，WIP-Tree则是在后台进行更新，WIP-Tree更新完成后会复制其它节点，并最终替换掉Current Tree，成为新的Current Tree。
+    - renderRoot阶段
+        - 生成一个根WIP Fiber，把开发者写的JSX变为WIPRoot的`pendingProps.children`传入beginWork开始增量构建
+    - render/reconciliation 阶段：
+        - 主要功能：
+            - 根据组件返回的JSX在内存中依次协调构建 workInProgress Fiber树（包括Diff，设置effectTag等）
+            - 创建最小化的任务链表
+        - 大致流程
+            - `workLoop`开始：对每个fiber进行commit前的处理，同时判断是否需要中断（`!shouldYield()`）
+                - `performSyncWorkOnRoot`或`performConcurrentWorkOnRoot`：前者没有`!shouldYield()`
+            - `beginWork`增量构建WIP树
+            - `completeWork`收集副作用和构建effectList
+            - 结束render阶段
+        - 此阶段的任务一般都可以被中断
+            - 可中断的能力是React并发模式（Concurrent Mode）的核心
+        - 大致代码
             ```ts
-            {
-                firstEffect; // 其实就是多叉树的结构：这一层第一个子节点
-                nextEffect;  // 这一层的子节点用链表连起来的兄弟节点
-                lastEffect;  // 这一层最后一个子节点
+            // performConcurrentWorkOnRoot
+
+            // packages/react-reconciler/src/ReactFiberScheduler.js
+            function workLoop() {
+                while (workInProgress !== null && !shouldYield()) {
+                    workInProgress = performUnitOfWork(workInProgress);
+                }
+            }
+            // packages/react-reconciler/src/ReactFiberScheduler.js
+            function performUnitOfWork(unitOfWork: Fiber): Fiber | null {
+                let next;
+                next = beginWork(current, unitOfWork, renderExpirationTime);
+                if (next === null) {
+                    next = completeUnitOfWork(unitOfWork);
+                }
+                return next;
             }
             ```
-        - firstEffect、nextEffect、lastEffect其实就是任务版本的链表头、sibling、return
-        - firstEffect在一整层和其return会指向同一个节点，也就是这一层的第一个节点
-        - lastEffect在一整层和其return会指向同一个节点，也就是这一层的最后一个节点，或者说最新的那个节点
-        - lastEffect的nextEffect会指向其return，以此来实现无需全局记录就可以循环处理fiber的功能
-    - 任务与调度
-        - 工作单元 work
-            - 就是从构建fiber节点到实际commit到真实DOM前的一切操作
-            - 可以理解为一次beginWork或者一次completeUnitOfWork
-        - 时间切片
-        - 调度更新：
-            - react标记要更新的fiber节点，根据优先级插入任务调度队列中
-        - 优先级等级
-            ```ts
-            const PriorityLevels = {
-                Immediate: 1,       // 用户输入、动画
-                UserBlocking: 2,    // 用户交互结果（如点击）
-                Normal: 3,          // 数据更新
-                Low: 4,             // 后台任务
-                Idle: 5,            // 空闲任务
-            };
-            ```
-    - Hooks
-        - 在Fiber节点创建时就会存有一系列给Hooks使用的属性
-        - Hook节点，memoizedState属性，Hook队列
-        - updateQueue属性储存着副作用
-    - 协调子节点
-        - todo
-    
-    - 核心功能：
-        任务拆分：
-            将整个渲染任务拆分成多个小任务（例如处理一个组件、一个 DOM 节点）。
-            每个小任务对应一个 Fiber 节点。
-        任务调度：
-            根据任务的优先级（例如用户交互、动画、数据更新）来决定任务的执行顺序。
-            高优先级的任务会优先执行，低优先级的任务可以推迟执行。
-            调度方法：
-                - 优先级调度：根据任务的优先级来决定任务的执行顺序。
-                - 时间切片：将任务拆分成多个小任务，在每一帧中只执行一部分任务。这样可以避免长时间占用主线程，保证页面的流畅性。
-                - 任务队列：使用任务队列来管理待执行的任务。高优先级的任务会被插入到队列的前面，优先执行。
-        增量渲染：
-            在每一帧中只执行一部分任务，避免长时间占用主线程，保证页面的流畅性。
-        可中断和恢复：
-            任务可以被中断（例如用户交互触发更高优先级的任务），并在稍后恢复执行。
-    - Fiber 是对虚拟 DOM 的扩展和优化。
-        每个 Fiber 节点对应一个虚拟 DOM 节点，但 Fiber 节点包含了更多的信息（例如优先级、副作用等）。
-        Fiber 树是一个链表结构，支持增量渲染和任务调度。
+        - `beginWork`函数：
+            - 定义：
+                ```ts
+                function beginWork(
+                    current: Fiber | null, // 当前组件对应的Fiber节点在上一次更新时的Fiber节点，即workInProgress.alternate
+                    workInProgress: Fiber, // 当前组件对应的Fiber节点
+                    renderLanes: Lanes     // 优先级相关
+                ): Fiber | null
+                ```
+            - “从上往下遍历直到到一个叶节点”这个过程中的一次步进
+            - 大致流程：
+                - 判断是mount还是update（current是否null）
+                - 判断要不要更新（props、type、key）
+                - 【todo】判断优先级
+                - 根据tag进行不同的 协调并构建子Fiber 的逻辑
+                - reconcileChildren，Diff，标记effectTag
+                - 返回子节点供下次performUnitOfWork
+            - mount
+                - 如果是首次渲染，对每个DOM都打上effectTag效率十分低，因此react只会给从上往下第一个需要mount的Fiber打上Placement effectTag，然后在completeUnitOfWork里把所有子fiber的在`completeWork`时mount的真实DOM节点都一步一步合并返回到这个Fiber的`children`属性中。
+            - update
+                - 尝试复用
+            - 所以其实每一个beginWork的工作就是生成子WIP Fiber
+            - 【todo】判断要不要更新的核心逻辑：怎么对比的pendingProps和memorizedProps？
+        - `completeUnitOfWork`函数：
+            - 从叶子节点往上遍历直到到一个有sibling的节点
+            - `performUnitOfWork`里只有到了叶子节点，也就是`beginWork`返回了空值才会调用`completeUnitOfWork`
+            - 这里主要记录HostComponent的行为，实际上会根据tag有各种不同的行为
+            - 每到一个fiber就：
+                - 判断是mount还是update（current和stateNode是否null）
+                - 生成节点对应的stateNode（创建or更新
+                - 生成当前Fiber的effectList链表
+                - 合并到父Fiber的effectList
+                - 用return属性while loop往上bubble
+                - 返回遇到的第一个有sibling的fiber的下一个sibling
+            - update
+                - 主要行为：
+                    - 准备新的更新props
+                    - 更新updateQueue
+                    - markUpdate
+                - `stateNode`
+                    - stateNode是fiber对应的真实DOM的封装
+                    - stateNode的props有：
+                        - onClick、onChange等回调函数的注册
+                        - 处理style prop
+                        - 处理DANGEROUSLY_SET_INNER_HTML prop
+                        - 处理children prop
+                - `updateQueue`
+                    - 在update时，新的stateNode的更新用数据，例如props，是被封装在updateQueue中的
+                    - 【todo，为什么要用updateQueue？】stateNode更新的内容会被赋值到updateQueue中，以在commit阶段被渲染
+                    - 【todo，updateQueue不是tuple吗为什么还会有动态索引？】`updatePayload`：被赋值到updateQueue的处理完的stateNode，是数组形式，他的偶数索引的值为变化的prop key，奇数索引的值为变化的prop value。
+                - `updateComponent`：
+                    - 用来update stateNode的函数，`updateQueue`也是在其中被赋值的
+            - mount
+                - 只要没有current和stateNode就会进入这个阶段
+                - 主要行为：
+                    - 为Fiber节点生成对应的DOM节点
+                    - 将子孙DOM节点插入刚生成的DOM节点中
+                        - 因为completeWork是从下往上的，子孙DOM一定是已经生成好的
+                        - 因为当前fiber要mount，代表其所有子fiber都要mount（Diff的第二假设），所以无需额外判断直接插入当前节点即可
+                    - 与update逻辑中的updateHostComponent类似的处理props的过程
+                - `createInstance`：生成真实DOM节点的重要函数，用来mount时生成正确的真实DOM节点
+                - `appendAllChildren`：将子孙DOM节点插入当前Fiber的`children`中
+            - Fiber维护了`firstEffect`、`nextEffect`、`lastEffect`这三个指针以方便子节点的effectList接上父节点的effectList
+            - 有意思的点：DELETION的effectTag，由于遍历是在WIP上进行的，实际上没法在最后收集的时候被遍历到，所以DELETION的effect是在标识时就注册的
+    - 【todo】lane是什么
 
+    - commit 阶段：
+        - commit的代码是完全同步的，因此不可中断
+        - 主要作用是应用副作用和调用生命周期方法
+        - 入口是`commitRoot`和`commitRootImpl`
+        - `before mutation`之前 阶段
+            - commitRootImpl方法中直到第一句`if (firstEffect !== null)` 之前属于before mutation之前。
+            - 主要作用：
+                - 【todo】一些useEffect、变量赋值，状态重置的工作。
+        - `BeforeMutation`阶段
+            - 操作DOM前
+            - 主要作用：遍历effectList并调用`commitBeforeMutationEffects`函数处理。
+            - `commitBeforeMutationEffects`
+                - 主要作用
+                    - 处理DOM节点渲染/删除后的 autoFocus、blur 逻辑。
+                    - 调用`getSnapshotBeforeUpdate`生命周期钩子。
+                        - 【todo，这个钩子有啥用】从Reactv16开始，componentWillXXX钩子前增加了UNSAFE_前缀。因为Stack Reconciler重构为Fiber Reconciler后，render阶段的任务可能中断/重新开始，对应的组件在render阶段的生命周期钩子（即componentWillXXX）可能触发多次。
+                        - 为此，React提供了替代的生命周期钩子getSnapshotBeforeUpdate。
+                        - getSnapshotBeforeUpdate是在commit阶段内的before mutation阶段调用的，由于commit阶段是同步的，所以不会遇到多次调用的问题。
+                    - 调度useEffect。
+        - `Mutation`阶段
+            - 操作中
+            - 正式提交
+        - `Layout`阶段
+            - 操作后
+            - 处理layout effects
+        - `layout`之后 阶段：
+            - 【todo】主要作用：
+                - useEffect相关的处理。
+                - 性能追踪相关：源码里有很多和interaction相关的变量。他们都和追踪React渲染时间、性能相关，在Profiler API 和DevTools中使用。
+                - 在commit阶段会触发一些生命周期钩子（如 componentDidXXX）和hook（如useLayoutEffect、useEffect），这些回调方法中可能触发新的更新，新的更新会开启新的`render-commit`流程
+        - 【todo】useLayoutEffect
+        - commitRoot函数：遍历任务链表，执行 DOM 操作和生命周期方法。
+        - commitMutationEffects函数：处理具体的 DOM 操作（插入、更新、删除）。
 
+- Diff算法
+    - 【todo】diff进行前似乎就已经为可复用的新旧子节点建立好alternate关联了？
+        - 应该是增量构建子节点时就会生成好alternate，但构建新子节点时自然不会有alternate
+    - 【todo】似乎diff开始前就已经构建好一个新的fiber树了，然后才开始diff。但为什么diff又是在performUnitOfWork中进行的呢？
+        - 增量构建
+    - 【todo】Fiber树本身是哪来的？为什么看起来WIP树是已经生成好了再跟current树对比的？
+        - 增量构建
+    - react里的reconcile协调函数就是Diff的核心实现，主要作用就是协调current和WIP的子节点做 Diffing，并生成下一次workLoop的WIP
+    - Diff算法用一系列假设来权衡递归和复用的成本：
+        - 假设一：不同类型的节点元素会有不同的形态
+            - 当节点为不同类型的元素时，React 会拆卸原有节点并且建立起新的节点。
+            - 该算法不会尝试匹配不同组件类型的子树。如果你发现你在两种不同类型的组件中切换，但输出非常相似的内容，建议把它们改成同一类型。
+        - 假设二：节点不会进行跨父节点移动
+            - 只会对比两个关联父节点的子节点，多了就加少了就减。没有提供任何方式追踪他们是否被移动到别的地方。
+        - 假设三：用户会给每个子节点提供一个 key，标记它们“是同一个”
+            - 方便复用。比如两个兄弟节点调换了位置，有 key 的情况下能保证二者都复用仅做移动，但无 key 就会造成两个不必要的卸载重建。
+        - 所以两个fiber是否相同，由其type和key共同决定
+    - 大致流程是嵌合在performUnitOfWrok中的：
+        - beginWork函数
+            - `reconcileChildren`函数：协调的核心函数
+                - WIP同层fiber单一的情况：
+                    - 这一个element遍历对比current这一层的所有element
+                    - 如果key和type都相同就useFiber复用并更新props，删掉剩余的current兄弟
+                        - `useFiber`用复用的current和可能是新的props创建一个workInProgress Fiber，然后alternate关联两者，然后返回。
+                    - 如果type不同就删掉current的并挂一个新的在workInProgress下，删掉剩余的current兄弟
+                    - 如果key和type都不同，创建新的挂在workInProgress下
+                - 多element的情况：
+                    - 对新旧对比预估了两种情况，并分别有不同的逻辑
+                    - 情况一：新旧节点仅仅只改变了type或者兄弟的数量，且没有改变顺序
+                        - 这样只会有尾部新增/删除节点 和 type改变 需要处理
+                        - 具体处理逻辑：
+                            - 同时步进children、current的sibling、workInProgress的sibling，然后逐一对比
+                            - 然后根据指针的index是否为null来决定创建新的还是删除旧的
+                    - 情况二：非情况一就是情况二
+                        - 也就是有中间的节点增/删/换位置了
+                        - 具体处理逻辑：
+                            - 构建一个map，用来找可复用（key和type都相同）的节点先
+                            - 然后对于位置不对的节点有以下两种情况
+                                - 新节点相比旧的偏左了，这个时候不动
+                                - 新节点相比旧的偏右了，创建"PLACEMENT" effectTag给workInProgress
+                                - 因为增删或者插入都会修改顺序，所以只让偏右的插入是正确的行为
+- 调度
+    - 工作单元 work
+        - 就是从构建fiber节点到实际commit到真实DOM前的一切操作
+        - 可以理解为一次beginWork或者一次completeUnitOfWork
+    - 时间切片
+    - 调度更新：
+        - react标记要更新的fiber节点，根据优先级插入任务调度队列中
+    - 优先级等级
+        ```ts
+        const PriorityLevels = {
+            Immediate: 1,       // 用户输入、动画
+            UserBlocking: 2,    // 用户交互结果（如点击）
+            Normal: 3,          // 数据更新
+            Low: 4,             // 后台任务
+            Idle: 5,            // 空闲任务
+        };
+        ```
+- Host Component
+    - 宿主组件，其实就是UI层和react对接的中间层，负责具体渲染
+    - 【todo】在这类 fiber 节点上，有一个 stateNode 属性，关联具体的宿主实例，比如 react-dom 下的原生 DOM 对象，它们是通过 ReactFiberHostConfig 连接到宿主环境的诸如 document.createElement 这样的 API 返回的。如果需要的话，react 会在节点 effect 收集前完成对 stateNode 的创建、更新，以及对应 effect 的标记。
+- Hooks
+    - 在Fiber节点创建时就会存有一系列给Hooks使用的属性
+    - Hook节点，memoizedState属性，Hook队列
+    - updateQueue属性储存着副作用
 
-    - 一个 Fiber 节点包含以下关键属性：
-        type：组件的类型（例如函数组件、类组件、DOM 元素类型）。
-        key：用于标识节点的唯一性。
-        stateNode：对应的真实 DOM 节点或组件实例。
-        child：第一个子节点。
-        sibling：下一个兄弟节点。
-        return：父节点。
-        alternate：指向旧 Fiber 节点的引用（用于 Diff 比较）。
-        effectTag：标记节点的更新类型（例如插入、更新、删除）。
-        expirationTime：任务的优先级和过期时间。
-    - Fiber 树的结构
-        - Fiber 树是一个链表树结构，每个节点通过 child、sibling 和 return 指针连接起来。
-        - 这样在执行fiber，可以直接访问下一个fiber继续执行
-    - Fiber 的工作流程分为两个阶段：
-        - Render 阶段：生成新的 Fiber 树，标记需要更新的节点。
-            Render 阶段是异步的，可以被中断和恢复。它的主要任务是：
-                遍历 Fiber 树：
-                    从根节点开始，深度优先遍历 Fiber 树。
-                    对每个 Fiber 节点执行 beginWork 方法，生成新的子节点。
-                标记副作用：
-                    在遍历过程中，React 会标记需要更新的节点（例如插入、更新、删除）。
-                    这些副作用会被记录在 effectTag 属性中。
-                完成工作：
-                    当遍历完成后，React 会执行 completeWork 方法，生成完整的 Fiber 树。
-        - Commit 阶段：将更新应用到真实 DOM。
-            Commit 阶段是同步的，不能被中断。它的主要任务是：
-                应用副作用：
-                    React 会遍历 Fiber 树，根据 effectTag 执行相应的 DOM 操作（例如插入、更新、删除）。
-                调用生命周期方法：
-                    在 Commit 阶段，React 会调用组件的生命周期方法（例如 componentDidMount、componentDidUpdate）。
-
-以下是 Fiber 架构中一些关键函数的源码级别解析：
-    beginWork
-        作用：处理当前 Fiber 节点，生成新的子节点。
-        根据 Fiber 节点的类型（例如函数组件、类组件、DOM 元素），调用相应的更新逻辑。
-        生成新的子节点，并返回第一个子节点。
-    completeWork
-        作用：完成当前 Fiber 节点的工作，生成完整的 Fiber 树。
-        处理当前 Fiber 节点的副作用（例如 DOM 更新）。
-        将当前节点的子节点链表连接到父节点。
-    performUnitOfWork
-        作用：执行一个工作单元（即一个 Fiber 节点）。
-        调用 beginWork 处理当前节点。
-        如果有子节点，则继续处理子节点。
-        如果没有子节点，则调用 completeWork 完成当前节点。
-    workLoop
-        作用：循环执行工作单元，直到所有任务完成或时间片用完。
-        在每一帧中执行 performUnitOfWork，直到任务完成或时间片用完。
-        如果任务未完成，则将剩余任务推迟到下一帧执行。
-
-3. 总结
-Diff 算法：React 通过层级比较和双指针算法高效地比较新旧虚拟 DOM 树，减少 DOM 操作。
-
-Fiber 架构：Fiber 是 React 的核心算法，通过链表结构和任务调度实现增量渲染和可中断更新。
-
-Render 阶段：生成新的 Fiber 树，标记需要更新的节点。
-
-Commit 阶段：将更新应用到真实 DOM，调用生命周期方法。
-
-希望这个详细的解释能帮助你更好地理解 React 的 Diff 算法和 Fiber 架构！如果还有其他问题，欢迎继续提问！
+- `requestIdleCallback(<callback>)`
+    - `<callback>`callback使接收一个`deadline`，表示其能够运行到什么时候/还剩多少运行实际，deadline过后就让出主线程

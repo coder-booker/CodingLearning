@@ -913,6 +913,9 @@ function sendMsg() {
 - 一般使用ES6模块格式即可
 - 只有ES6模块可以导出/导入ES6模块
 - 如果一份文件A导出，一份文件B引用，html导入时要使用`<script type="module" src="B.js></script>"`告知浏览器B是一个es6模块
+- 动态导入 `import()`
+    - 动态导入语法（Dynamic Import），返回`Promise<import_content>`，但解析后会成为组件
+    - 可以用来懒加载和加载非模块的资源
 ### 语法糖
 - `xxx?.yyy`: 可选链操作符
     - 安全访问xxx的属性yyy：如果xxx为undefined或者null之类无法获得属性的值，返回undefined而非报错
@@ -1065,6 +1068,7 @@ function sendMsg() {
     - Babel：用来把ES6+的代码编译为ES5的代码
     - Webpack：把js模块合并打包为一个bundle文件，还能做Tree-shaking
 
-
+# js和浏览器
+- JS 可以操作 DOM，但GUI渲染线程与JS线程是互斥的。所以JS 脚本执行和浏览器布局、绘制不能同时执行。
 
 - to-do
