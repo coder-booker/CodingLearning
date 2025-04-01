@@ -61,9 +61,16 @@ The following are the config to select when u enter the command in terminal
 
 # route cache
 - Request Memorization
-    - 生命周期：在 ***渲染*** 时生效
-    - 对且只对React Component Tree的GET生效（也就是对route handler无效）
-    - 在渲染完成前，根据url和option，cache所以fetch
+    - Nextjs会自动把fetch的结果在组件树开始渲染时记忆化，用于在应用渲染时避免应用各处对该函数的重复调用。但在渲染完成后就会删除。
+    - 注意事项：
+        - 只对GET请求生效
+        - 只对React Component Tree生效（也就是对route handler无效）
+        - 只在渲染中生效，和运行后的data cache是不同的概念
+    - Opt out:
+        ```ts
+        const { signal } = new AbortController()
+        fetch(url, { signal })
+        ```
 - Data Cache
     - 普遍情况下会对fetch的结果cache的空间
     - 无论是不是在渲染都会cache
@@ -234,3 +241,232 @@ module.exports = {
         - `const response = NextResponse.rewrite('/new-url');`
     - next()：继续处理下一个中间件或路由。
         - `const response = NextResponse.next();`
+
+
+
+
+
+# runtime
+- building
+    - Next.js要表达任意Object，用`object`
+    - any默认无法通过build，可以对`@typescript-eslint/no-explicit-any`做修改来调整
+
+
+# WIP
+### Data fetching & Caching
+- Request Memorization
+    - Nextjs会自动把fetch或者自定义函数的结果在组件树开始渲染时记忆化，用于在应用渲染时避免应用各处对该函数的重复调用。但在渲染完成后就会删除。
+    - cache的目标：
+        - GET 的 `fetch`
+        - `React.cache`封装的函数
+    - 注意事项：
+        - 只对React Component Tree生效（也就是对route handler无效）
+        - 只在渲染中生效，和运行后的data cache是不同的概念
+    - Opt out:
+        ```ts
+        // for fetch
+        const { signal } = new AbortController()
+        fetch(url, { signal })
+        // for React.cache: 不写就行
+        ```
+- Data Cache
+    - 对向外部的请求，包括fetch API和unstable_cache，的缓存
+    - 14默认cache ，但15默认不cache 
+    - opt-in/-out：
+        - fetch: `{ cache: 'force-cache' }` or `{ cache: 'no-store' }`
+        - unstable_: `unstable_cache` or `unstable_noStore`
+    - 有多种revalidate方法：
+        1. 不revalidate，持久化缓存：
+            - fetch：`fetch(URL, { cache: 'force-cache' })`：对同样的URL cache
+            - unstable_cache：`unstable_cache(async () => {await getData})`：可以用在ORM之类的非fetch请求中
+        2. Time-based: 
+            - fetch：`next: { revalidate: 3600 }` (ms，但过期之后的第一个fetch不会立马使用新数据，只会返回旧数据和同时触发data cache更新)
+            - unstable_cache: 看看下面的
+        3. On-demand
+            - fetch：
+                - 【似乎有些问题】`revalidatePath()`
+                - `next: { tags: ['taggg']}` + `revalidateTag('taggg')`（基于tag的触发来revalidate，会立马更新和返回新数据）
+    - 注意事项：
+        - revalidate的行为是无效化，等下次请求再重新cache
+        - time-based revalidate是stale-while-invalidate的
+    - unstable_cache:
+        - eg
+            ```ts
+            const getCachedUser = unstable_cache(
+                async () => {
+                    return { id: userId }
+                },
+                [userId], // add the user ID to the cache key
+                {
+                    tags: ['users'],
+                    revalidate: 60,
+                }
+            )
+            ```
+- Full Route Cache 全路由缓存
+    - 缓存每一个route page的RSC payload、HTML、客户端组件的js到服务器上
+    - 注意事项：
+        - 不会缓存dynamic rendering的route page
+    - revalidate：
+        - Data Cache的revalidate就会revalidate
+- Router Cache
+    - stores the RSC payload of route segments, split by layouts, loading states, and page
+    - 会缓存访问过的页面或者prefetch将要访问的页面，缓存形式：
+        - 共用的Layout
+        - 在树中最近的降级UI
+        - 实验性的把route的前进后退的page缓存在客户端
+    - 将要访问的页面：
+        - `<Link>`组件
+            - 在link设置prefetch可以控制prefetch的行为，默认为null
+        - `router.prefetch()`
+            - 默认为full prefetch
+    - 生命周期：
+        - session改变就会刷新
+        - 根据prefetch的设置来invalidate
+            - default不prefetch动态的，静态的保留5分钟
+            - prefetch为true就动态静态都5分钟
+        - revalidatePath, revalidateTag
+        - 【todo】Using cookies.set or cookies.delete invalidates the Router Cache to prevent routes that use cookies from becoming stale (e.g. authentication).
+        - `router.refresh` 刷新当前路由
+
+- Nextjs对异步显示的丰富封装：
+    - 基础：
+        - loadings.ts：对route的page显示备用UI
+        - React.Suspense：对props还没更新好的组件显示备用UI
+    - preload：
+        - 用`void getDate()`先后台异步获取数据
+    - 注意事项：
+        - 小心sequential的误区，尽量进行非阻塞的parallel数据获取，少用await
+
+### rendering
+- Static Rendering
+    - 默认行为。只要fetch cache了且没有dynamicAPI，正常写组件就会自动static rendering为html，也就是SSG
+    - 可以通过一些设置实现 ISG 增量静态再生
+        - revalidate：
+            - Time-based：
+                - `export const revalidate = 60;`
+            - On-demand：
+                - `revalidatePath('/posts')`
+                - `next: { tags: ['posts'] },`
+        - `export async function generateStaticParams() {}`
+            - 用于有`[slug]`的动态路由，实现生成返回slug所有可能的值供生成html
+        - `export const dynamicParams = true`
+            - 当出现了并未在generateStaticParams生成返回的slug，要不要后台生成新的html
+            - 如果为false就返回404
+    - static render的page会在build或者ISG的revalidate被渲染并缓存
+    - 用于非个性化的公共页面，更新频率倒是无所谓
+- Dynamic Rendering
+    - 在服务端实时渲染组件
+    - dynamicAPI || fetch no-store 就是 dynamic rendering
+    - Dynamic API：
+        - `cookies`
+        - `headers`
+        - `connection`
+        - `draftMode`
+        - `searchParams` prop
+        - `unstable_noStore`
+        - `export const dynamic = 'force-dynamic'`
+
+### Hydration
+1. React Rendering on the Server
+    - 把服务端组件编码为RSC payload，optimized for streaming
+    - 用RSC payload和客户端组件的js来在服务端生成一个不包含互动的基础HTML
+2. Next.js Caching on the Server (Full Route Cache)
+    - 缓存每一个route page的RSC payload、HTML、客户端组件的js到服务器上
+    - 传送给客户端开始水合
+3. React Hydration and Reconciliation on the Client
+    - 显示基础HTML
+    - 【不太理解为什么协调】用RSC payload来协调客户端组件，并渲染服务端组件，更新DOM
+    - 【不太理解为什么水合】客户端js运行，水合客户端组件，然后绑定交互逻辑到客户端组件上，更新DOM
+4. Next.js Caching on the Client (Router Cache)
+    - 把每个route page的RSC payload缓存到客户端上
+    - used to improve the navigation experience by storing previously visited routes and prefetching future routes.
+5. Subsequent Navigations
+    - 在之后的navigation中，如果Router Cache有缓存就直接使用，无需再次请求服务器。否则访问Full Router Cache并缓存在Router Cache中
+
+- RSC Payload
+    - used to reconcile the Client and rendered Server Component trees, and update the DOM.
+    - 包含：
+        - The rendered result of Server Components
+        - Placeholders for where Client Components should be rendered and references to their JavaScript files
+        - Any props passed from a Server Component to a Client Component
+### Optimization
+- Image
+    - 自动懒加载，quality、priority、loader、自动编译为webp
+    - 对导入的本地图片自动调整大小，但url的就得指定大小了
+    - WebP自适应如何兼容IE：picture标签+source标签
+### Route
+
+
+### other
+- 'server-only'和'client-only'用来标注模块仅能被server或client组件使用，例如serveronly包含敏感信息，clientonly操作windows等等。如果违反了在build时会报错。
+- taint可以保护敏感数据泄露到客户端
+- revalidatePath确实无法控制外部API的fetch，得用revalidateTag
+
+### question
+streaming
+    其实就是懒加载和排优先级。把部分ui suspense，页面就会先加载其他ui
+并行路由
+    default.ts: 没有显性访问子页面时的默认页面或者无法匹配到的子路由
+    layout＞page＞default
+国际化
+    - `[lang]`的slug+文字字典
+冷启动
+    首次调用时需要重新加载运行时环境和依赖模块。
+    心跳函数定期warm up
+	解耦API路由的依赖来加快冷启动
+edge function
+    环境依赖：无法使用Nodejs模块
+    资源限制：Edge Functions 一般是serverless的，有很多资源限制
+serverless function
+    function name、内存、CPU 资源、运行时间、response body size都有限制，需避免复杂逻辑。
+    API 路由就是serverless的
+中间件
+    根目录定义middleware.ts，用matchConfig或者手动判断来筛选路由
+- Webpack
+    - 插件、loader、按需加载、路径等等
+    ```ts
+    webpack: (config, options) => {
+        config.module.rules.push({
+        test: /\.mdx/,
+        use: [
+            options.defaultLoaders.babel,
+            {
+                loader: '@mdx-js/loader',
+                options: pluginOptions.options,
+            },
+        ],
+        })
+        return config
+    },
+    ```
+page route
+    不支持stream和SSR，也不支持很多先进的特性
+next/script的strategy参数对LCP的影响
+	- beforeInteractive：
+	脚本会在页面渲染之前加载，可能会阻塞 LCP。
+	适用于关键脚本（如 analytics、AB 测试）。
+
+	afterInteractive：
+	脚本会在页面交互之后加载，不会阻塞 LCP。
+	适用于非关键脚本（如第三方库）。
+
+	lazyOnload：
+	脚本会在页面完全加载后延迟加载，对 LCP 无影响。
+	适用于低优先级脚本（如广告、社交媒体按钮）。
+
+CDN控制
+redux的兼容
+
+
+
+Router Cache对访问过的路由进行cache是cache什么？page本身还是prefetch？
+为什么dynamic不会Full Router Cache？RSC payload到底是什么？
+客户端组件的缓存行为与服务端有区别吗？
+RSC payload在Router Cache的行为
+ondemand isg不会触发中间件？
+
+
+
+平行加载和Promise.all的联动
+async和await在client和server的不同

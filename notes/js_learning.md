@@ -317,6 +317,76 @@
         - 使用 $ 符号可以避免与用户定义的名称冲突。例如，某些库可能会使用 $ 符号来命名内部方法，以确保这些方法不会与用户定义的方法重名。
 # 函数
 - 默认隐性返回undefined，除非显性返回了某些值
+- 独立函数：在全局对象下声明的函数
+- 标签函数
+    - 基于模板字符串的函数
+    - eg和用例
+        ```ts
+        function sql(strings: TemplateStringsArray, ...exps: unknown[]): void {
+            console.log("SQL statement:", strings.join("?"));
+            console.log("SQL params:", exps)
+        }
+        const myname = "mike";
+        const email = "123@123.com"
+        sql`SELECT * FROM bruh WHERE name=${name} AND email=${email}`; // 这个分号是必须的, 不然会报错
+        // output:
+        // SQL statement: SELECT * FROM bruh WHERE name=? AND email=?
+        // SQL params: [ 'mike', '123@123.com' ]
+        ```
+- 箭头函数
+    - 继承定义时的作用域的this（静态绑定）
+        - 因此对箭头函数的重复上下文绑定是无效的
+    - 需要注意：
+        - 箭头函数不会捕获全局对象，但会间接捕获别人得到的全局对象（这个别人只会是定义时的上下文）
+        - 对象中的直系箭头函数捕获不到东西，因为在对象内获得的上下文是挂载到对象的父级上的
+        - 箭头函数在闭包中的this和最近的func是同一个，这是箭头函数最基础的捕获上下文
+        - 不可以作为构造函数使用
+        - 没有arguments属性
+    - 箭头函数在回调和闭包中非常好用
+    - eg
+        ```js
+        function Timer() {
+            this.seconds = 0;
+            setInterval(() => {
+                this.seconds++; // 正确捕获外层 this（Timer 实例）
+            }, 1000);
+        }
+        ```
+- 匿名函数
+    - 定义时没有名称的函数
+    - 箭头函数就是一种简洁的匿名函数
+    - 匿名函数可以new，除了箭头函数
+    - 立刻执行函数(IIFE)
+        - 只会是匿名函数
+        - 上下文是全局对象
+- 生成器
+    - eg
+        ```ts
+        function* fibonacci() {
+            let current = 1;
+            while (true) {
+                let reset = yield current;  // yield后是.next()的value, 返回值是.next()的参数, 只能输入一个。注意.next如果没有传入参数会返回undefined
+                current++;
+                console.log("reset: ", reset)
+            }
+        }
+        const sequence = fibonacci();
+        console.log("outer current:", sequence.next().value); // 1
+        console.log("outer current:", sequence.next().value); // 2
+        console.log("outer current:", sequence.next(["123", "321"]).value); // reset: ['123', '321'], 3
+        console.log("outer current:", sequence.next().value); // 4
+        ```
+- 剩余参数 rest parameters
+    - 在参数的定义那里写...[name]就可以接受任意长度的参数并构建为一个数组
+    - eg
+        ```js
+        function (...args: any[]) {
+            console.log(args); // 把参数以数组的形式打印出来
+        };
+        ```
+- arguments属性
+    - 函数的自带属性，但箭头函数没有
+    - 包裹着函数接收参数的Array-like的对象，只有length和索引键
 - 上下文
     - outline
         - function函数的上下文由其调用时的形式决定，箭头函数的上下文由其定义时的上下文决定
@@ -340,27 +410,34 @@
             ```
     - 显式绑定：
         - 通过 call, apply, bind 指定
-            - call：传入上下文和逐一传入参数并立刻运行
-            - apply：传入上下文和参数数组并立刻运行
-            - bind：绑定上下文和一部分参数并返回一个新函数。这个新函数的参数会优先接收绑定的参数再顺序接收调用传入的参数
+            - `Function.prototype.call(context[, arr1, arr2, ...])`：
+                - 传入上下文和逐一传入参数并立刻运行。多出来的参数会忽略不会报错
+            - `Function.prototype.apply(context[, Array<arr1, arr2, ...>])`：
+                - 传入上下文和参数数组并立刻运行。多出来的参数会忽略不会报错
+            - `Function.prototype.bind(context[, arr1, arr2, ...])`：
+                - 绑定上下文**和**一部分参数并返回一个新函数。这个新函数的参数会优先接收绑定的参数再顺序接收调用传入的参数
+                - 注意bind绑定的只是引用，不会像参数一样复制，因此无法解决闭包的引用问题
+        - 需要注意的点：
+            - 函数如果已经绑定了上下文，之后再次绑定不会生效，也就是显性绑定的第一个参数会被忽略
+            - 参数的绑定可以顺序继续生效，但多出来的仍然失效，也不会报错
         - 语法：
             ```js
             function greet(a, b) {
-                console.log(`${a} ${b}`);
+                console.log(`${this ? this.attr1 : "null"} ${a} ${b}`);
             }
+            greet(1, 2) // null 1 2
             const context_object = { attr1: "attr1" };
             const a = "a";
-            const b = 1
-
-            greet.call(context_object, a, b);    // a 1
-            greet.apply(context_object, [a, b]);   // a 1
-
-            const boundGreet = greet.bind(context_object, a);
-            boundGreet(b);          // a 1
+            const b = "b";
+            const c = "c";
+            greet.call(context_object, a, b, c);    // attr1 a b
+            greet.apply(context_object, [a, b, c]);   // attr1 a b
+            const boundGreet11 = greet.bind(context_object);
+            const boundGreet12 = boundGreet11.bind(1)
+            boundGreet12(2);          // attr1 2 undefined
+            const boundGreet21 = greet.bind(context_object, 1, 2);
+            boundGreet21(3);          // attr1 1 2
             ```
-        - 对一个函数的重复bind只有第一次上下文绑定生效，剩下的几次都会原封不动返回
-            - 因为bind底层就和嵌套call/apply差不多，最后目标函数只会得到倒数第二层，也就是第一次bind的上下文
-            - 注意参数的绑定可以顺序继续生效
     - 隐式绑定：
         - 调用函数的对象
         - 注意对象和类中的 func_name() {}定义和用function关键字定义是一样的
@@ -390,11 +467,13 @@
             showThis(); // 非严格模式：window | 严格模式：undefined
             ```
     - 箭头函数
-        - 继承调用时的作用域的this（静态绑定）
-        - 箭头函数的上下文由其定义时的上下文决定
-        - 箭头函数不会捕获全局对象，但会间接捕获别人得到的全局对象（这个别人只会是定义时的上下文）
-        - 注意，对象中的直系箭头函数捕获不到东西，因为在对象内获得的上下文是挂载到对象的父级上的
-        - 箭头函数在回调中非常好用
+        - 继承定义时的作用域的this（静态绑定）
+            - 因此对箭头函数的重复上下文绑定是无效的
+        - 需要注意：
+            - 箭头函数不会捕获全局对象，但会间接捕获别人得到的全局对象（这个别人只会是定义时的上下文）
+            - 对象中的直系箭头函数捕获不到东西，因为在对象内获得的上下文是挂载到对象的父级上的
+            - 箭头函数在闭包中的this和最近的func是同一个，这是箭头函数最基础的捕获上下文
+        - 箭头函数在回调和闭包中非常好用
         - eg
             ```js
             function Timer() {
@@ -409,29 +488,9 @@
         - 箭头函数则一样捕获定义处的上下文
     - 原型链this
     - 模块this
-- 箭头函数
-    - 捕获上下文
-    - 不可以作为构造函数使用
-    - 没有arguments属性
-- 独立函数：在全局对象下声明的函数
-- 匿名函数
-    - 定义时没有名称的函数
-    - 箭头函数就是一种简洁的匿名函数
-    - 匿名函数可以new，除了箭头函数
-    - 立刻执行函数(IIFE)
-        - 只会是匿名函数
-        - 上下文是全局对象
-- 剩余参数 rest parameters
-    - 在参数的定义那里写...[name]就可以接受任意长度的参数并构建为一个数组
-    - eg
-    ```js
-    function (...args: any[]) {
-        console.log(args); // 把参数以数组的形式打印出来
-    };
-    ```
-- arguments属性
-    - 函数的自带属性，但箭头函数没有
-    - 包裹着函数接收参数的Array-like的对象，只有length和索引键
+    - 需要注意的点：
+        - 函数如果已经绑定了上下文，之后再次绑定不会生效，也就是显性绑定的第一个参数或者对箭头函数的绑定会被忽略
+        - 参数的绑定可以顺序继续生效，但多出来的仍然失效，也不会报错
 - 函数与对象
     - 实例化函数对象会使用函数的返回对象作为返回结果。
         - 如果没有返回、返回值不为对象(比如返回了个基础类型)、或返回值为this，则返回其父级对象
@@ -509,12 +568,48 @@
 - 值得注意的点：
     - setTimeout这一类宏任务在被定义时，实际上只是把任务插入了队列中。所以setTimeout(func, 0)并不一定会立马执行，可能会被推到下个事件循环才执行
 
-# 闭包原理、作用、应用场景
-- 保存状态：闭包可以保存函数执行时的状态，即使函数已经执行完毕。
-- 实现私有变量：通过闭包，可以模拟私有变量，避免外部直接访问和修改。
-- 延迟执行：闭包可以用于实现延迟执行（如回调函数、定时器）。
-- 模块化：闭包可以用于创建模块，封装私有方法和变量。
-
+# 闭包
+- 作用、应用场景
+    - 保存状态：闭包可以保存函数执行时的状态，即使函数已经执行完毕。
+    - 实现私有变量：通过闭包，可以模拟私有变量，避免外部直接访问和修改。
+    - 延迟执行：闭包可以用于实现延迟执行（如回调函数、定时器）。
+    - 模块化：闭包可以用于创建模块，封装私有方法和变量。
+- 需要注意的地方：
+    - 解决闭包的引用错误问题：
+        - 用立刻执行函数再包裹一层，把i传入立刻执行函数就能绑定好参数了
+        - 用let在和函数同级的作用域中定义函数引用的变量，以此让外部的变化影响不了函数内
+    - 箭头函数
+        - 注意箭头函数在闭包中的this和最外层的func是同一个，因为这是箭头函数最基础的捕获上下文
+- eg
+    ```ts
+    function test() {
+        let arr = [];
+        let i = 0;
+        for (; i < 3; ++i ) {
+            // 闭包循环错误
+            arr.push(function() {
+                console.log(i)
+            })  // 333
+            // 解决方法：再套一层闭包+IIFE，绑定参数
+            arr.push((function(i) {
+                return function () {
+                    console.log(i);
+                }
+            })(i))  // 0, 1, 2
+            // 手动绑定参数是没用的
+            arr.push((function() {
+                console.log(i)
+            }).bind(undefined, i))  // 333
+        }
+        // 解决方法2：限制i的作用域，如此i就无法共享了。注意不能用var
+        for (let i = 0; i < 3; ++i ) { 
+            // or
+            let idx = i; // 这样也能限制idx的作用域
+        }
+        return arr;
+    }
+    for ( let k of test() ) {k();}
+    ```
 
 # 内置对象与方法
 ### Math
@@ -532,13 +627,17 @@
     - 接收一个executor函数，这个函数可以选择pending Promise传入的`resolve`和`reject`状态改变函数。
         - `resolve`把Promise变为fulfilled态，`reject`则变为rejected态，然后把各自的.then或者.catch中的回调函数推入微任务队列等待执行
         - executor可以忽略`reject`，只接受`resolve`
-    - 会立刻执行executor函数，然后把里面的异步函数和一个新的微任务绑定起来，这个微任务的作用就是尽快处理异步操作的下一个阶段
-    - 因为executor的运行是同步的，但插入的微任务是异步的，所以出现"新建微任务在同步代码前"的现象是正常的
-    - **所以Promise本身并不是微任务，resolve或者reject才会创建微任务**。
+- Promise大致流程：
+    - Promsie实例化后立刻执行executor函数，状态改变后创建一个新的微任务，这个微任务的作用就是尽快处理Promise操作的下一个状态阶段，例如.then和.catch
+    - 但状态改变的语句可以被异步操作的回调包裹，这样异步操作结束后才会改变状态。Promise也是因此适合异步操作
+- 注意事项：
+    - 注意Promise必须要显性改变状态，否则不会进入下一个阶段
+    - 因为executor的运行是同步的，但插入的微任务是异步的，所以出现".then在同步代码后运行"的现象是正常的
+    - **所以Promise本身并不是微任务，状态改变的回调才是**。
 - `.then(func1, func2)`
     - 给Promise注册状态改变后的回调函数
-    - .then本身也是Promise
-        - return了value就会`resolve`成fulfilled，抛出错误就会`reject`成rejected
+    - .then本身也是一个Promise
+        - return了value就等价于Promise的`resolve`，抛出错误就等价于`reject`
     - .then可以选择接收并注册两个函数
         - 第一个函数是Promise resolve后会调用并传入resolve参数的onFulfilled回调函数
         - 第二个函数时Promise reject后会调用并传入reject参数的onRejected回调函数
@@ -951,15 +1050,15 @@ function sendMsg() {
     - ES2015（ES6，ECMAScript 2015）：
         - 引入了 let 和 const 块级作用域变量声明。
         - 引入了箭头函数（arrow functions）。
+        - 增加了import export的ECMAScript Module(ESM)规范
+        - 增加了 Promise 对象。
+        - 增加了Symbol
+        - 增加了Set 和 Map：新的数据结构。
         - 增加了模板字符串（template strings）。
         - 增加了解构赋值（destructuring assignment）。
         - 增加了默认参数
         - 增加了拓展运算符
         - 引入了类（class）、extends
-        - 增加了import export的ECMAScript Module(ESM)规范
-        - 增加了 Promise 对象。
-        - 增加了Symbol
-        - 增加了Set 和 Map：新的数据结构。
     - ES2016（ES7，ECMAScript 2016）：
         - 增加了 Array.prototype.includes 方法。
         - 增加了指数运算符（**）。
@@ -1059,14 +1158,16 @@ function sendMsg() {
         - 把类似Typescript和Sass的高级语言编译成最基础的js
     - 打包
     - 优化
+        - Tree-shaking
+            - 一种减少代码体积的技术，通过静态分析代码依赖关系来移除代码中其实不会被使用的部分
+            - 在ES2015/ES6中引入
+        - Code Split
+            - 按需加载代码
     - 资源管理
     - 提供开发服务器(Optional)
-- Tree-shaking
-    - 一种减少代码体积的技术，通过静态分析代码依赖关系来移除代码中其实不会被使用的部分
-    - 在ES2015/ES6中引入
 - 现代常用的构建工具
     - Babel：用来把ES6+的代码编译为ES5的代码
-    - Webpack：把js模块合并打包为一个bundle文件，还能做Tree-shaking
+    - Webpack：把js模块优化、打包为一个bundle文件
 
 # js和浏览器
 - JS 可以操作 DOM，但GUI渲染线程与JS线程是互斥的。所以JS 脚本执行和浏览器布局、绘制不能同时执行。

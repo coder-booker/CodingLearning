@@ -486,12 +486,21 @@
             - 主要作用：遍历effectList并调用`commitBeforeMutationEffects`函数处理。
             - `commitBeforeMutationEffects`
                 - 主要作用
-                    - 处理DOM节点渲染/删除后的 autoFocus、blur 逻辑。
+                    - 【todo。这是什么，为什么要在这里处理】处理DOM节点渲染/删除后的 autoFocus、blur 逻辑。
                     - 调用`getSnapshotBeforeUpdate`生命周期钩子。
-                        - 【todo，这个钩子有啥用】从Reactv16开始，componentWillXXX钩子前增加了UNSAFE_前缀。因为Stack Reconciler重构为Fiber Reconciler后，render阶段的任务可能中断/重新开始，对应的组件在render阶段的生命周期钩子（即componentWillXXX）可能触发多次。
-                        - 为此，React提供了替代的生命周期钩子getSnapshotBeforeUpdate。
-                        - getSnapshotBeforeUpdate是在commit阶段内的before mutation阶段调用的，由于commit阶段是同步的，所以不会遇到多次调用的问题。
-                    - 调度useEffect。
+                        - 从Reactv16开始，componentWillXXX钩子前增加了UNSAFE_前缀。因为Stack Reconciler重构为Fiber Reconciler后，render阶段的任务可能中断/重新开始，对应的组件在render阶段的生命周期钩子（即componentWillXXX）可能触发多次。
+                        - 【todo，这个钩子有啥用，Snapshot是什么】为此，React提供了替代的生命周期钩子getSnapshotBeforeUpdate。由于commit阶段是同步的，所以不会遇到多次调用的问题。
+                    - 异步注册useEffect。
+                        - 标记有passiveEffect，并注册`scheduleCallback(<priority>, <callbackFunc>)`
+                            - scheduleCallback由Scheduler模块提供，用于以proirity注册callbackFunc进调度器中。这个callback有`flushPassiveEffects();`在内，用于调用useEffect的callback
+                                - 在`flushPassiveEffects`方法内部会从全局变量`rootWithPendingPassiveEffects`获取`effectList`。
+                        - 总体分为三步：
+                            - before mutation阶段注册scheduleCallback（flushPassiveEffects）
+                            - layout阶段之后将effectList赋值给rootWithPendingPassiveEffects
+                            - scheduleCallback触发flushPassiveEffects，flushPassiveEffects内部遍历rootWithPendingPassiveEffects
+                        - 为什么要异步调度
+                            - 因为副作用的本质就是一些背景的、非主要任务的任务，不应该阻塞浏览器渲染。如设置订阅和时间监听之类的不需要渲染。
+
         - `Mutation`阶段
             - 操作中
             - 正式提交

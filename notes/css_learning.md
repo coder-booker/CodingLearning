@@ -31,7 +31,51 @@
 ### css module
 - `:global(.className)`用来在`.module.css`中对全局施加样式，也就是去除哈希值
 
-### Notes of elements
+### 盒模型
+- 关乎以下四项内容
+    - 外边距 margin
+    - 边框 border
+    - 滚动条 scroll bar
+    - 内边距 padding
+    - 内容 content
+- 有两种盒模型
+    - W3C 标准盒子模型
+        - border-box: content-box
+        - 只算content的宽高，不包含border到padding
+    - IE 怪异盒子模型
+        - border-box: border-box
+        - 算上border，当然也算上其内的滚动条和padding
+### 各种attr
+- 这些属性在不同浏览器会有很多很多不同行为，因此大概知道意义就好了
+- client
+    - 不变
+    - clientWidth/Height
+        - 可视范围，也就是内容的宽高
+        - 包含内边距的宽/高，不包含滚动条
+    - clientTop/Left
+        - clientWidth/Height 之外的和border外缘的距离，或者说border上边/左边的宽度
+- offset
+    - 不变
+    - offsetWidth/Height
+        - 包含边框、滚动条、padding的宽高
+    - offsetTop/Left
+        - 相对于offetParent的位置
+        - offsetWidth/Height之外的 和 parent border内缘/padding外缘的宽度，或者offsetParent的padding宽度 + 子元素margin宽度
+        - 如果子元素溢出了，溢出的部分是会算进offsetTop/Left里的。例如未滚动时，最底下的子元素的offsetTop和scrollHeight差不多且不会改变
+    - offsetParent
+        - position不为static(默认值)的最近父级元素
+        - 最顶头的定位过的元素是body，所以没有被定位过的父级的话offsetParent会指向body
+        - 如果元素本身是fixed那自然也没有任何父级，offsetParent返回null
+- scroll
+    - 变
+    - scrollWidth/Height
+        - 包含溢出部分的元素内容宽高
+            - 所以在没有溢出时，scrollWidth/Height === clientWidth/Height
+        - 包含滚动条宽高
+        - 不包含内边距
+    - scrollTop/Left
+        - 子元素实际内容上/左边缘和子元素可见内容上/左边缘的距离
+        - 一般溢出滚动了才会变，不然大部分时候都是0
 - 单位
     - 绝对单位
     - 相对单位：
@@ -106,6 +150,7 @@
     - `hidden`
     - `scroll` - constantly display
     - `auto` - display when overflow
+    - 只要不是visible，都能把容器变成BFC
 - flex 
     - `margin: auto`会尽可能分配多的空间，所以可以用来置左置右置顶置底
         - 和`justify-content`+`align-items`不太一样，`margin`以单个子元素为单位，jus和ali以整个容器里的元素为单位

@@ -7,51 +7,151 @@
     - 浏览器内置的解决"判断元素是否在视窗内"问题的API
 
 
-# 宽高
-- 盒模型
-    - 关乎以下四项内容
-        - 外边距 margin
-        - 边框 border
-        - 滚动条 scroll bar
-        - 内边距 padding
-        - 内容 content
-    - 有两种盒模型
-        - W3C 标准盒子模型
-            - border-box: content-box
-            - 只算content的宽高，不包含border到padding
-        - IE 怪异盒子模型
-            - border-box: border-box
-            - 算上border，当然也算上其内的滚动条和padding
-- 这些属性在不同浏览器会有很多很多不同行为，因此大概知道意义就好了
-- client
-    - 不变
-    - clientWidth/Height
-        - 可视范围，也就是内容的宽高
-        - 包含内边距的宽/高，不包含滚动条
-    - clientTop/Left
-        - clientWidth/Height 之外的和border外缘的距离，或者说border上边/左边的宽度
-- offset
-    - 不变
-    - offsetWidth/Height
-        - 包含边框、滚动条、padding的宽高
-    - offsetTop/Left
-        - 相对于offetParent的位置
-        - offsetWidth/Height之外的 和 parent border内缘/padding外缘的宽度，或者offsetParent的padding宽度 + 子元素margin宽度
-        - 如果子元素溢出了，溢出的部分是会算进offsetTop/Left里的。例如未滚动时，最底下的子元素的offsetTop和scrollHeight差不多且不会改变
-    - offsetParent
-        - position不为static(默认值)的最近父级元素
-        - 最顶头的定位过的元素是body，所以没有被定位过的父级的话offsetParent会指向body
-        - 如果元素本身是fixed那自然也没有任何父级，offsetParent返回null
-- scroll
-    - 变
-    - scrollWidth/Height
-        - 包含溢出部分的元素内容宽高
-            - 所以在没有溢出时，scrollWidth/Height === clientWidth/Height
-        - 包含滚动条宽高
-        - 不包含内边距
-    - scrollTop/Left
-        - 子元素实际内容上/左边缘和子元素可见内容上/左边缘的距离
-        - 一般溢出滚动了才会变，不然大部分时候都是0
+# 前端工程化
+- 就是对前端项目进行以下操作
+    - 编译
+        - 把类似Typescript和Sass的高级语言编译成最基础的js
+    - 打包
+    - 优化
+        - Tree-shaking
+            - 一种减少代码体积的技术，通过静态分析代码依赖关系来移除代码中其实不会被使用的部分
+            - 在ES2015/ES6中引入
+        - Code Split
+            - 按需加载代码
+    - 资源管理
+    - 提供开发服务器(Optional)
+- 现代常用的构建工具
+    - Babel：用来把ES6+的代码编译为ES5的代码
+    - Webpack：把js模块优化、打包为一个bundle文件
+- Webpack
+    - entry
+    - output
+    - loader
+        - 作用：把非js的文件转换为webpack可识别的模块以打包
+        - 常见loader：
+            - babel-loader：将ES6+的代码转换成ES5的代码。
+            - css-loader：解析CSS文件，并处理CSS中的依赖关系。
+            - style-loader：将CSS代码注入到HTML文档中。
+            - sass-loader：将Sass文件编译成CSS文件。
+            - less-loader：将Less文件编译成CSS文件。
+            - postcss-loader：自动添加CSS前缀，优化CSS代码等。
+            - vue-loader：将Vue单文件组件编译成JavaScript代码。
+            - file-loader：解析文件路径，将文件赋值到输出目录，并返回文件路径。
+            - url-loader：类似于file-loader，但是可以将小于指定大小的文件转成base64编码的Data URL格式
+        - eg
+            ```js
+            module: {
+                rules: [
+                    {
+                        test: /\.文件后缀$/, // 正则匹配文件类型
+                        use: ['loader-name'], // 使用的 loader
+                        exclude: /node_modules/, // 排除目录
+                        options: { ... } // loader 参数
+                    }
+                ]
+            }
+            ```
+    - plugin
+        - 作用：扩展 Webpack 功能，处理 Loader 无法完成的任务（如代码压缩、HTML 生成等）。
+        - 常见plugin
+            - HtmlWebpackPlugin：生成HTML文件，并自动将打包后的javaScript和CSS文件引入到HTML文件中。
+            - CleanWebpackPlugin：清除输出目录。
+            - ExtractTextWebpackPlugin：将CSS代码提取到单独的CSS文件中。
+            - DefinePlugin：定义全局变量。
+            - UglifyJsWebpackPlugin：压缩JavaScript代码。
+            - HotModuleReplacementPlugin：热模块替换，用于在开发环境下实现热更新。
+            - MiniCssExtractPlugin：与ExtractTextWebpackPlugin类似，将CSS代码提取到单独的CSS文件中。
+            - BundleAnalyzerPlugin：分析打包后的文件大小和依赖关系。
+    - mode
+    - optimization
+        - eg
+            ```js
+            optimization: {
+                splitChunks: {    // 代码分割
+                    chunks: 'all',          // 分割所有类型的 chunk（initial/async/all）
+                    minSize: 20000,         // 生成 chunk 的最小体积（单位：字节）
+                    maxSize: 0,             // 尝试拆分大于此值的 chunk
+                    minChunks: 1,           // 模块被至少 minChunks 个 chunk 引用时才分割
+                    cacheGroups: {          // 定义缓存组（可多组）
+                        vendors: {
+                            test: /[\\/]node_modules[\\/]/, // 匹配 node_modules 中的模块
+                            name: 'vendors',    // 生成的 chunk 名称
+                            priority: -10,      // 优先级（数值越大越优先）
+                            reuseExistingChunk: true // 重用已存在的 chunk
+                        },
+                        common: {
+                            minChunks: 2,       // 被 2 个以上 chunk 引用的模块
+                            name: 'common',
+                            priority: -20
+                        }
+                    }
+                },
+                moduleIds: 'deterministic',    // 固定模块 ID
+                chunkIds: 'deterministic',     // 固定 Chunk ID
+                runtimeChunk: 'single',        // 分离 Webpack 运行时代码
+                minimize: true,                // 启用压缩（生产模式默认 true）
+                minimizer: [new TerserPlugin()] // 指定压缩工具
+            }
+            ```
+        - splitChunks.chunks 可选值
+            - initial：只分割同步加载的模块。
+            - async：只分割异步加载的模块。
+            - all：所有模块都可能被分割（推荐）。
+        - 实际项目的例子：
+            - eg
+                ```js
+                optimization: {
+                    splitChunks: {
+                        chunks: 'all',
+                        cacheGroups: {
+                        react: {
+                            test: /[\\/]node_modules[\\/](react|react-dom)[\\/]/,
+                            name: 'react-vendor',
+                            priority: 20
+                        },
+                        lodash: {
+                            test: /[\\/]node_modules[\\/]lodash[\\/]/,
+                            name: 'lodash-vendor',
+                            priority: 10
+                        }
+                        }
+                    }
+                }
+                ```
+    - sizeEffect:
+        - 用来tree shaking的
+    - devServer
+    - devtool
+        - devtool: 'source-map'
+        - devtool: false, // 或 'hidden-source-map'
+    - resolve.alias	路径别名（如 @ -> src）
+    - externals	排除某些库（如 CDN 引入的 React）
+    - cache	持久化缓存（Webpack 5 默认开启，大幅提升构建速度）
+    - performance 资源大小警告阈值
+
+
+    - 魔法注释
+        - 在动态导入（import()）写魔法注释（Magic Comments）可以对模块的加载产生不同行为
+            -  `webpackPrefetch: true`可以让模块自动被预加载
+            - `webpackPreload: true`可以立刻预加载当前页面关键资源（如字体）
+        - eg
+            ```ts
+            const Settings = React.lazy(() =>
+                import(/* webpackPrefetch: true */ './Settings')
+            );
+            ```
+    - manifest.json
+        - Webpack 通过 manifest 知道如何加载 chunk。
+        - 长期缓存：若第三方库哈希不变，用户无需重复下载。
+        - eg
+            ```json
+            {
+                "main.js": "main.8a9b3c.js",
+                "vendor.js": "vendor.d4e5f6.js",
+                "src_index.js": "main.8a9b3c.js",
+                "node_modules_lodash.js": "vendor.d4e5f6.js"
+            }
+            ```
 
 # 浏览器
 - sessionStorage和localStorage的区别
