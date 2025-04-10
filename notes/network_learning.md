@@ -38,36 +38,10 @@
 - others: 
     - CDN: Content Delivery Network或Content Distribution Network, 就是当地服务器在主服务器前的缓存用服务器
     - html文档和渲染是分开的。
-
 ### stateless & serverless
 - stateless：服务器无状态，也就是所有请求之间都没有关系，没有session资料会保存在服务器
     - 如果是前后端分离的话，restful本身就是stateless的，状态都在前端
 - serverless：云服务部署就是serverless
-### 分层模型
-- OSI模型
-    - 应用层 application layer
-        - http
-    - 表示层 presentation layer
-        - 数据加密解密、格式转换等
-    - 会话层 session layer
-        - 控制会话
-    - 传输层 transport layer
-        - TCP(面向连接)/UDP(无连接)
-    - 网络层 network layer
-        - IP/DNS(无连接服务)/NAT
-    - 数据链路层 data link layer
-        - MAC
-    - 物理层 physical layer
-        - 物理介质
-- TCP/IP模型
-    - 应用层 application layer
-        - 应用+表示+会话
-    - 传输层 transport layer
-        - TCP(面向连接)/UDP(无连接)
-    - 互联网层 internet layer
-        - IP/DNS(无连接服务)/NAT
-    - 网络接口层 network interface layer
-        - 数据链路+物理
 ### Duplex, Simplex Communication
 - Full-Duplex：双方同时发送和接受
 - Half-Duplex：单向通信
@@ -92,7 +66,6 @@
     - PUT：
         - 创建或更新资源
         - 是幂等的，因为每次使用都必须指定一个目标
-### 本机ip
 ### 面向连接服务，无连接服务
 - 面向连接服务就是TCP这一类得连接才能传输的协议
 - 无连接服务则是直接发送数据（“尽最大努力交付”(Best-Effort-Delivery)）
@@ -105,6 +78,55 @@
 - JSON
 - Protobuf (Protocol Buffers)
 - XML
+### 比特率和波特率
+- 比特率的单位是bps
+- 波特率（Baud Rate）：
+    - 每单位“符号”的传输时间
+    - 比如每4 bit为一个符号，baud rate = bps / 4
+
+# 数字信号传输
+- 信噪比（Signal-to-Noise Ratio, SNR）
+    - 信号的功率和噪声的功率的比的log10
+        - SNR(dB) = 10log10(S/N); S = signal, N = Noise
+        - 注意单位，香浓公式的SNR要做一些处理: SNR(Linear) = 10^(SNR(dB)/10) = S/N
+    - 信道容量（Channel Capacity）
+        - 香农公式：理论最大无差错传输速率（bps）：
+            - C = Blog2(1+SNR(linear)) = Blog2(1+10^(SNR(db)/10)); B：信道带宽（Hz）。
+        - SNR越高，容量越大。
+- 基带传输 baseband
+    - 数字信号本身（01）
+    - 需独占信道（无法多路复用）。
+    - 应用：usb
+- 调制传输（Broadband/Passband）
+    - 幅移键控（ASK, Amplitude-Shift Keying）
+        - 原理：通过改变载波幅度表示0/1。
+            - 例如：高幅度=1，低幅度=0。
+        - 优点：简单易实现。
+        - 缺点：抗噪声差（幅度易受干扰）。
+        - 应用：早期低速调制（如红外遥控）。
+    - 频移键控（FSK, Frequency-Shift Keying）
+        - 原理：通过改变载波频率表示0/1。
+            - 例如：频率f1=0，f2=1。
+        - 优点：抗噪声和效率优于ASK。
+        - 缺点：带宽利用率低。
+        - 应用：无线传感器、蓝牙（GFSK）。
+    - 相移键控（PSK, Phase-Shift Keying）
+        - 原理：通过改变载波相位表示数据。
+            - BPSK（二进制PSK）：0°=0，180°=1。
+            - QPSK（四相PSK）：4种相位（0°, 90°, 180°, 270°），每符号2比特。
+        - 其实就是载波的正弦突然被破坏了（位移了），以此判断是0还是1
+        - 优点：抗噪声强，带宽效率高（如QPSK是BPSK的两倍）。
+        - 缺点：解调复杂度高。
+        - 应用：Wi-Fi、卫星通信。
+    - 正交幅度调制（QAM, Quadrature Amplitude Modulation）
+        - 原理：同时调制载波的幅度和相位，提高数据密度。
+            - 例如：16-QAM（4比特/符号）、64-QAM（6比特/符号）。
+            - 这样一段波可以代表不止1 bit的信息，但也因此对噪声特别敏感
+        - 优点：极高带宽效率（如5G用256-QAM）。
+        - 缺点：对信道质量敏感（需高信噪比）。
+        - 应用：现代Wi-Fi（802.11ac）、5G、有线电视（DOCSIS）。
+
+
 
 # URL
 - `#`：页面定位符，用来表示在当前url了哪个位置
@@ -200,6 +222,166 @@
     - algorithm='HS256': 加密算法
     - issuer=ISSUER
     - audience=audience,  # 令牌的预期接收者
+
+# IP、路由器、交换机
+- 流程：从pc到公网
+    1. pc通过arp得知路由器的mac，把包发送给交换机
+        - 源MAC：PC的MAC地址（如 PC_MAC）
+        - 目标MAC：默认网关的MAC地址（如 GW_MAC，通过ARP解析获得）
+        - 源IP：PC的本地IP（如 192.168.1.100）
+        - 目标IP：公网服务器的IP（如 8.8.8.8）
+    2. 交换机根据mac把包转发给路由器
+    3. 路由器检查ip，NAT转换内网ip代理公网请求，发送到ISP网关
+        - 源MAC：路由器的出口MAC
+        - 目标MAC：转换为ISP的MAC
+        - 源IP：转换为路由器代理的公网ip
+        - 目标IP：不变
+    4. 公网层层传播
+        - 源MAC：当前路由器的出口MAC
+        - 目标MAC：下一跳路由器的MAC
+        - IP地址不变（除非经过代理或特殊NAT）。
+    5. 服务器接收
+        - 源MAC：最后一跳路由器的MAC
+        - 目标MAC：服务器自身的MAC
+        - 源IP：路由器的公网IP
+        - 目标IP：8.8.8.8（自身IP）
+    6. 服务器发出响应，把ip、mac的源和目标对调反向走整个流程直到pc
+- 交换机
+    - CAM表：MAC与端口的映射
+    - 储存转发机制：
+        1. 接收完整帧：
+            - 完整缓存数据帧到内存中（存储阶段），等待后续处理。
+            - 必须等待整个帧（包括帧头、数据和CRC校验）全部接收完毕才会转发。
+        2. 错误检查（CRC校验）：
+            - 计算CRC校验值，并与帧尾的校验字段比对。
+            - 直接丢弃校验失败的帧
+        3. 查找MAC地址表：
+            - 查表找端口（记录端口与MAC的映射关系）。
+            - 直接转发或者泛洪（Flood）到所有端口（除接收端口外）。
+        4. 转发帧：
+            - 确认目标端口转发数据帧
+    - 直通转发机制（Cut-Through）
+        - 原理：交换机仅读取目标MAC地址后立即转发，不等待完整帧接收。
+        - 优点：延迟极低（适用于高频交易等低延迟场景）。
+        - 缺点：可能转发错误帧（无CRC校验）。
+- 路由器
+    - 存着两个表
+        - 路由表：目标IP、下一跳ip、对应端口这三者的映射
+        - ARP表：目标ip和目标mac的映射（这个表存在的意义是因为端口不代表MAC，一个端口可以有多个MAC，比如这个端口连着交换机）
+    - 储存转发机制
+        1. 接收完整数据包：
+            - 必须接收完整的IP数据包（包括IP头、传输层头和数据）后才进行处理。
+        2. 校验与解封装：
+            - 检查IP头的校验和（Checksum），确保数据包未损坏。
+            - 剥离数据链路层（如以太网）的帧头/帧尾，仅保留IP层及以上数据。
+        3. 路由表查询：
+            - 查ip表（ip和端口的映射），决定下一跳（Next Hop）的出口接口。
+            - 可能要地址转换（如私网IP→公网IP）。
+        4. 重新封装数据包：
+            - 根据出口网络类型（如以太网、PPP等），重新封装数据链路层帧头：
+            - 源MAC：路由器出口接口的MAC地址
+            - 目标MAC：下一跳设备的MAC地址（通过ARP或静态配置获得）
+            - 如果经过NAT，还会修改IP头中的源/目标IP。
+        5. 转发数据包：
+            - 将重新封装后的数据包发送到下一跳设备（如另一台路由器或终端主机）。
+            - --TTL; TTL耗尽了就返回ICMP超时错误
+    - 快速转发机制（Fast Switching）
+        - 原理：缓存最近的路由决策，后续相同流量的数据包直接快速转发。
+        - 优点：减少路由表查询时间，提高吞吐量。
+        - 重点：根据实现会有各种不同的校验方案，比如硬件加速、仅校验关键包、把校验工作交给服务器等
+- 特殊IP地址（以192.168.1.0/24为例）
+    - 必要的：（因此局域网的容量需要考虑这俩IP）
+        - 192.168.1.0：网络地址，标识子网本身的
+        - 192.168.1.255：广播地址，用于全网广播
+    - 可选的
+        - 192.168.1.1：网关地址，是路由器的LAN接口IP
+        - 192.168.1.2：DHCP服务器地址，用于分配IP的服务器的ip（可选）
+    - 本机ip
+
+# 分层模型
+- OSI模型
+    - 应用层 application layer
+        - http
+    - 表示层 presentation layer
+        - 数据加密解密、格式转换等
+    - 会话层 session layer
+        - 控制会话
+    - 传输层 transport layer
+        - TCP(面向连接)/UDP(无连接)
+    - 网络层 network layer
+        - IP/DNS(无连接服务)/NAT
+    - 数据链路层 data link layer
+        - MAC
+    - 物理层 physical layer
+        - 物理介质
+- TCP/IP模型
+    - 应用层 application layer
+        - 应用+表示+会话
+    - 传输层 transport layer
+        - TCP(面向连接)/UDP(无连接)
+    - 互联网层 internet layer
+        - IP/DNS(无连接服务)/NAT
+    - 网络接口层 network interface layer
+        - 数据链路+物理
+# 协议
+- OSI应用层；TCP/IP应用层
+    - HTTP、SSL/TLS/HTTPS
+    - FTP/SFTP
+        - 使用 TCP端口21（控制） 和 20（数据） 传输文件。
+        - S是SSH加密的FTP
+        - ftp://
+    - DNS（Domain Name System）
+        - 通常使用 UDP 53端口（查询），TCP 53端口（大型响应或区域传输）
+    - DHCP（Dynamic Host Configuration Protocol）
+        - 依赖UDP（L4）和IP（L3）
+        - 通过 DORA流程（Discover-Offer-Request-Ack）动态分配IP地址、子网掩码、网关等。
+        - 客户端使用 UDP 68 端口，服务器使用 UDP 67 端口。
+    - Telnet
+        - 基于TCP端口23的明文远程登录协议（不安全，已被SSH取代）。
+    - NTP （Network Time Protocol）
+        - 用于同步时间
+        - 基于UDP
+    - SNMP （Simple Network Management Protocol）
+        - UDP 161（查询）/162（Trap通知）
+        - 监控和管理网络设备（如路由器、交换机）。
+        - Manager（管理端）通过 Get/Set 请求读取或修改设备的MIB（管理信息库）。
+        - Agent（被管理设备）可主动发送 Trap 通知异常事件（如CPU过载）。
+    - PGP（Pretty Good Privacy）
+        - 用于加密电子邮件和文件，结合非对称加密（RSA）和对称加密（AES）。
+    - SMTP/POP3/IMAP
+        - 都是email用的协议
+        - SMTP(Simple Mail Transfer Protocol): 用于发送email
+        - POP3(Post Office Protocol 3): 用于下载email
+        - IMAP(Internet Message Access Protocol): 用于访问email
+        - 基于TCP
+- OSI表示层；TCP/IP应用层
+    - SSH Secure Shell
+        - 用于在不安全的网络上安全地访问计算机
+        - 基于TCP
+    - PGP（邮件加密）
+- OSI会话层；TCP应用层
+    - PPTP（VPN隧道）
+        - 通过TCP端口1723建立VPN隧道，封装PPP帧（数据链路层）在IP网络中传输。
+    - SSL握手
+- OSI传输层；TCP传输层
+    - TCP、UDP
+- OSI网络层；TCP网络层
+    - IP、ARP、ICMP、DHCP（部分）
+- OSI数据链路层；TCP网络接口层
+    - PPP、以太网（MAC层）
+    - HDLC（High-Level Data Link Control）
+        - 面向比特的同步协议，用于点对点链路（如路由器之间的串行连接）。
+        - 核心功能：
+            - 帧定界（Flag序列 01111110）。
+            - 流量控制（滑动窗口）。
+            - 错误检测（CRC校验）。
+- OSI物理层；TCP网络接口层
+    - 光纤、双绞线（无协议，只有信号）
+
+- 文件协议
+    - file://
+
+
 
 
 # 应用层
@@ -743,34 +925,7 @@
         - 4位 opcode：标志数据帧类型。如1等于text类型，2等于字节流类型，8等于关闭连接
         - dynamic的payload长度
             - 7, 16, 32, 16
-## 文件协议
-- file://
-## DNS协议 Domain Name System
-- 默认用UDP，适合快速查询
-- 大量传输时用TCP，但较少见
-## FTP协议 File Transfer Protocol
-- 基于TCP
-- ftp://
-## SMTP/POP3/IMAP协议
-- 都是email用的协议
-- SMTP(Simple Mail Transfer Protocol): 用于发送email
-- POP3(Post Office Protocol 3): 用于下载email
-- IMAP(Internet Message Access Protocol): 用于访问email
-- 基于TCP
-## SSH协议 Secure Shell
-- 用于在不安全的网络上安全地访问计算机
-- 基于TCP
-## Telnet协议
-- 用于远程使用命令行接口
-- 基于TCP
-## NTP Network Time Protocol
-- 用于同步时间
-- 基于UDP
-## DHCP协议 Dynamic Host Configuration Protocol
-- 基于UDP
-## SNMP协议 Simple Network Management Protocol
-- 用于网络管理和监控
-- 基于UDP
+
 
 # 传输层
 - seq_num
@@ -784,6 +939,34 @@
         - 也就是粘包问题的根源：TCP不负责parse字节，只负责传（这也是传输协议出现的原因）
 - 使用四个元素识别一条链接：
     - 源IP、目标IP、源端口、目标端口
+- 有多种内部协议
+    1. 可靠传输协议
+        - 停止等待协议（Stop-and-Wait）：
+            - 等待ACK才发下一个包
+        - 滑动窗口（Sliding Window）：
+            - 允许发送方连续发送多个数据包（无需逐个等待ACK），通过窗口大小控制流量。
+            - 用于高速数据传输（如HTTP下载）
+        - 快速重传（Fast Retransmit）：
+            - 收到3个重复ACK时立即重传丢失的包（不等待超时）。
+            - 用于减少延迟（如视频流）
+        - 选择性重传（SACK）：
+            - 明确告知发送方哪些包丢失（而非全部重传），提高效率。
+            - 用于高丢包率网络（如无线）
+    2. 连接管理协议
+        - 3握手，4挥手
+    3. 拥塞控制协议
+        - 慢启动（Slow Start）
+            - 窗口大小指数增长，直到阈值或丢包。
+            - 避免初期拥塞
+        - 拥塞避免（AIMD）
+            - 窗口线性增长，丢包后减半（加法增大/乘法减小）。
+            - 公平性优先
+        - BBR（Bottleneck Bandwidth and RTT）
+            - 基于带宽和延迟动态调整发送速率（Google提出）。
+            - 高吞吐、低延迟
+    4. 其他
+        - TCP Keepalive：检测连接是否存活（防止半开连接）。
+        - TCP Fast Open（TFO）：在首次SYN中携带数据，减少握手延迟（如HTTP请求）。
 - 三次握手
     - 流程
         - 发送方SYN请求

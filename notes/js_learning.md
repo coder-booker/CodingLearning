@@ -1,44 +1,56 @@
 
 # 赋值
-- 数组解构：`const [x, y] = [0, 0];`
+- 数组解构：
+    - 基础用法：`let [foo, [[bar], baz]] = [1, [[2], 3]];`
+    - 缺失行为：
+        - `let [ , , third] = ["foo", "bar", "baz"];` third = "baz"
+        - `let [x, y, ...z] = ['a'];` y = undefined, z = [];
+        - `let [a, [b], d] = [1, [2, 3], 4];` b = "2"
+    - 动态赋值：`let [head, ...tail] = [1, 2, 3, 4];`
+    - 定义默认值: `const [ a, b = 20, c = 50 ] = [ 10 ];` -> `a=10, b=20, c=50` (必须按顺序)
 - 对象解构: `const {a, b, c} = { a: 10, b: 10, c: 10 };`
-- 解构默认值
-    - 数组: `const [ a, b = 20, c = 50 ] = [ 10 ];` -> `a=10, b=20, c=50` (必须按顺序)
-    - 对象: `const { a = 10, b = 20, c = 30 } = {a: 20, b, c: 20}` -> `a=20, b=20, c=20` (以键来标识)
+    - 定义默认值: `const { a = 10, b = 20, c = 30 } = {a: 20, b, c: 20}` -> `a=20, b=20, c=20` (以键来标识)
+    - alias: `const {aaa: bbb} = {aaa: "123"};` bbb = "123"
 - 储存基本类型/原始值的变量被赋值给别的变量时，是复制了一份副本给这个新变量。
 
 
-# 类型自动转换/宽松比较 loose type comparison
-- js是动态类型语言，所以变量的类型是运行时确定的，因此会有类型的自动转换
-    - 所以ts不会发生这种事
-- 转换可以手动也可以自动，但大多数情况下用自动
-- 转换方式
-    - `.toPrimitive`, `.valueOf`, `.toString`
-    - toPrimitive > valueOf > toString
-- 有三种转换
-    - 字符串转换：期望的类型是字符串。`toPrimitive` -> `toString`
-    - 数字转换：期望的类型是数字。`toPrimitive` -> `valueOf`
-    - 默认转换：没有指定期望类型。`.toPrimitive` -> `.valueOf` -> `.toString`
-- 场景
-    - 对比运算
-        - 字符串与数字混合：转成数字
-        - 对象与对象：对比地址
-        - eg `'1'<2`返回true，`'5'==5`返回true
-        - 注意`===`是严格相等，不会进行类型转换
-    - 数学运算
-        - 全都尝试变成数字
-        - `+`例外：如果`+`一个字符串，会变成字符串拼接
-    - 字符串拼接`+`
-        - 只要运算元有任意一个为非数字，就会把这次运算视为字符串拼接
-    - 逻辑运算(比如条件判断和`!`的场景)转换成true和false
-        - 骚操作：因此`!!`可以转换成对应的boolean
-    - 对象参与运算时，如果需要转换类型，会尝试用`toString()`或者`valueOf()`方法将运算元转换成原始值primitive再运算，如果两个方法都没有返回原始值则报错
-- 要判断类型可以用typeof xxx查询, instanceof XxxYyy判断
+# 类型转换
+- 类型自动转换/宽松比较 loose type comparison
+    - js是动态类型语言，所以变量的类型是运行时确定的，因此会有类型的自动转换
+        - 所以ts不会发生这种事
+    - 转换可以手动也可以自动，但大多数情况下用自动
+    - 转换方式
+        - `.toPrimitive`, `.valueOf`, `.toString`
+        - toPrimitive > valueOf > toString
+    - 有三种转换
+        - 字符串转换：期望的类型是字符串。`toPrimitive` -> `toString`
+        - 数字转换：期望的类型是数字。`toPrimitive` -> `valueOf`
+        - 默认转换：没有指定期望类型。`.toPrimitive` -> `.valueOf` -> `.toString`
+    - 场景
+        - 对比运算
+            - 字符串与数字混合：转成数字
+            - 对象与对象：对比地址
+            - eg `'1'<2`返回true，`'5'==5`返回true
+            - 注意`===`是严格相等，不会进行类型转换
+        - 数学运算
+            - 全都尝试变成数字
+            - `+`例外：如果`+`一个字符串，会变成字符串拼接
+        - 字符串拼接`+`
+            - 只要运算元有任意一个为非数字，就会把这次运算视为字符串拼接
+        - 逻辑运算(比如条件判断和`!`的场景)转换成true和false
+            - 骚操作：因此`!!`可以转换成对应的boolean
+        - 对象参与运算时，如果需要转换类型，会尝试用`toString()`或者`valueOf()`方法将运算元转换成原始值primitive再运算，如果两个方法都没有返回原始值则报错
+    - 要判断类型可以用typeof xxx查询, instanceof XxxYyy判断
+- 主动转换
+    - parseInt, parseFloat
+    - Number(), Boolean(), String()
 
 
-# 六大基本类型/原始值
-- 六大基本类型/原始值
-    - undefined、null、boolean、number、string、symbol
+# 基本类型与引用类型
+- 基本类型
+    - undefined、null、boolean、number、string、symbol, bigint
+- 引用类型
+    - object, array, function, Date, Map, Set
 - 变量二进制的低三位代表其类型：000: 对象，001：整数，100：字符串等
 ### boolean
 - false：
@@ -76,8 +88,9 @@
     - `a.length` 获得长度
 - 方法
     - 子字符
-        - `a.at()`
-        - `a.charAt()`
+        - `a[i]` 越界返回undefined
+        - `a.at(i)` 越界返回undefined，但可以-1 
+        - `a.charAt(i)` 越界时返回空值
     - 子串
         - `a.substring([start], [end?])` 不接受负数，如果start > end会自动交换这两个数
         - `a.slice([start[, end])` 接受负数为从末尾倒数的index，如果start > end会返回空字符串
@@ -96,6 +109,13 @@
     - `Array<string>.join(<separator);`
         - 可以拼接string字符串
         - 分隔符默认用`,`
+    - `""`的字符串的行为比较特别，是看以前有没有同样的字符串，有就直接引用，没有才创建（设计模式中的Flyweight）
+- String对象
+    - 包装字符串原始值的对象
+        - 但在js中可以当成对象进行操作，ts中不行。例如添加键ts是报错的
+    - 如果不使用new关键字，String会变成一般的原始值
+    - `valueOf`返回原始值
+    - `String()`其实是进行类型转换的方法
 ### Symbol
 - 特点
     - Symbol在全局有一片自己的空间，任何地方定义的Symbol都会在这里去重
@@ -141,22 +161,28 @@
         - 这个描述字符串会变成其属性`.description`
     - `.for()`：寻找或创建Symbol
     - `.keyFor()`：寻找被创建了的Symbol，没有就返回undefined
-
 # 数组
 - 数组本质上就是经过特殊处理的可迭代对象
 - 内置方法
     - `.push()` 追加，多个参数代表追加多个元素
-    - `const result = arr.length` 长度
         - 设为`0`可以清空数组
     - `.shift()` 删除并返回index为0的元素
     - `.unshift(<item>)` 添加并返回index为0的元素
+    - `.sort([(a, b): number])` 
+        - 原地排序，注意默认会把元素转换为字符串，然后字典序排列
+        - 默认ascending，重写才能变成decending
+        - 重写的话，返回值有三种要求：
+            - > 0 : a > b 
+            - = 0 : a === b
+            - < 0 : a < b
+    - `const result = arr.length` 长度
     - `const result = arr.pop()` 删除并返回最后一位元素
     - `const result = arr.toString()` 用`,`拼接所有元素成字符串，注意没法改分隔符，要改只能用Array.prototype.join(separator)
     - `const result = arr.join(<sep>)` 默认`<sep>`是`,`
     - `const result = arr.include()` 判断有无包含某元素
     - `const result = arr.indexOf()` 获得某元素在数组中的第一个匹配项的idx，如无则返回-1
     - `const result = arr.find()` 获得某元素在数组中的第一个匹配项本身，如无返回undefined
-    - `const result = arr.concat(arr: Array)` 返回拼接好的数组
+    - `const result = arr1.concat(arr2[, arr3[, arr4[, ...]]])` 拼接俩数组，不改变原有数组
     - `const result = arr.reverse()` 就地翻转且返回引用
     - `const result = arr.toReversed()` 返回一个反转好的新数组，不改变原数组
     - `const result = arr.slice([start[, end]])`
@@ -207,13 +233,12 @@
         - 不直接对array进行`.map`而是先`.fill`，是因为`.map`会跳过空项，fill过了.map才会生效，而原本fill的值会被map覆盖
     - 快速去重：`Array.from(new Set(array));`
 - 浅拷贝数组：
-    - `[...oldArr]`
-        - **拓展运算符其实效率相比对ref内容的直接改动低不少**
+    - `[...oldArr]`（**拓展运算符其实效率相比对ref内容的直接改动低不少**）
     - `oldArr.slice()`空参数
     - `Array.from(oldArr)`
 - 一般用const修饰，因为const的是引用而非数组内的值，所以数组const仍可修改
 
-# 对象
+# 对象/object
 - 万物皆对象
 - `this`指向调用者的上下文
 - 全局对象
@@ -237,33 +262,6 @@
             - 用于建立由 new obj() 创建的对象的原型
             - 一般不用
 - 对象除非特殊处理过，否则布可迭代（数组就是特殊的可迭代对象）
-- `delete`操作符
-    - delete 操作符用于删除对象的某个属性；如果没有指向这个属性的引用，那它最终会被释放。
-    - 如果你试图删除的属性不存在，那么delete将不会起任何作用，但仍会返回true
-    - 如果对象的原型链上有一个与待删除属性同名的属性，那么删除属性之后，对象会使用原型链上的那个属性（也就是说，delete操作只会在自身的属性上起作用）
-    - 任何使用 var 声明的属性不能从全局作用域或函数的作用域中删除。
-        - 但在对象中的函数是能够用delete操作删除的。
-    - 任何用let或const声明的属性不能够从它被声明的作用域中删除。
-    - configurable为false属性不能被移除。这意味着像Math, Array, Object内置对象的属性以及使用Object.defineProperty()方法设置为不可设置的属性不能被删除。
-    - 参数是神秘的字面量（例如数字啥的）也不能delete，只会返回true
-- `Object.defineProperty([obj], [prop], [descriptor])`
-    - 用来给某个对象详细设置属性的内置函数
-    - 具体可以设置什么通过descriptor来定义
-    - `obj`：要被定义属性的对象
-    - `prop`：要定义的属性名
-    - `descriptor`：属性描述符对象
-        - `value`：属性的值。默认为 undefined。
-        - `writable`：属性是否可写。默认为 false。
-            - 如果是false，所有的修改对此属性的修改都会不起作用
-        - `enumerable`：属性是否可枚举。默认为 false。
-            - 用`for in`或者`Object.keys`枚举的时候会不会显示这个属性
-        - `configurable`：属性是否可配置。默认为 false。
-            - 能否被`Object.defineProperty`再次定义
-        - `get`：属性的 getter 函数。默认为 undefined。
-            - 也就是该属性被调用时会使用这个get()的返回值
-        - `set`：属性的 setter 函数。默认为 undefined。
-            - 也就是该属性被修改时会把修改值当成参数输入set()中
-- 内置对象的所有属性都是不可配置的(configurable=false)
 - Object方法
     - .values()：
         - 返回value数组
@@ -271,24 +269,71 @@
         - 判断有无该属性/键，不包含原型链
     - attr in obj
         - 判断有无该属性/键，包含原型链
+    - `delete`操作符
+        - 删除对象的某个属性
+        - 试图删除的属性不存在仍会返回true
+        - 也就是说，delete操作只会在自身的属性上起作用，原型链上的无法处理
+        - var 声明的属性不能从全局作用域或函数的作用域中删除。
+            - 但在对象中的函数是能够用delete操作删除的。
+        - let、const声明的属性不能够从它被声明的作用域中删除。
+        - configurable为false属性不能被移除。如Math, Array, Object等内置对象的属性不能被删除。
+        - 【？】参数是神秘的字面量（例如数字啥的）也不能delete，只会返回true
+- 静态方法
+    - `Object.getOwnPropertyNames(obj)`获取自有属性
+    - `let targetObj = Object.assign(targetObj, propertiesObject[, propertiesObject[, ...]])`
+        - 把多个可选propertiesObject添加/赋值到targetObj上
+        - 直接修改，且会返回本身
+    - `let a = Object.create(obj[, propertiesObject])`
+        - 以obj为原型创建对象，可选propertiesObject来设定属性的值
+        - 可以用来实现继承
+        - eg
+            ```js
+            // Shape——父类
+            function Shape() {
+                this.x = 0;
+            }
+            // 父类方法
+            Shape.prototype.move = function (x) {
+                this.x += x;
+                console.info("Shape moved.");
+            };
+            // Rectangle——子类
+            function Rectangle() {
+                Shape.call(this); // 调用父类构造函数。
+            }
+            // 子类继承父类
+            Rectangle.prototype = Object.create(Shape.prototype, {
+                // 设置Rectangle.prototype.constructor属性，否则会使用Shape.prototype.constructor
+                constructor: {
+                    value: Rectangle,
+                    enumerable: false,
+                    writable: true,
+                    configurable: true,
+                },
+            });
+            const rect = new Rectangle();   // 调用constructor
+            console.log("rect 是 Rectangle 类的实例吗？", rect instanceof Rectangle); // true
+            console.log("rect 是 Shape 类的实例吗？", rect instanceof Shape); // true
+            rect.move(1); // 打印 'Shape moved.'
+            ```
 - 键 
     - 对象只有字符串键和Symbol键
     - eg
-    ```ts
-    (() => {
-    const c = "c";
-    const object = {
-        a: 1,   // 普通键
-        "b": 2, // 字符串键
-        [c]: 3, // 变量键
-        [4]: 4, // 数字键
-    }
-    console.log(object.a, object["a"]);
-    console.log(object.b, object["b"]);
-    console.log(object.c, object["c"]);
-    console.log(object['4'], object[4]); // 因为点运算符不支持数字toString
-    })() // output: 11223344
-    ```
+        ```ts
+        (() => {
+        const c = "c";
+        const object = {
+            a: 1,   // 普通键
+            "b": 2, // 字符串键
+            [c]: 3, // 变量键
+            [4]: 4, // 数字键
+        }
+        console.log(object.a, object["a"]);
+        console.log(object.b, object["b"]);
+        console.log(object.c, object["c"]);
+        console.log(object['4'], object[4]); // 因为点运算符不支持数字toString
+        })() // output: 11223344
+        ```
     - `.`运算符
         - 对后面的文字进行字符串转换。如果有同名外部变量并不会影响
         - 数字字面量不能使用`.`
@@ -303,6 +348,43 @@
     - 字符串、Set、Map、数组
 - 伪数组对象
     - 有`.length`属性和数字字符串键的对象
+- 一些特别的功能：
+    - `Object.defineProperty(obj, prop, descriptor)`
+        - 用来给某个对象详细设置属性的内置函数
+        - 具体可以设置什么通过descriptor来定义
+        - `obj`：要被定义属性的对象
+        - `prop`：要定义的属性名
+        - `descriptor`：属性描述符对象/可自定义的选项
+            - `value`：属性的值。默认为 undefined。
+            - `writable`：属性是否可写。默认为 false。
+                - 如果是false，所有的修改对此属性的修改都会不起作用
+            - `enumerable`：属性是否可枚举。默认为 false。
+                - 用`for in`或者`Object.keys`枚举的时候会不会显示这个属性
+            - `configurable`：属性是否可配置。默认为 false。
+                - 能否被`Object.defineProperty`再次定义
+            - `get`：属性的 getter 函数。默认为 undefined。
+                - 也就是该属性被调用时会使用这个get()的返回值
+            - `set`：属性的 setter 函数。默认为 undefined。
+                - 也就是该属性被修改时会把修改值当成参数输入set()中
+        - eg
+            ```js
+            const obj = {};
+            Object.defineProperty(obj, 'name', {
+                get() {
+                    console.log('读取 name 属性');
+                    return this._name;
+                },
+                set(value) {
+                    console.log('设置 name 属性');
+                    this._name = value;
+                },
+            });
+            obj.name = 'Alice'; // 设置 name 属性
+            console.log(obj.name); // 读取 name 属性
+            ```
+    - 内置对象的所有属性都是不可配置的(configurable=false)
+
+
 
 # 类
 - static的方法中的this指向的是类本身
@@ -497,9 +579,14 @@
         - 如果没有父级对象或者是匿名函数，非严格模式下会返回全局对象window，严格模式下返回`undefined`
 
 
+# 变量
+- 暂时性死区
+    - 只要一进入当前作用域，所要使用的变量就已经存在了，但不可获取（否则报错），只有等到声明的那一行代码出现，才可以获取和使用。
+
 # 循环与迭代 
 - 传统循环：
     - `for ( const i = 0; i < n; i++ ) {};`
+    - 循环语句和其内部作用域是分开的，对同一变量的重复声明是合法的
 - for in：
     - `for ( let attr in a_object ) {};`
     - attr代表对象里的键
@@ -689,7 +776,7 @@
     - `.size`返回长度
     - `.keys()`返回包含所有内部元素的迭代器
 - Map
-    - `let a = new Map([<iterator>]);`
+    - `let a = new Map(<iterator_of_array>);`
         - 可以传入一个迭代结果为键值对数组的可迭代对象，例如`[['1', 1], ['2', 2]]`
     - `a.set(key, val)`;
         - 注意要用set方法来添加键值对，不然只是给这个对象添加了个attr而已
@@ -697,7 +784,7 @@
     - `a.get(key);`
         - ***一定要用.get, 方括号和点运算符都只是对Map实例本身的属性操作，而非内容***
     - `a.delete(key);`
-    - `a.forEach((key, val) => {});`
+    - `a.forEach((key, val) => {});`/`for ( let key of a )`
     - `a.entries();`
         - `for ( let [key, val] of a.entries() )`;
     - `a.fromEntries(<Map Entries>);`
@@ -706,11 +793,85 @@
     - `a.keys()`; 返回键迭代器
     - `a.values()`; 返回值迭代器
     - 访问不存在的键不会生成默认值
+    - 和Object的区别
+        1. 键的类型
+        Map: 键可以是任意类型，包括对象、函数、基本类型等。
+        Object: 键只能是字符串或 Symbol，其他类型会被自动转换为字符串。
+        2. 大小获取
+        Map: 可以通过 size 属性直接获取键值对的数量。
+        Object: 需要手动计算属性数量，例如使用 Object.keys(obj).length。
+        3. 性能
+        Map: 在频繁增删键值对的场景下性能更好，因为它是专门为这种操作优化的。
+        Object: 在频繁增删键值对的场景下性能较差，因为它不是为这种操作优化的。
+        4. 默认键
+        Map: 没有默认键，只包含显式插入的键值对。
+        Object: 有原型链，可能包含一些默认的属性和方法（如 toString、hasOwnProperty 等），可能会与自定义键冲突。
+        5. 序列化
+        Map: 不能直接使用 JSON.stringify 序列化，需要手动转换为数组或其他格式。
+        Object: 可以直接使用 JSON.stringify 序列化。
+        6. 迭代
+        Map: 可以直接使用 for...of 循环迭代，或者使用 forEach 方法。
+        Object: 需要使用 for...in 循环（注意会遍历原型链上的属性），或者使用 Object.keys、Object.values、Object.entries 等方法。
+        7. 原型链
+        Map: 没有原型链，不会继承额外的属性或方法。
+        Object: 有原型链，可能会继承一些不期望的属性或方法。
 ### JSON
-- 把已声明变量的名字用{}包起来，可以快捷建立拥有以变量名为键，变量值为值的键值对的字面量对象
 - `JSON.stringify()`把对象转变为json字符串样式
 - `.json()`不只是解析json内容，同时还会转化为js的对象
 - 无论用那种语法传输，背后都是json字符串形式的？？？？
+### eval
+- eval() 函数会将传入的字符串当做 JavaScript 代码进行执行。
+### Proxy
+- 创建一个对象的代理，从而实现基本操作的拦截和自定义（如属性查找、赋值、枚举、函数调用等）。
+- 可自定义的选项：
+    - get：读取属性。
+    - set：设置属性。
+    - deleteProperty：删除属性。
+    - has：in 操作符。
+    - ownKeys：Object.keys、for...in 等。
+    - apply：函数调用（当代理目标是函数时）。等等。
+- eg
+    ```js
+    const target = {};
+    const proxy = new Proxy(target, {
+        get(obj, prop) {
+            console.log(`读取 ${prop} 属性`);
+            return obj[prop];
+        },
+        set(obj, prop, value) {
+            console.log(`设置 ${prop} 属性`);
+            obj[prop] = value;
+            return true;
+        },
+        has(target, key) {
+            console.log(`判断 ${key} 属性`)
+            return key in target;
+        },
+        ownKeys(target) {
+            return Reflect.ownKeys(target);
+        },
+    });
+    proxy.name = 'Alice'; // 设置 name 属性
+    console.log(proxy.name); // 读取 name 属性
+    ```
+### Reflect
+- 一个提供反射式对象操作的对象
+- Reflect 的主要目的是简化对象操作，并提供更规范的元编程能力。
+- 为什么需要reflect？
+    - 减少异常：某些 Object 方法（如 defineProperty）会抛出错误，而 Reflect 方法返回布尔值。
+    - 更好的函数式风格：适合在高阶函数或元编程中使用。
+    - 与 Proxy 对称：简化代理逻辑，避免手动实现默认行为。
+- eg
+    ```js
+    const obj = { x: 1 };
+    // 传统方法
+    'x' in obj; // true
+    delete obj.x; // true
+    // Reflect 方式
+    Reflect.has(obj, 'x'); // true
+    Reflect.ownKeys(obj); // ["x"]
+    Reflect.deleteProperty(obj, 'x'); // true
+    ```
 ### Intersection API
 - 可用于懒加载
 - 监听元素视窗进入点和退出点
@@ -1048,16 +1209,16 @@ function sendMsg() {
         - 增加了 JSON 支持。
         - 增加了 Object.defineProperty 等方法。
     - ES2015（ES6，ECMAScript 2015）：
-        - 引入了 let 和 const 块级作用域变量声明。
-        - 引入了箭头函数（arrow functions）。
-        - 增加了import export的ECMAScript Module(ESM)规范
+        - 增加了 let 和 const 块级作用域变量声明。
+        - 增加了箭头函数（arrow functions）。
+        - 增加了import export的ECMAScript Module(ESM)规范，同时有tree shaking
         - 增加了 Promise 对象。
         - 增加了Symbol
         - 增加了Set 和 Map：新的数据结构。
-        - 增加了模板字符串（template strings）。
-        - 增加了解构赋值（destructuring assignment）。
-        - 增加了默认参数
         - 增加了拓展运算符
+        - 引入了模板字符串（template strings）。
+        - 引入了解构赋值（destructuring assignment）。
+        - 引入了默认参数
         - 引入了类（class）、extends
     - ES2016（ES7，ECMAScript 2016）：
         - 增加了 Array.prototype.includes 方法。
@@ -1152,22 +1313,13 @@ function sendMsg() {
         - 全局变量
         - 闭包引用外部变量
         - 循环引用
-## 构建工具
-- 对前端项目进行以下操作
-    - 编译
-        - 把类似Typescript和Sass的高级语言编译成最基础的js
-    - 打包
-    - 优化
-        - Tree-shaking
-            - 一种减少代码体积的技术，通过静态分析代码依赖关系来移除代码中其实不会被使用的部分
-            - 在ES2015/ES6中引入
-        - Code Split
-            - 按需加载代码
-    - 资源管理
-    - 提供开发服务器(Optional)
+## 构建工具（详见frontend_specific_learning）
 - 现代常用的构建工具
     - Babel：用来把ES6+的代码编译为ES5的代码
     - Webpack：把js模块优化、打包为一个bundle文件
+- Tree-shaking
+    - 一种减少代码体积的技术，通过静态分析代码依赖关系来移除代码中其实不会被使用的部分
+    - 在ES2015/ES6中引入
 
 # js和浏览器
 - JS 可以操作 DOM，但GUI渲染线程与JS线程是互斥的。所以JS 脚本执行和浏览器布局、绘制不能同时执行。

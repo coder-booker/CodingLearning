@@ -1,6 +1,5 @@
-# CSS Learning
 
-### Commonly used pattern
+# experience
 - body
     - max-width: 100vw;：将 body 元素的最大宽度设置为视口宽度的 100%。这意味着 body 元素的宽度不会超过视口的宽度。  
     - overflow-x: hidden;：隐藏 body 元素在水平方向上的溢出内容。如果 body 元素的内容超出了视口的宽度，超出的部分将不会显示。
@@ -14,24 +13,67 @@
     - 粗体化: `<b></b>`和`font-weight: `结合可以实现部分文本的自定义大小粗体化，而无需使用`<span></span>`
 - 均匀排列
     - flex + gap
-    - 猫头鹰选择器: `* + *`，或者 `xxx + xxx`
+    - 猫头鹰选择器: `* + *`，或者 `<xxx> + <xxx>`
 - decoration用的一些字段
     - `cursor: pointer`
     - `border-radius: 50%`
 - 屏蔽交互实现
     - html标签声明`disabled`，然后用`:disabled`选择器来捕获
     - 常见做法是同时配合 `cursor: not-allowed;`和背景颜色设置
-### selector
+
+# 奇怪的概念
+- BFC (Block Formatting Context)
+    - 就是把某个盒子和外部完全独立
+        - 因为本来会有margin塌陷问题，BFC时就不会了
+    - 能够清除浮动
+        - 父级BFC可以识别子float的高度
+    - 文档的根元素（`<html>`）。其实就是第一个BFC
+    - 创建方法
+        - `display: flow-root`
+        - overflow不为visible，如auto、hidden
+
+
+# selector选择器
+- css选择器优先级
+    - 总顺序
+        1. `!important`会覆盖页面内任何位置的元素样式，权值为正无穷
+        2. 内联样式，如`style="color: green"`，权值为1000
+        3. ID选择器，如`#app`，权值为0100
+        4. 类、伪类、属性选择器，如`.foo`, `:first-child`, `div[class="foo"]`，权值为0010
+        5. html标签、伪元素选择器，如`div::first-line`，权值为0001
+        6. 通配符、子类选择器、兄弟选择器，如`*`, `>`, `+`，权值为0000
+        7. 继承的样式没有权值
+    - 权值计算：
+        - 一行选择器的优先级 = ABCD
+        - 如果存在内联样式，那么 A = 1, 否则 A = 0
+        - B 的值等于 ID选择器出现的次数
+        - C 的值等于 类选择器 和 属性选择器 和 伪类 出现的总次数
+        - D 的值等于 标签选择器 和 伪元素 出现的总次数
+        - eg `.main .123[class="foo"]`中，A=0，B=0，C=3，D=0，最终权值为0030
+    - 权重相同的情况下，后者覆盖前者
+    - 权值其实是256进制的
 - 所有空格分隔的选择器都是上下级，所有无空格的选择器都是concurrent关系
     - 因此其实常用的伪类选择器也是无空格的concurrent级
     - e.g. `.AAA.BBB`是选中同时拥有AAA和BBB class的元素，`.AAA .BBB`是上下级关系
     - e.g. `.AAA :focus`可以一次性选中所有AAA的子元素的focus样式
-- 猫头鹰选择器: `* + *`，或者 `xxx + xxx`
+- 各种选择器
+    - ID选择器，如`#app`
+    - 类、伪类、属性选择器，如`.foo`, `:first-child`, `div[class="foo"]`
+        - 伪类选择器：选择处于特定状态的元素，比如`:hover`、`:invalid`、`:focus`
+    - html标签、伪元素选择器，如`div::first-line`
+        - 伪元素选择器：无法用 HTML 语义表达的抽象实体，如同往标记文本中加入全新的 HTML 元素一样。
+    - 通配符、子类选择器、兄弟选择器，如`*`, `>`, `+`
+        - `a ~ b `在a标签后任意位置的b兄弟标签
+        - `a + b`紧贴在a标签后的b兄弟标签
+        - `a || b`列选择器：匹配表格行的，a标签作用域中的所有b标签
+    - `a:`伪类选择器：按照未被包含在文档树中的状态信息来选择元素。
+- 有意思的pattern
+    - 猫头鹰选择器: `* + *`，或者 `xxx + xxx`
 
-### css module
+# css module
 - `:global(.className)`用来在`.module.css`中对全局施加样式，也就是去除哈希值
 
-### 盒模型
+# 盒模型
 - 关乎以下四项内容
     - 外边距 margin
     - 边框 border
@@ -40,12 +82,12 @@
     - 内容 content
 - 有两种盒模型
     - W3C 标准盒子模型
-        - border-box: content-box
+        - box-sizing: content-box
         - 只算content的宽高，不包含border到padding
     - IE 怪异盒子模型
-        - border-box: border-box
+        - box-sizing: border-box
         - 算上border，当然也算上其内的滚动条和padding
-### 各种attr
+# 各种attr
 - 这些属性在不同浏览器会有很多很多不同行为，因此大概知道意义就好了
 - client
     - 不变
@@ -98,6 +140,14 @@
         - 渐变：`background-image: linear-gradient(to bottom, transparent 20%, blue 40%, blue 60%, transparent 80%);`
     - `background-position`: 
         - 控制背景图片的中心点
+- `float`
+    - 浮动元素前的块会顶开浮动元素，后的块则会被覆盖。
+        - 当然如果float方向不会覆盖到后面的块自然不会影响显示后面的块，只是位置会不同：float被顶开的距离只会计算前面块，后面的块会被忽略
+    - 清除浮动：设置**块状**clear的空**后**兄弟元素撑起父容器，具体left/right/both再判断
+        - 伪元素`:after`、空div都可以
+        - 注意clear的含义其实就是不允许某个方向上有元素浮动，所以float的left和right与clear的left和right注意需要互相对着
+            - 比如float在前且float:left，你后面的元素clear:right是没用的
+            - 此外，因为float前的块会顶开float，对前块设置clear没用
 - 文本
     - 垂直居中：
         - `line-height`和`height`一样
@@ -144,7 +194,6 @@
         - `contain`; 不裁剪，保留比例缩放
         - `cover`; 裁剪，保留比例缩放
     - 用相对路径加载本地资源："/public/pictures/nam_of_picture.jpg"
-
 - `overflow`:
     - `visible` - default
     - `hidden`

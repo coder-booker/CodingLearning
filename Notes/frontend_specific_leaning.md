@@ -1,166 +1,411 @@
-# 图片懒加载
-- HTML内置属性loading=lazy，让图片在滚动到元素附近时才加载
-    - <img source='/xxx.jpg' loading='lazy' alt=''>
-- js实现进入视窗再加载
-    - 对比元素offsetTop是否小于scrollTop和clientHeight，是的话代表进入了视窗，开始加载
-- IntersectionObserver
-    - 浏览器内置的解决"判断元素是否在视窗内"问题的API
 
 
+
+# 前端优化
+1. 浏览器渲染优化
+    - 关键渲染路径（CRP）优化
+        - 首屏就是一个关键渲染路径
+        - 具体方法：
+            - 减少关键资源数量
+                - 内联关键 CSS（首屏样式直接嵌入 HTML）。
+                - 延迟非关键 JS（使用 async/defer）。
+            - 最小化js和css
+            - 预加载关键资源
+                - `<head>`标签中的`<link>`可以设置`ref='preload'`，让关键资源优先加载和缓存（但preload并不会执行资源）
+    - 减少重排（Reflow）与重绘（Repaint）
+        - 避免频繁操作 DOM
+            - 使用 DocumentFragment 批量插入 DOM。
+            - 读写分离（先读取布局属性，再统一修改）。
+        - 使用 CSS3 动画替代 JS 动画（可以触发GPU加速）
+            - 触发 GPU 加速（transform: translateZ(0)）。
+        - 优化选择器性能
+            - 避免嵌套过深（如 .nav ul li a → .nav-link）。
+    - 图片优化
+        - 格式选择
+            - WebP（比 JPEG/PNG 小 30%）。
+            - AVIF（下一代格式，支持 HDR）。
+        - 懒加载
+            - HTML内置属性loading=lazy，让图片在滚动到元素附近时才加载
+                - <img source='/xxx.jpg' loading='lazy' alt=''>
+            - js实现进入视窗再加载
+                - 对比元素offsetTop是否小于scrollTop和clientHeight，是的话代表进入了视窗，开始加载
+            - IntersectionObserver
+                - 浏览器内置的解决"判断元素是否在视窗内"问题的API
+        - 响应式图片
+            - `<img srcset="small.jpg 480w, large.jpg 1080w" sizes="(max-width: 600px) 480px, 1080px">`
+2. react优化
+    - 懒加载、虚拟列表
+    - 钩子缓存
+    - 预加载
+4. V8 引擎与 JS 执行优化
+    - 隐藏类（Hidden Class）优化
+        - 避免动态添加属性：
+        ```js
+            // ❌
+            const obj = {};
+            obj.a = 1;
+            obj.b = 2;
+            // ✅
+            const obj = { a: 1, b: 2 };
+        ```
+        - 避免删除属性（使用 null 替代 delete）。
+    - 内存管理
+        - 避免内存泄漏：
+            - 清除定时器、事件监听器。
+            - 避免闭包滥用。
+        - 使用 WeakMap/WeakSet：存储临时引用。
+    - 优化热路径（Hot Path）
+        - 减少函数参数：避免超过 4 个参数（V8 优化限制）。
+        - 使用 TypedArray：处理二进制数据。
 # 前端工程化
 - 就是对前端项目进行以下操作
+    - 构建工程
+    - 管理库
+        - npm
     - 编译
-        - 把类似Typescript和Sass的高级语言编译成最基础的js
-    - 打包
+        - loader: 对不同的文件后缀进行不同的加载方法，例如json、Sass、ts
     - 优化
-        - Tree-shaking
-            - 一种减少代码体积的技术，通过静态分析代码依赖关系来移除代码中其实不会被使用的部分
-            - 在ES2015/ES6中引入
-        - Code Split
-            - 按需加载代码
-    - 资源管理
-    - 提供开发服务器(Optional)
+        - plugin: css提取、js压缩（Tree-shaking）、生成html之类的
+        - code split
+        - loader：资源加载管理
+    - 自动运行单元测试，
+    - 打包
+    - 部署项目，生成web站点。
+    - 额外功能：
+        - 开发服务器(Optional)
+        - 生成分析报表
+            - 包大小分析、souce-map
+        - 定义全局变量
 - 现代常用的构建工具
+    - maven：java的项目管理工具
     - Babel：用来把ES6+的代码编译为ES5的代码
     - Webpack：把js模块优化、打包为一个bundle文件
-- Webpack
-    - entry
-    - output
-    - loader
-        - 作用：把非js的文件转换为webpack可识别的模块以打包
-        - 常见loader：
-            - babel-loader：将ES6+的代码转换成ES5的代码。
-            - css-loader：解析CSS文件，并处理CSS中的依赖关系。
-            - style-loader：将CSS代码注入到HTML文档中。
-            - sass-loader：将Sass文件编译成CSS文件。
-            - less-loader：将Less文件编译成CSS文件。
-            - postcss-loader：自动添加CSS前缀，优化CSS代码等。
-            - vue-loader：将Vue单文件组件编译成JavaScript代码。
-            - file-loader：解析文件路径，将文件赋值到输出目录，并返回文件路径。
-            - url-loader：类似于file-loader，但是可以将小于指定大小的文件转成base64编码的Data URL格式
-        - eg
-            ```js
-            module: {
-                rules: [
-                    {
-                        test: /\.文件后缀$/, // 正则匹配文件类型
-                        use: ['loader-name'], // 使用的 loader
-                        exclude: /node_modules/, // 排除目录
-                        options: { ... } // loader 参数
-                    }
-                ]
-            }
-            ```
-    - plugin
-        - 作用：扩展 Webpack 功能，处理 Loader 无法完成的任务（如代码压缩、HTML 生成等）。
-        - 常见plugin
-            - HtmlWebpackPlugin：生成HTML文件，并自动将打包后的javaScript和CSS文件引入到HTML文件中。
-            - CleanWebpackPlugin：清除输出目录。
-            - ExtractTextWebpackPlugin：将CSS代码提取到单独的CSS文件中。
-            - DefinePlugin：定义全局变量。
-            - UglifyJsWebpackPlugin：压缩JavaScript代码。
-            - HotModuleReplacementPlugin：热模块替换，用于在开发环境下实现热更新。
-            - MiniCssExtractPlugin：与ExtractTextWebpackPlugin类似，将CSS代码提取到单独的CSS文件中。
-            - BundleAnalyzerPlugin：分析打包后的文件大小和依赖关系。
-    - mode
-    - optimization
-        - eg
-            ```js
-            optimization: {
-                splitChunks: {    // 代码分割
-                    chunks: 'all',          // 分割所有类型的 chunk（initial/async/all）
-                    minSize: 20000,         // 生成 chunk 的最小体积（单位：字节）
-                    maxSize: 0,             // 尝试拆分大于此值的 chunk
-                    minChunks: 1,           // 模块被至少 minChunks 个 chunk 引用时才分割
-                    cacheGroups: {          // 定义缓存组（可多组）
-                        vendors: {
-                            test: /[\\/]node_modules[\\/]/, // 匹配 node_modules 中的模块
-                            name: 'vendors',    // 生成的 chunk 名称
-                            priority: -10,      // 优先级（数值越大越优先）
-                            reuseExistingChunk: true // 重用已存在的 chunk
-                        },
-                        common: {
-                            minChunks: 2,       // 被 2 个以上 chunk 引用的模块
-                            name: 'common',
-                            priority: -20
-                        }
-                    }
-                },
-                moduleIds: 'deterministic',    // 固定模块 ID
-                chunkIds: 'deterministic',     // 固定 Chunk ID
-                runtimeChunk: 'single',        // 分离 Webpack 运行时代码
-                minimize: true,                // 启用压缩（生产模式默认 true）
-                minimizer: [new TerserPlugin()] // 指定压缩工具
-            }
-            ```
-        - splitChunks.chunks 可选值
-            - initial：只分割同步加载的模块。
-            - async：只分割异步加载的模块。
-            - all：所有模块都可能被分割（推荐）。
-        - 实际项目的例子：
-            - eg
-                ```js
-                optimization: {
-                    splitChunks: {
-                        chunks: 'all',
-                        cacheGroups: {
-                        react: {
-                            test: /[\\/]node_modules[\\/](react|react-dom)[\\/]/,
-                            name: 'react-vendor',
-                            priority: 20
-                        },
-                        lodash: {
-                            test: /[\\/]node_modules[\\/]lodash[\\/]/,
-                            name: 'lodash-vendor',
-                            priority: 10
-                        }
-                        }
+    - Vite
+### Webpack
+- 核心原理：
+    - 采用打包机制，将所有模块打包成一个或多个 bundle 文件。开发模式下使用 webpack-dev-server 提供服务，通过热更新（HMR）实现快速开发。构建时需要遍历所有依赖，生成依赖图，然后进行打包。
+- entry
+- output
+    ```js
+    entry: {
+        app: './src/app.js',
+        search: './src/search.js',
+    },
+    output: {
+        filename: filename: '[name].[contenthash:8].js', // 生成如 app.a1b2c3d4.js
+        path: __dirname + '/dist',
+        publicPath: 'https://cdn.example.com/assets/[fullhash]/', // 配合cdn缓存策略减少不必要的重新请求
+    },
+    ```
+- loader
+    - 作用：把非js的文件转换为webpack可识别的模块以打包
+    - 常见loader：
+        - babel-loader：将ES6+的代码转换成ES5的代码。
+        - css-loader：解析CSS文件，并处理CSS中的依赖关系。
+        - style-loader：将CSS代码注入到HTML文档中。
+        - sass-loader：将Sass文件编译成CSS文件。
+        - less-loader：将Less文件编译成CSS文件。
+        - postcss-loader：自动添加CSS前缀，优化CSS代码等。
+        - vue-loader：将Vue单文件组件编译成JavaScript代码。
+        - file-loader：解析文件路径，将文件赋值到输出目录，并返回文件路径。
+        - url-loader：类似于file-loader，但是可以将小于指定大小的文件转成base64编码的Data URL格式
+    - eg
+        ```js
+        module: {
+            rules: [
+                {
+                    test: /\.文件后缀$/, // 正则匹配文件类型
+                    use: ['loader-name'], // 使用的 loader
+                    exclude: /node_modules/, // 排除目录
+                    options: { ... } // loader 参数
+                }
+            ]
+        }
+        ```
+- plugin
+    - 作用：扩展 Webpack 功能，处理 Loader 无法完成的任务（如代码压缩、HTML 生成等）。
+    - 常见plugin
+        - HtmlWebpackPlugin：生成HTML文件，并自动将打包后的javaScript和CSS文件引入到HTML文件中。
+        - CleanWebpackPlugin：清除输出目录。
+        - ExtractTextWebpackPlugin：将CSS代码提取到单独的CSS文件中。
+            - deprecated
+        - MiniCssExtractPlugin：与ExtractTextWebpackPlugin类似，将CSS代码提取到单独的CSS文件中。
+            - 这样请求html、css、js可以平行进行，嵌入css的话html容易阻塞
+            - 支持HMR、支持 Webpack 5 的持久缓存。
+        - DefinePlugin：定义全局变量。
+        - UglifyJsWebpackPlugin：压缩JavaScript代码。
+        - HotModuleReplacementPlugin：热模块替换，用于在开发环境下实现热更新。
+        - BundleAnalyzerPlugin：分析打包后的文件大小和依赖关系。
+            - 集成到 Webpack，实时分析包体积
+            - 开发时查看打包结果，交互式可视化
+        - TerserPlugin：Tree Shaking
+            - 解析：将代码转换为抽象语法树（AST）。
+            - 转换：深入删除死代码、缩短变量名、优化逻辑。
+            - 生成：输出压缩后的代码。
+- mode
+- optimization
+    - 常用属性
+        ```js
+        optimization: {
+            splitChunks: {    // 代码分割
+                chunks: 'all',          // 分割所有类型的 chunk（initial/async/all）
+                minSize: 20000,         // 生成 chunk 的最小体积（单位：字节）
+                maxSize: 0,             // 尝试拆分大于max(minSize, maxSize)的 chunk
+                minChunks: 1,           // 模块被至少 minChunks 个 chunk 引用时才分割
+                cacheGroups: {          // 定义缓存组
+                    vendors: {
+                        test: /[\\/]node_modules[\\/]/, // 给webpack用以匹配此group要被打包的模块
+                        name: 'vendors',    // 生成的 chunk 名称
+                        priority: -10,      // 优先级，用于指定webpack匹配模块时时优先合并到哪个cacheGroup
+                        reuseExistingChunk: true // 重用已存在的 chunk
+                    },
+                    common: {
+                        minChunks: 2,       // 被 2 个以上 chunk 引用的模块
+                        name: 'common',
+                        priority: -20
                     }
                 }
-                ```
-    - sizeEffect:
-        - 用来tree shaking的
-    - devServer
-    - devtool
-        - devtool: 'source-map'
-        - devtool: false, // 或 'hidden-source-map'
-    - resolve.alias	路径别名（如 @ -> src）
-    - externals	排除某些库（如 CDN 引入的 React）
-    - cache	持久化缓存（Webpack 5 默认开启，大幅提升构建速度）
-    - performance 资源大小警告阈值
-
-
-    - 魔法注释
-        - 在动态导入（import()）写魔法注释（Magic Comments）可以对模块的加载产生不同行为
-            -  `webpackPrefetch: true`可以让模块自动被预加载
-            - `webpackPreload: true`可以立刻预加载当前页面关键资源（如字体）
-        - eg
-            ```ts
-            const Settings = React.lazy(() =>
-                import(/* webpackPrefetch: true */ './Settings')
-            );
-            ```
-    - manifest.json
-        - Webpack 通过 manifest 知道如何加载 chunk。
-        - 长期缓存：若第三方库哈希不变，用户无需重复下载。
-        - eg
+            },
+            moduleIds: 'deterministic',    // 默认值。固定模块 ID。优先级低于output.filename
+            chunkIds: 'deterministic',     // 固定 Chunk ID。优先级低于output.filename
+            runtimeChunk: 'single',        // 分离 Webpack 运行时代码
+            minimize: true,                // 启用压缩（生产模式默认 true）
+            minimizer: [new TerserPlugin({ parallel: true })], // 指定压缩工具
+        }
+        ```
+    - splitChunks.chunks 可选值
+        - initial：只分割同步加载的模块。
+        - async：只分割异步加载的模块。
+        - all：所有模块都可能被分割（推荐）。
+    - optimization.minimizer：
+        - 默认就是TerserPlugin，UglifyJsWebpackPlugin是4+以前的版本
+        - 只要minimize为true就会默认加载Terser
+        - 需要自定义配置时才手动实例化
+    - optimization.moduleIds
+        - 编译优化完的js文件的import语句名字
+        - import语句实际上会变成webpack内置的一个模块id，用于检查模块是否被加载了（我也不大懂）
+    - optimization.chunkIds:
+        - 5+默认为deterministic，4+是简易的数字id
+- devServer
+- devtool
+    - 开发环境显示源码：'source-map'/'eval-cheap-source-map'
+    - 生产环境：false/'hidden-source-map'
+- resolve.alias	路径别名（如 @ -> src）
+- externals	排除某些库（如 CDN 引入的 React）
+- cache	持久化缓存（Webpack 5 默认开启，大幅提升构建速度）
+    ```js
+    cache: {
+        type: 'filesystem', // 缓存到磁盘
+        buildDependencies: {
+            config: [__filename] // 依赖文件名来决定什么时候revalidate？
+        }
+    }
+    ```
+- performance 资源大小警告阈值
+- manifest.json（**不太懂**）
+    - Webpack 通过 manifest 知道如何chunk和源js文件的关系。
+    - 长期缓存：若第三方库哈希不变，用户无需重复下载。
+    - eg
+        ```json
+        {
+            "main.js": "main.8a9b3c.js",
+            "vendor.js": "vendor.d4e5f6.js",
+            "src_index.js": "main.8a9b3c.js",
+            "node_modules_lodash.js": "vendor.d4e5f6.js"
+        }
+        ```
+- 包大小分析：
+    - source-map-explorer
+        - 生产环境构建后分析，精确到源码行
+        - 开发阶段用 BundleAnalyzerPlugin（实时反馈）。
+        - 使用方法：
             ```json
-            {
-                "main.js": "main.8a9b3c.js",
-                "vendor.js": "vendor.d4e5f6.js",
-                "src_index.js": "main.8a9b3c.js",
-                "node_modules_lodash.js": "vendor.d4e5f6.js"
+            "scripts": {
+                "analyze": "source-map-explorer 'build/static/js/*.js'",
             }
             ```
+    - BundleAnalyzerPlugin：分析打包后的文件大小和依赖关系。
+        - 开发环境下的实时反馈
+- 魔法注释
+    - 在动态导入（import()）写魔法注释（Magic Comments）可以对模块的加载产生不同行为
+        -  `webpackPrefetch: true`可以让模块自动被预加载
+        - `webpackPreload: true`可以立刻预加载当前页面关键资源（如字体）
+    - eg
+        ```ts
+        const Settings = React.lazy(() =>
+            import(/* webpackPrefetch: true */ './Settings')
+        );
+        ```
+- React 默认 webpack配置：
+    - CRA默认有webpack
+    ```js
+    const webpackConfig = {
+        mode: isEnvProduction ? 'production' : 'development',
+        bail: isEnvProduction, // 生产环境构建失败时退出
+        devtool: isEnvProduction
+            ? 'source-map' // 生产环境生成完整 Source Map
+            : 'cheap-module-source-map', // 开发环境快速生成 Source Map
+        entry: paths.appIndexJs, // 入口文件：src/index.js
+        output: {
+            path: paths.appBuild, // 输出目录：build/
+            filename: 'static/js/[name].[contenthash:8].js', // 带哈希的输出文件名
+            chunkFilename: 'static/js/[name].[contenthash:8].chunk.js', // 动态导入的 chunk
+            publicPath: publicPath, // 静态资源公共路径（默认 '/'）
+            clean: true, // 构建前清空输出目录
+        },
+        module: {
+            rules: [
+                // 处理 JS/JSX（Babel 转译）
+                {
+                    test: /\.(js|jsx)$/,    // webpack遇到一个文件时会对每个rules的test进行匹配，test到最匹配的就使用这个rule
+                    include: paths.appSrc,
+                    loader: 'babel-loader',
+                    options: {
+                        presets: ['react-app'], // CRA 默认 Babel 配置
+                        cacheDirectory: true, // 缓存 Babel 结果
+                    },
+                },
+                // 处理 CSS（支持 CSS Modules）
+                {
+                    test: /\.css$/,
+                    use: [
+                        isEnvProduction ? MiniCssExtractPlugin.loader : 'style-loader',
+                        'css-loader',
+                    ],
+                },
+                // 处理图片/字体
+                {
+                    test: /\.(png|jpg|gif|svg|eot|ttf|woff|woff2)$/,
+                    type: 'asset/resource', // Webpack 5 资源处理
+                },
+            ],
+        },
+        plugins: [
+            // 生成 index.html 并注入 JS/CSS
+            new HtmlWebpackPlugin({
+                template: paths.appHtml, // public/index.html
+            }),
+            // 生产环境提取 CSS 为独立文件
+            isEnvProduction && new MiniCssExtractPlugin({
+                filename: 'static/css/[name].[contenthash:8].css',
+                chunkFilename: 'static/css/[name].[contenthash:8].chunk.css',
+            }),
+            // 定义环境变量
+            new webpack.DefinePlugin({
+                'process.env': JSON.stringify(process.env),
+            }),
+        ].filter(Boolean),
+        optimization: {
+            minimize: isEnvProduction, // 生产环境启用压缩
+            minimizer: [new TerserPlugin()], // 使用 Terser 压缩
+            splitChunks: {
+                chunks: 'all', // 分割所有类型的 chunk
+                    cacheGroups: {
+                        vendors: {
+                            test: /[\\/]node_modules[\\/]/, // 分离 node_modules
+                            name: 'vendors',
+                            priority: -10,
+                        },
+                    },
+            },
+            runtimeChunk: 'single', // 分离 Webpack 运行时代码
+            moduleIds: 'deterministic', // 固定模块 ID
+        },
+        resolve: {
+            extensions: ['.js', '.jsx'], // 自动解析的文件扩展名
+            alias: {
+                'react-dom': '@hot-loader/react-dom', // 开发环境热更新支持
+            },
+        },
+        devServer: {
+            hot: true, // 启用热更新
+            historyApiFallback: true, // 支持 SPA 路由
+        },
+    };
+    ```
+    - productionSourceMap: true, // CRA 中默认开启
+    - 如需自定义：可通过以下方式覆盖配置：
+        - react-app-rewired + customize-cra（推荐）：
+        - eg
+            ```js
+            // config-overrides.js
+            const { override, addWebpackPlugin } = require('customize-cra');
+            const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin;
 
-# 浏览器
-- sessionStorage和localStorage的区别
-    - sessionStorage：
-        - 生命周期：页面会话期间有效，关闭页面后数据被清除。
-        - 作用域：仅在当前标签页有效。
-    - localStorage：
-        - 生命周期：永久存储，除非手动清除。
-        - 作用域：跨标签页共享。
+            module.exports = override(
+                addWebpackPlugin(new BundleAnalyzerPlugin())
+            );
+            ```
+        - npm run eject（不可逆）
+
+### Vite
+- 优势：
+    - 极快的启动速度
+        - 直接将源文件作为原生 ES 模块提供给浏览器
+        - 因此Vite 的"冷启动"只是启动一个静态文件服务器，几乎瞬间完成，而Webpack 必须先打包整个依赖图才能启动开发服务器
+    - 精确的 HMR 边界检测
+- 工作原理
+    1. 原生 ES Modules (ESM) 的利用
+        - 直接将源文件作为原生 ES 模块提供给浏览器
+        - 通过 `<script type="module">` 加载入口文件，浏览器自行解析模块依赖图
+        - 按需编译：只编译当前页面实际使用的文件，而不是整个应用
+        - 但也因此必须浏览器原生支持esm
+    2. 依赖预构建
+        - 将 CommonJS/UMD 依赖转换为 ESM 格式
+        - 将多个内部模块的依赖合并为单个模块（如 lodash 的各种方法）
+    3. 快速 HMR 实现
+        - Vite 维护了一个模块关系图
+        - 当一个模块发生变化时，Vite 查关系图并精确地使已更新的模块与其最近的 HMR 边界之间的链失效，然后简单编译更新
+            - Vite 服务器通过文件系统监听发现变更
+            - 仅对修改的文件进行轻量级转译（如 TS→JS）
+            - 通过 **WebSocket** 向浏览器发送更新事件
+            - 浏览器直接重新请求该模块（利用 HTTP 缓存机制）
+            - 新模块执行后，Vite 的运行时仅更新相关组件树
+        - 这使 HMR 更新始终快速，无论应用大小
+    4. 生产构建
+        - 生产环境使用 Rollup 进行打包
+        - Rollup 的打包效率更高
+        - 生成的代码更简洁
+        - 更好的 tree-shaking
+- 使用场景
+    - 现代浏览器项目：需要快速开发体验的应用
+    - 大型单页应用 (SPA)：传统打包工具在大型项目中启动和 HMR 慢
+    - 库/组件开发：快速的开发反馈循环很重要
+    - 需要快速原型设计的项目：立即看到更改效果
+    - Vue/React 项目：对这两个框架有很好的支持
+
+
+### package.json
+- 原本是nodejs的npm的meta配置文件，后来变成了js生态通用的配置文件
+- 因此有一些字段其实是给js生态中的热门库设置的，比如webpack
+- sideEffect:
+    - 用来指定哪些文件可以tree shaking的，有sideEffect的就不shake
+    - Webpack内置的静态分析功能
+    - 和Terser的区别在于，sideEffect只会进行简单的shaking，如清除未引用的变量等，而Terser还会进一步清除未使用的代码片段
+- "browserslist": 
+    ```json
+    {
+        "production": [
+            ">0.2%",      // 市场份额 >0.2% 的浏览器
+            "not dead",   // 排除官方已不再维护的浏览器
+            "not op_mini all" // 排除 Opera Mini
+        ],
+        "development": [
+            "last 1 chrome version",
+            "last 1 firefox version",
+            "last 1 safari version"
+        ]
+    }
+    ```
+
+# 浏览器相关
+- 浏览器渲染流程
+    - DOM树构建：渲染引擎使用HTML解析器（调用XML解析器）解析HTML文档，将各个HTML元素逐个转化成DOM节点，从而生成DOM树；
+    - CSSOM树构建：CSS解析器解析CSS，并将其转化为CSS对象，将这些CSS对象组装起来，构建CSSOM树；
+    - 渲染树构建：DOM 树和 CSSOM 树都构建完成以后，浏览器会根据这两棵树构建出一棵渲染树；
+    - 页面布局：渲染树构建完毕之后，元素的位置关系以及需要应用的样式就确定了，这时浏览器会计算出所有元素的大小和绝对位置；
+    - 页面绘制：页面布局完成之后，浏览器会将根据处理出来的结果，把每一个页面图层转换为像素，并对所有的媒体文件进行解码。
+
 
 # 前端加密
 - 就是让前端的js完成类似https的加密流程
@@ -194,8 +439,6 @@
     - 定义：用户与页面的互动深度。
     - 解释：如浏览页面数量、停留时间、评论、分享按钮等，反映用户参与度。
 
-
-
 - 信息层面
 9. 学习曲线（Learning Curve）
 定义：用户掌握页面操作的难易程度。
@@ -216,9 +459,6 @@
 定义：用户能否轻松完成任务。
 解释：页面应直观易用，用户无需复杂操作即可找到所需信息或功能。
 
-
-
-
 - 艺术层面
 4. 一致性（Consistency）
 定义：页面设计是否保持一致。
@@ -235,8 +475,6 @@
 3. 视觉层次（Visual Hierarchy）
 定义：页面元素是否按重要性排列。
 解释：通过大小、颜色、对比度等设计手段，引导用户关注重要内容。
-
-
 
 - 用户行为层面
 23. 用户反馈（User Feedback）
@@ -261,3 +499,8 @@
 定义：用户操作后是否有及时反馈。
 解释：如按钮点击后的状态变化，帮助用户确认操作成功。
 
+
+# 不同的前端框架
+- Svelte:一个编译型前端框架，将组件编译为高效的原生 JavaScript 代码。无虚拟 DOM，运行时开销极小，适合构建高性能应用。 SvelteKit 是 Svelte 的全栈框架，支持 SSR、SSG 和客户端渲染。
+- Solid.js:一个高性能的响应式 UI 框架，语法类似 React，但无虚拟 DOM。通过细粒度的响应式更新实现高性能。适合需要极致性能的应用。
+- Qwik:一个专注于即时加载性能的框架，通过延迟加载 JavaScript 实现极快的首屏加载。适合内容密集型网站，如电商或新闻站点。
