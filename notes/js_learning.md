@@ -118,11 +118,13 @@
     - `String()`其实是进行类型转换的方法
 ### Symbol
 - 特点
-    - Symbol在全局有一片自己的空间，任何地方定义的Symbol都会在这里去重
-    - Symbol自己就可以跨模块共享，不用导出，只要import过让声明语句运行就行
+    - 唯一性：在任何地方定义的Symbol都是唯一的
     - ES6，也就是ES2015才引入的
+    - 不会被正常遍历处理
 - 主要作用：
     - 用来标识全局唯一的值，避免命名空间污染和保持唯一性
+    - 元编程的入口
+    - 适合定义对象私有属性
 - js规范用内置Symbol值来重写对象的特定内置行为
     - `Symbol.iterator`：迭代行为
         - eg
@@ -161,6 +163,7 @@
         - 这个描述字符串会变成其属性`.description`
     - `.for()`：寻找或创建Symbol
     - `.keyFor()`：寻找被创建了的Symbol，没有就返回undefined
+        - 可用以跨模块共享而不用导出
 # 数组
 - 数组本质上就是经过特殊处理的可迭代对象
 - 内置方法
@@ -577,7 +580,8 @@
     - 实例化函数对象会使用函数的返回对象作为返回结果。
         - 如果没有返回、返回值不为对象(比如返回了个基础类型)、或返回值为this，则返回其父级对象
         - 如果没有父级对象或者是匿名函数，非严格模式下会返回全局对象window，严格模式下返回`undefined`
-
+- 迭代器
+    - 
 
 # 变量
 - 暂时性死区
@@ -750,6 +754,45 @@
     - Pending（等待中）：初始状态，既不是成功也不是失败。
     - Fulfilled（已成功）：操作成功完成。
     - Rejected（已失败）：操作失败。
+# 装饰器
+- 装饰器本质上就是个高阶函数的语法糖
+- 装饰器会隐性传入被调用者的this
+- tsconfig中指定`"experimentalDecorators": true`
+- e.g.
+    ```ts
+    // target: object：调用 被装饰方法 的对象实例的prototype，其实也就是它的类型
+    // propertyName/propertyKey: string | symbol：方法名
+    // descriptor: PropertyDescriptor：被装饰者的属性描述。value属性就是被装饰者的具体内容
+    function catchErrors(target: object, propertyName: string, descriptor: PropertyDescriptor) {
+        // 先把原方法保存下来，以方便修改
+        const method = descriptor.value;
+
+        // 修改被装饰者的方法内容
+        descriptor.value = async function (...args: unknown[]) {
+            try {
+                return await method.apply(this, args); // this 调用 被装饰方法 的对象实例
+            } catch (error) {
+                console.error(error);
+            }
+        };
+        // 返回被装饰者
+        return descriptor;
+    }
+    ```
+- 使用例子：
+    ```ts
+    const fetchData = catchError((async function () {
+        // 模拟一个可能抛出错误的异步操作
+        throw new Error('Fetch failed');
+    }));
+    fetchData();
+    // 等价于
+    @catchError
+    function fetchData() {
+        throw new Error('Fetch failed');
+    }
+    fetchData(); // 此处调用就相当于descriptor()
+    ```
 ### 异步任务API
 - `process.nextTick(func);`
     - 创建在当前事件循环阶段完成后立刻执行的微任务
@@ -872,112 +915,6 @@
     Reflect.ownKeys(obj); // ["x"]
     Reflect.deleteProperty(obj, 'x'); // true
     ```
-### Intersection API
-- 可用于懒加载
-- 监听元素视窗进入点和退出点
-- eg
-    ```ts
-    const observer = new IntersectionObserver(entries => {
-        for (const i of entries) {
-            if (i.isIntersecting) { // 当目标元素出现在视图内
-                const img = i.target;
-                const trueSrc = img.getAttribute("data-src");
-                setTimeout(() => {
-                    img.setAttribute("src", trueSrc); // 方便展示懒加载效果
-                }, 1000);
-                observer.unobserve(img); // 停止监听此元素
-            }
-        }
-    });
-    ```
-### History API & hashChange
-- 用于路由
-- History API
-    - `history.pushState({}, '', path);`：更改路径并跳转
-        - history.pushState 接收三个参数：
-        - state：一个状态对象，与新的 URL 关联。可以是任意可序列化的数据。
-        - title：新页面的标题。目前大多数浏览器忽略此参数。
-        - url：新的 URL。
-    - `window.popstate`：监听 popstate 事件（浏览器前进/后退时触发）。
-- hashChange
-    - `window.location.hash`
-- routePairs对象：保存路径与对应组件的关系，匹配到path就返回对应的组件
-- pathToRegex函数：解析路径与捕获参数。react的路径定义方法有些语法糖，比如`:id`要变成`"id": <value>`。需要分析哪一段是把接收的path的id捕获出来放进
-- matchPath函数：把输入的path解析并匹配，返回对应keys和components
-- render函数：清除现有DOM，挂载新DOM
-- navigate函数：`history.pushState({}, '', path);`后，render保存的对应组件
-- handleRouteChange函数：匹配当前`window.location.pathname`并渲染对应组件
-- 事件监听：
-    - 在document监听`DOMContentLoaded`以首屏加载
-    - 在window监听`popstate`
-- eg
-    ```ts
-    // 路由配置
-    const routes = [
-        { path: '/', component: Home },
-        { path: '/about', component: About },
-        { path: '/user/:id', component: User },
-        { path: '*', component: NotFound } // 404 页面
-    ];
-    // 路径转正则表达式（简化版）
-    function pathToRegexp(path, keys) {
-        const pattern = path.replace(/:(\w+)/g, (_, key) => {
-            keys.push({ name: key });
-            return '([^\/]+)';
-        });
-        return new RegExp(`^${pattern}$`);
-    }
-    // 路由匹配
-    function matchRoute(path, routes) {
-        for (const route of routes) {
-            const keys = [];
-            const regex = pathToRegexp(route.path, keys);
-            const match = regex.exec(path);
-
-            if (match) {
-                const params = keys.reduce((acc, key, index) => {
-                    acc[key.name] = match[index + 1];
-                    return acc;
-                }, {});
-                return { ...route, params };
-            }
-        }
-        return null;
-    }
-    // 动态组件渲染
-    function render(component, params) {
-        const app = document.getElementById('app');
-        app.innerHTML = '';
-        const element = document.createElement('div');
-        element.innerHTML = component(params);
-        app.appendChild(element);
-    }
-    // 导航
-    function navigate(path) {
-        history.pushState({}, '', path);
-        handleRouteChange();
-    }
-    // 处理路由变化
-    function handleRouteChange() {
-        const path = window.location.pathname;
-        const matchedRoute = matchRoute(path, routes);
-
-        if (matchedRoute) {
-            render(matchedRoute.component, matchedRoute.params);
-        } else {
-            render(NotFound);
-        }
-    }
-    // 初始化
-    window.addEventListener('popstate', handleRouteChange);
-    document.addEventListener('DOMContentLoaded', handleRouteChange);
-    // 组件定义
-    function Home() {return '<h1>Home</h1>';}
-    // ...
-
-    // 初始化渲染
-    handleRouteChange();
-    ```
 ### URL类
 - 封装好各种获得URL参数的方法
 - 其中的属性/方法：
@@ -1092,6 +1029,128 @@ const observedElement = document.getElementById("aaa");
 // observe 一个元素，要多个就多次observe
 resizeObserver.observe(observedElement);
 ```
+
+# 浏览器
+- JS 可以操作 DOM，但GUI渲染线程与JS线程是互斥的。所以JS 脚本执行和浏览器布局、绘制不能同时执行。
+### 文档操作API
+- DocumentFragment
+    - eg
+        ```js
+        const fragment = document.createDocumentFragment();
+        for (let i = 0; i < 100; i++) {
+            const div = document.createElement('div');
+            fragment.appendChild(div); // 先在内存中操作
+        }
+        document.body.appendChild(fragment); // 只触发一次重排
+        ```
+    - 和react的`<></>`和`<Fragment>`其实没有关系
+### Intersection API
+- 可用于懒加载
+- 监听元素视窗进入点和退出点
+- eg
+    ```ts
+    const observer = new IntersectionObserver(entries => {
+        for (const i of entries) {
+            if (i.isIntersecting) { // 当目标元素出现在视图内
+                const img = i.target;
+                const trueSrc = img.getAttribute("data-src");
+                setTimeout(() => {
+                    img.setAttribute("src", trueSrc); // 方便展示懒加载效果
+                }, 1000);
+                observer.unobserve(img); // 停止监听此元素
+            }
+        }
+    });
+    ```
+### History API & hashChange
+- 用于路由
+- History API
+    - `history.pushState({}, '', path);`：更改路径并跳转
+        - history.pushState 接收三个参数：
+        - state：一个状态对象，与新的 URL 关联。可以是任意可序列化的数据。
+        - title：新页面的标题。目前大多数浏览器忽略此参数。
+        - url：新的 URL。
+    - `window.popstate`：监听 popstate 事件（浏览器前进/后退时触发）。
+- hashChange
+    - `window.location.hash`
+- routePairs对象：保存路径与对应组件的关系，匹配到path就返回对应的组件
+- pathToRegex函数：解析路径与捕获参数。react的路径定义方法有些语法糖，比如`:id`要变成`"id": <value>`。需要分析哪一段是把接收的path的id捕获出来放进
+- matchPath函数：把输入的path解析并匹配，返回对应keys和components
+- render函数：清除现有DOM，挂载新DOM
+- navigate函数：`history.pushState({}, '', path);`后，render保存的对应组件
+- handleRouteChange函数：匹配当前`window.location.pathname`并渲染对应组件
+- 事件监听：
+    - 在document监听`DOMContentLoaded`以首屏加载
+    - 在window监听`popstate`
+- eg
+    ```ts
+    // 路由配置
+    const routes = [
+        { path: '/', component: Home },
+        { path: '/about', component: About },
+        { path: '/user/:id', component: User },
+        { path: '*', component: NotFound } // 404 页面
+    ];
+    // 路径转正则表达式（简化版）
+    function pathToRegexp(path, keys) {
+        const pattern = path.replace(/:(\w+)/g, (_, key) => {
+            keys.push({ name: key });
+            return '([^\/]+)';
+        });
+        return new RegExp(`^${pattern}$`);
+    }
+    // 路由匹配
+    function matchRoute(path, routes) {
+        for (const route of routes) {
+            const keys = [];
+            const regex = pathToRegexp(route.path, keys);
+            const match = regex.exec(path);
+
+            if (match) {
+                const params = keys.reduce((acc, key, index) => {
+                    acc[key.name] = match[index + 1];
+                    return acc;
+                }, {});
+                return { ...route, params };
+            }
+        }
+        return null;
+    }
+    // 动态组件渲染
+    function render(component, params) {
+        const app = document.getElementById('app');
+        app.innerHTML = '';
+        const element = document.createElement('div');
+        element.innerHTML = component(params);
+        app.appendChild(element);
+    }
+    // 导航
+    function navigate(path) {
+        history.pushState({}, '', path);
+        handleRouteChange();
+    }
+    // 处理路由变化
+    function handleRouteChange() {
+        const path = window.location.pathname;
+        const matchedRoute = matchRoute(path, routes);
+
+        if (matchedRoute) {
+            render(matchedRoute.component, matchedRoute.params);
+        } else {
+            render(NotFound);
+        }
+    }
+    // 初始化
+    window.addEventListener('popstate', handleRouteChange);
+    document.addEventListener('DOMContentLoaded', handleRouteChange);
+    // 组件定义
+    function Home() {return '<h1>Home</h1>';}
+    // ...
+
+    // 初始化渲染
+    handleRouteChange();
+    ```
+
 
 # Event
 ### DragEvent
@@ -1321,7 +1380,115 @@ function sendMsg() {
     - 一种减少代码体积的技术，通过静态分析代码依赖关系来移除代码中其实不会被使用的部分
     - 在ES2015/ES6中引入
 
-# js和浏览器
+# 浏览器
 - JS 可以操作 DOM，但GUI渲染线程与JS线程是互斥的。所以JS 脚本执行和浏览器布局、绘制不能同时执行。
+### 文档操作API
+    - DocumentFragment
+### Intersection API
+- 可用于懒加载
+- 监听元素视窗进入点和退出点
+- eg
+    ```ts
+    const observer = new IntersectionObserver(entries => {
+        for (const i of entries) {
+            if (i.isIntersecting) { // 当目标元素出现在视图内
+                const img = i.target;
+                const trueSrc = img.getAttribute("data-src");
+                setTimeout(() => {
+                    img.setAttribute("src", trueSrc); // 方便展示懒加载效果
+                }, 1000);
+                observer.unobserve(img); // 停止监听此元素
+            }
+        }
+    });
+    ```
+### History API & hashChange
+- 用于路由
+- History API
+    - `history.pushState({}, '', path);`：更改路径并跳转
+        - history.pushState 接收三个参数：
+        - state：一个状态对象，与新的 URL 关联。可以是任意可序列化的数据。
+        - title：新页面的标题。目前大多数浏览器忽略此参数。
+        - url：新的 URL。
+    - `window.popstate`：监听 popstate 事件（浏览器前进/后退时触发）。
+- hashChange
+    - `window.location.hash`
+- routePairs对象：保存路径与对应组件的关系，匹配到path就返回对应的组件
+- pathToRegex函数：解析路径与捕获参数。react的路径定义方法有些语法糖，比如`:id`要变成`"id": <value>`。需要分析哪一段是把接收的path的id捕获出来放进
+- matchPath函数：把输入的path解析并匹配，返回对应keys和components
+- render函数：清除现有DOM，挂载新DOM
+- navigate函数：`history.pushState({}, '', path);`后，render保存的对应组件
+- handleRouteChange函数：匹配当前`window.location.pathname`并渲染对应组件
+- 事件监听：
+    - 在document监听`DOMContentLoaded`以首屏加载
+    - 在window监听`popstate`
+- eg
+    ```ts
+    // 路由配置
+    const routes = [
+        { path: '/', component: Home },
+        { path: '/about', component: About },
+        { path: '/user/:id', component: User },
+        { path: '*', component: NotFound } // 404 页面
+    ];
+    // 路径转正则表达式（简化版）
+    function pathToRegexp(path, keys) {
+        const pattern = path.replace(/:(\w+)/g, (_, key) => {
+            keys.push({ name: key });
+            return '([^\/]+)';
+        });
+        return new RegExp(`^${pattern}$`);
+    }
+    // 路由匹配
+    function matchRoute(path, routes) {
+        for (const route of routes) {
+            const keys = [];
+            const regex = pathToRegexp(route.path, keys);
+            const match = regex.exec(path);
 
-- to-do
+            if (match) {
+                const params = keys.reduce((acc, key, index) => {
+                    acc[key.name] = match[index + 1];
+                    return acc;
+                }, {});
+                return { ...route, params };
+            }
+        }
+        return null;
+    }
+    // 动态组件渲染
+    function render(component, params) {
+        const app = document.getElementById('app');
+        app.innerHTML = '';
+        const element = document.createElement('div');
+        element.innerHTML = component(params);
+        app.appendChild(element);
+    }
+    // 导航
+    function navigate(path) {
+        history.pushState({}, '', path);
+        handleRouteChange();
+    }
+    // 处理路由变化
+    function handleRouteChange() {
+        const path = window.location.pathname;
+        const matchedRoute = matchRoute(path, routes);
+
+        if (matchedRoute) {
+            render(matchedRoute.component, matchedRoute.params);
+        } else {
+            render(NotFound);
+        }
+    }
+    // 初始化
+    window.addEventListener('popstate', handleRouteChange);
+    document.addEventListener('DOMContentLoaded', handleRouteChange);
+    // 组件定义
+    function Home() {return '<h1>Home</h1>';}
+    // ...
+
+    // 初始化渲染
+    handleRouteChange();
+    ```
+
+

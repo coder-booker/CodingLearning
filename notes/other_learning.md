@@ -1,11 +1,4 @@
-# vscode snippet
-- ToolBar -> File -> Preference -> Configure Snippets
-- settings.json:  
-    ```
-    "[<filename>]":  {
-        "editor.quickSuggestions": true
-    }
-    ```
+
 
 # regex
 - 复健练习
@@ -130,74 +123,120 @@
 - 123-126： 部分符号
 - 127：     DEL
 
-# .env
-- 标示着环境变量
-    - eg `AUTH_SECRET = sfcascasfc`
-- 需要读取时声明类型，不然一般都是字符串
-- `.env.local`
-    - 标识开发环境的环境变量
-    - 和.env同时存在时，.env.local优先级更高（同样的键值对会被.env.local覆盖）
-
-# windows
-- 软链接
-    - 管理员运行cmd
-    - `mklink [目标链接] [源链接]`
-    - `/d` flag来链接文件夹
-    - 目标链接不可先前就存在（可能有对应exist_ok的flag，但目前没必要学）
-- 文件目录树
-    - `tree`: 只显示directory
-        - `/F`: 显示文件
-
-# 术语
-- slug
-    - 用于url其中一部分的字符串
-- enumerate和traverse
-    - 都是列举所有内容的用词，但前者只列举，后者可能还会做点操作
-
-
-# 路径
-- `/**`表示任意层级的任意子路径，eg `/a`, `/a/b`, `/a/b/c`都会被匹配到
-- `/*`表示该路径下的任意一层子路径，e.g.`/a`, `/b`, `/c`
-- `/**/*`则可以匹配任意路径
-
-# 系统位数
-- amd/amd64
-    - x86架构的32/64位CPU
-    - 主流电脑和服务器用的
-- arm/arm64
-    - arm架构的32/64位CPU
-    - 一般是手机平板苹果用的
 # 哈希
 - consistent hashing 一致性哈希
     - 哈希环：将哈希空间视为一个环（0到2^32-1），数据和节点都通过哈希函数映射到环上的某个位置。
     - 数据分配：数据存储在顺时针方向最近的节点上。
     - 动态扩展与收缩：添加或删除节点时，只需重新分配少量数据，而不是全部。
 
+# 规范化版本管理
+- SemVer
+    - 版本号的管理
+    - MAJOR.MINOR.PATCH[-PRERELEASE]
+    - 包括
+        - MAJOR 主版本号：必须（MUST）在有任何不兼容的修改被加入公共 API 时递增。其中可以（MAY）包括次版本号及修订级别的改变。每当主版本号递增时，次版本号和修订号必须（MUST）归零。
+        - MINOR 次版本号：必须（MUST）在有向下兼容的新功能出现时递增。在任何公共 API 的功能被标记为弃用时也必须（MUST）递增。也可以（MAY）在内部程序有大量新功能或改进被加入时递增，其中可以（MAY）包括修订级别的改变。每当次版本号递增时，修订号必须（MUST）归零。
+        - PATCH 修订号：必须（MUST）在只做了向下兼容的修正时才递增。这里的修正指的是针对不正确结果而进行的内部修改。
+        - PRERELEASE 先行版本号可以（MAY）：被标注在修订版之后，先加上一个连接号再加上一连串以句点分隔的标识符来修饰。标识符必须（MUST）由 ASCII 字母数字和连接号 [0-9A-Za-z-] 组成，且禁止（MUST NOT）留白。数字型的标识符禁止（MUST NOT）在前方补零。先行版的优先级低于相关联的标准版本。被标上先行版本号则表示这个版本并非稳定而且可能无法满足预期的兼容性需求。范例：1.0.0-alpha、1.0.0-alpha.1、1.0.0-0.3.7、1.0.0-x.7.z.92。
+- Conventional Commit
+    - 基础范式：
+        ```
+        <type>[optional scope]: <description>
 
-# other other
-- 算法
+        [optional body]
 
-- 计算机基础
-- sql
-- 设计模式/架构
-- 多线程/并发
+        [optional footer(s)]
+        ```
+    - type
+        - fix: 类型 为 fix 的提交表示在代码库中修复了一个 bug（这和语义化版本中的 PATCH 相对应）。
+        - feat: 类型 为 feat 的提交表示在代码库中新增了一个功能（这和语义化版本中的 MINOR 相对应）。
+        - build: 用于修改项目构建系统，例如修改依赖库、外部接口或者升级 Node 版本等；
+        - chore: 用于对非业务性代码进行修改，例如修改构建流程或者工具配置等；
+        - ci: 用于修改持续集成流程，例如修改 Travis、Jenkins 等工作流配置；
+        - docs: 用于修改文档，例如修改 README 文件、API 文档等；
+        - style: 用于修改代码的样式，例如调整缩进、空格、空行等；
+        - refactor: 用于重构代码，例如修改代码结构、变量名、函数名等但不修改功能逻辑；
+        - perf: 用于优化性能，例如提升代码的性能、减少内存占用等；
+        - test: 用于修改测试用例，例如添加、删除、修改代码的测试用例等。
+        - 其他：type后加`!`是BREAK CHANGE的语法糖
+    - optional scope
+        - 这个比较随机，可行的例子有：(api)、(lang)之类的
+    - description
+        - 对此次commit的简易描述
+    - optional body：
+        - 详细描述。第一个段落前和每个段落间都要空一行（注意其实就是和上一句隔了两个换行符）
+    - optional footer：
+        - 如：
+            - Reviewed-by: xxxx
+            - Refs: #123（也可以是另一个commit的id）
+            - BREAKING CHANGE：xxxxyyyy（破坏性 API 变更，也就是需要改 MAJOR 的commit）
 
-- 应用开发框架
+# 奇怪的电脑知识
+### .env
+- 标示着环境变量
+    - eg `AUTH_SECRET = sfcascasfc`
+- 需要读取时声明类型，不然一般都是字符串
+- `.env.local`
+    - 标识开发环境的环境变量
+    - 和.env同时存在时，.env.local优先级更高（同样的键值对会被.env.local覆盖）
+### 术语
+- slug：用于url其中一部分的字符串
+- enumerate和traverse：都是列举所有内容的用词，但前者只列举，后者可能还会做点操作
+### 路径格式
+- `/**`表示任意层级的任意子路径，eg `/a`, `/a/b`, `/a/b/c`都会被匹配到
+- `/*`表示该路径下的任意一层子路径，e.g.`/a`, `/b`, `/c`
+- `/**/*`则可以匹配任意路径
 
-- 视频
-- 可视化
-- 登录
-- 聊天窗口
-- 文件上传
-- 懒加载
+
+# windows
+### 有用的功能
+- 软链接
+    - 管理员运行cmd
+    - `mklink [目标链接] [源链接]`
+    - `/d` flag来链接文件夹
+    - 目标链接不可先前就存在（可能有对应exist_ok的flag，但目前没必要学）
+- 硬链接
+    - 可以这么类比：软链接是弱引用，硬链接是强引用。所以软链接无法阻止源文件被删除，而硬链接在源文件被删除之后会使最终的内存仍然被保，直到所有硬链接都被删除。
+- 文件目录树
+    - `tree`: 只显示directory
+        - `/F`: 显示文件
+### 系统位数
+- amd/amd64
+    - x86架构的32/64位CPU
+    - 主流电脑和服务器用的
+- arm/arm64
+    - arm架构的32/64位CPU
+    - 一般是手机平板苹果用的
 
 
 
+# VSCode
+### 快捷键
+- 终端: Ctrl + `
+- setting搜索: Ctrl + Shift + p
+- 游标整词移动：Ctrl + 方向
+- 手动触发code hint: Alt + s (我自己绑定的，原本是 Ctrl + Space)
+- 任何父级(或者自动选中的)括号快捷删除(包括左右): Ctrl + Alt + Backspace
+- 快捷选中所有相同内容：Ctrl + Shift + L
+- 快捷选中上下行相同位置的内容：Ctrl + Shift + Alt + 上下
+- 全局搜索文件：Ctrl + T
+- 关闭所有标签页：Ctrl + K + W
+- 创建文件：Ctrl + Shift + Alt + F
+- 创建文件夹: Ctrl + Shift + Alt + D
+- 切换到文件视窗：Ctrl + 0
+### 拓展
+- snippet creator
+- vscode pet
+- toggle quotes
+    - shortcut: Ctrl + '
+- console ninja
+    - js/ts fast console.log when server launched
+- 内置的snippet
+    - ToolBar -> File -> Preference -> Configure Snippets
+    - settings.json:  
+        ```
+        "[<filename>]":  {
+            "editor.quickSuggestions": true
+        }
+        ```
 
-
-
-
-- 思路整理
-    - 前后端（react ssr和nodejs）不如赶紧用Nextjs做俩高质量的项目，以及慢慢优化现有的corpus项目
-    - HTML5
-    - 其他CSS框架
