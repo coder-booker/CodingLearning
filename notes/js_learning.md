@@ -223,11 +223,14 @@
     - `new Array([<nonNumberItem[, item, item] or number>])`
         - 如果参数不是数字就代表直接用item初始化：`Array(...[elements])`
         - 如果参数是数字代表指名`.length`的值，但不
-        - 可以不`new`，一样会调用构造函数
-    - `const result = Array.from(arrayLike[, mapFunction(item, idx)[, thisArg]]);` 从迭代器/字符串建立数组
-        - arrayLike是伪数组对象
+        - 可以不`new`，一样会调用构造函数 
+    - `const result = Array.from(arrayLike[, mapFn[, thisArg]]);` 从迭代器/字符串建立数组
+        - arrayLike是伪数组对象，可以是`{length: xxx}`或者直接就是一个数组
         - 因此可以这样快速填充index为值的Array：`Array.from({ length: <number> }, (_, idx) => idx));`
-        - `mapFunction`每次会重新运行，因此可以返回引用。
+        - `mapFn`
+            - 就是和.map一样的回调
+            - 每次会重新运行，因此可以返回引用。
+        - `thisArg`是`mapFn`的`this`值
         - 注意是`Array`关键字，也就是静态方法，不是arr数组的实例方法
 - 高级用法
     - 用`Array.prototype.<someFunc>.call(<伪数组对象>, ...<args_of_someFunc>)`或者`.apply(<伪数组对象>, [...<args_of_someFunc>]`来借用array的方法
@@ -237,7 +240,9 @@
             Array.prototype.fill(arrLike, 114514);
             // arrLike现在是 {'0': 114514, '1': 114514, 'length': 2}; 或者可以理解为一个内容为 [114514, 114514] 的数组
             ```
-    - n维数组快速填充默认值：`new Array<T[]>(n).fill(<T_item_arr>).map(() => new Array(n).fill(<T_item>));`
+    - n维数组快速填充默认值：
+        - `new Array<T[]>(n).fill(<T_item_arr>).map(() => new Array(n).fill(<T_item>));`
+        - `Array.from({length: <length>}, mapFn);` 以伪数组对象建立数组
         - 不直接对array进行`.map`而是先`.fill`，是因为`.map`会跳过空项，fill过了.map才会生效，而原本fill的值会被map覆盖
     - 快速去重：`Array.from(new Set(array));`
 - 浅拷贝数组：
@@ -1261,7 +1266,7 @@ function sendMsg() {
     - 注意如果xxx存在，即不是undefined或者null，虽然xxx?.yyy仍会返回undefined，但不是因为?.而是js自己的访问不存在变量的特性
 - `!!xxxx`: 把xxxx转换成布尔值。等价于判断xxxx是否为null/undefined之类的无效值，减少了写判断式的功夫
 - `a = b ?? c` vs `a = b || c`
-    - `??`只会在null和undefined的时候返回右侧，`||`则只要false就返回
+    - `??`会在左侧null或undefined的时候返回右侧，`||`则会在左侧是false就返回右侧
 
 # 模块命名空间
 - 模块命名空间对象是一个描述模块所有导出的对象。它是一个静态对象，在模块被求值（要求导入）时创建。

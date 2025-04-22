@@ -33,32 +33,56 @@
     - 枚举类型`enum`：就是多个常量同时枚举，可以用自带的数字值枚举、字符串枚举、或者自己指定的异构枚举
     - Union type：`xxxx | yyyy`
     - 元组类型：`const arr: [string, number] = ['123', 123];`
-    - 泛型`<T>`
-        - 感觉就是用来声明某两个位置的类型将会是一样的，但具体是什么类型则无所谓
-        - eg `function toArray<T>(attr: T): T[] {return [attr];}`
     - 组合type：`XXXX<yyy>`
         - 有点类似“指定XXXX接收yyy类型的参数”
         - eg `const aMap: Map<number, number> = new Map([[1, 2], [2, 3]])`
         - eg `const [a, setA] = useState<number>(0)`
-    - `Omit`: 取B在A的补集（complementary）
+- type的操作
+    - 注意对type的操作和泛型的约束语法是完全不同的两种东西
+        - 泛型是对类型的相对描述，所以泛型算在普通类型的上一层而不是同层
+        - 比如`type A = keyof B`和`<T extends keyof K>`是完全不同的东西
+    - 注意ts的type的理念是Duck Typing，也就是某类型的超集也能通过该类型的检查
+    - 导入导出
+        - `export type { aType };`
+        - `import type { aType };`
+    - `keyof XXX`: 返回一个对象类型的所有键的Union type。
+    - `type TB = TA & TC;`：交叉类型 Intersection Types（拓展type）
+    - `Omit<T, K extends keyof T>`: 去除了K的T对象类型，可以理解为T对K的补集（complementary）
+        - 比较有意思的是第一个类型参数是对象参数而第二个类型参数是Union type，这也是Omit和Exclude的不同之处
         ```ts
         type AAA = {
             id: string;
             name: string;
             uid: number;
         };
-        type BBB = Omit<AAA, "name" | "uid">
+        type BBB = Omit<AAA, "name" | "uid">; // {id: string}
         ```
-    - `Record`
-        - 动态添加type
-        - 一般用于给object定义类型
+    - `Pick<T, K extends keyof T>`: 返回第二个参数指定的键的对象类型
         ```ts
-        type AAA = Record<string, number>;
-        const BBB: AAA = {
-            id: 1, 
-            age: 18,
+        type AAA = { 
+            id: string;
+            name: string;
+            uid: number;
         }
+        type BBB = Pick<AAA, "name" | "uid">; // {name: string; uid: number}
         ```
+    - `Record<T, K>`
+        - 批量动态声明对象每个键值对应有的类型
+        - 有点类似一张表的一条记录的类型，只不过这个表的column只有俩：键和值
+        - 一般用于给object定义类型
+            ```ts
+            type AAA = Record<string, number>;
+            const BBB: AAA = {
+                id: 1, 
+                age: 18,
+            }
+            ```
+    -  `Partial<T>`/`Required<T>`: 把一个对象类型的所有键变成可选/必选的
+- 泛型`<T>`
+    - 感觉就是用来实现多态的对类型的相对描述
+    - eg `function toArray<T>(attr: T): T[] {return [attr];}`
+    - 约束语法
+        - `T extends K`: 表示T必须是K或者K的继承者/超集
 - React的type
     - `JSX.Element`/`React.ReactNode`
         - children就是`React.ReactNode`
@@ -84,12 +108,7 @@
         - key pressed: `React.KeyboardEvent<HTMLInputElement>`
         - click: `React.MouseEvent<HTMLButtonElement, MouseEvent>`
         - form submit: `React.FormEvent<HTMLFormElement>`
-- type的操作
-    - 导入导出
-        - `export type { aType };`
-        - `import type { aType };`
-    - 交叉类型 Intersection Types（拓展type）
-        - `type TB = TA & TC;`
+
 - basic:
     ```ts
     type Letter = "AAA" | "BBB" | "CCC";

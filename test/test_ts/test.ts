@@ -2,22 +2,22 @@
 // node --loader ts-node/esm .\test.ts
 
 type AAA = {
-  aaa: string;
-  bbb: string;
-  ccc: string;
-}
-
-type A = keyof AAA;
-type B = keyof AAA;
+  id: string;
+  name: string;
+  uid: number;
+};
+type BBB = Omit<AAA, "name" | "uid">; // {id: string}
 
 
-function test<T, K extends keyof AAA>(bruh1: T, bruh2: K) {
-  console.log("pass");
+function temp(x: BBB) {
+  console.log(x)
 }
 
 const bruh = {
-  aaa: "213"
-}
-test(bruh);
+  id: "123123", 
+  name: "123123",
+  uid: "123123"
+};
+temp(bruh)
 
 
