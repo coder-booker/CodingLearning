@@ -1,4 +1,9 @@
 
+# experience
+- js相当灵活，只要你觉得可以的操作一般都真的可以，比如给函数添加属性和方法
+- Promise
+
+
 # 赋值
 - 数组解构：
     - 基础用法：`let [foo, [[bar], baz]] = [1, [[2], 3]];`
@@ -714,32 +719,47 @@
 ### Promise与异步操作
 - 回调地狱（Callback Hell）问题
 - promise是用来封装和管理异步编程的，它本身不是异步的，只是封装异步操作的话可以很方便地管理成功失败和异步顺序。
-- `new Promise((resolve, reject) => { resolve("value"); reject("error") })`
-    - 接收一个executor函数，这个函数可以选择pending Promise传入的`resolve`和`reject`状态改变函数。
-        - `resolve`把Promise变为fulfilled态，`reject`则变为rejected态，然后把各自的.then或者.catch中的回调函数推入微任务队列等待执行
-        - executor可以忽略`reject`，只接受`resolve`
 - Promise大致流程：
-    - Promsie实例化后立刻执行executor函数，状态改变后创建一个新的微任务，这个微任务的作用就是尽快处理Promise操作的下一个状态阶段，例如.then和.catch
+    - Promsie实例化后立刻执行executor函数，状态改变后创建一个新的微任务，这个微任务的任务就是处理Promise操作的下一个状态阶段的回调函数，例如.then的和.catch的
     - 但状态改变的语句可以被异步操作的回调包裹，这样异步操作结束后才会改变状态。Promise也是因此适合异步操作
 - 注意事项：
     - 注意Promise必须要显性改变状态，否则不会进入下一个阶段
     - 因为executor的运行是同步的，但插入的微任务是异步的，所以出现".then在同步代码后运行"的现象是正常的
     - **所以Promise本身并不是微任务，状态改变的回调才是**。
-- `.then(func1, func2)`
-    - 给Promise注册状态改变后的回调函数
-    - .then本身也是一个Promise
-        - return了value就等价于Promise的`resolve`，抛出错误就等价于`reject`
-    - .then可以选择接收并注册两个函数
-        - 第一个函数是Promise resolve后会调用并传入resolve参数的onFulfilled回调函数
-        - 第二个函数时Promise reject后会调用并传入reject参数的onRejected回调函数
-    - 隐式返回undefined
-- `.catch(func1)`
-    - `.then(null, func2)`的简写而已，代表只处理reject的链式调用
-- `.finally(func1)`
+- `new Promise((resolve, reject) => { resolve("value"); reject("error") })`
+    - 接收一个executor函数，这个函数可以选择pending Promise传入的`resolve`和`reject`状态改变函数。
+        - `resolve`把Promise变为fulfilled态，`reject`则变为rejected态，然后把各自的.then或者.catch中的回调函数推入微任务队列等待执行
+        - executor可以忽略`reject`，只接受`resolve`
+- 方法
+    - `.then([func1[, func2]])`
+        - 链式调用的下一步，哪怕finally了也能继续调用（因为finally返回的也是Promise）
+        - .then本身也会返回一个Promise
+            - return了value就等价于Promise的`resolve`，抛出错误就等价于`reject`
+        - func1：上一级resolve后会调用的onFulfilled回调函数。可选接收resolve传入的参数
+        - func2：上一级reject后会调用的onRejected回调函数。可选接收reject传入的参数
+        - func2会拦截下面的catch，让下面的catch失效，除非再次throw
+    - `.catch(func1)`
+        - `.then(null, func2)`的简写而已，代表只处理reject的链式调用
+        - 如果上面有onRejected回调，catch不会捕获，除非再次throw
+    - `.finally(func1)`
+        - func1不接受参数，其返回值也会被忽略
+        - finally之后还可以接.then，下一级的参数是上一级的返回值，也就是会跳过finally
+        - 行为演示
+            ```ts
+            promise.then(
+                (value) => Promise.resolve(onFinally()).then(() => value),
+                (reason) =>
+                    Promise.resolve(onFinally()).then(() => {
+                    throw reason;
+                    }),
+            );
+            ```
 - 静态方法
     - `Promise.all([promise, ...])`: 返回promise结果数组。任意一个reject就全reject，reason为第一个reject的
     - `Promise.race([promise, ...])`：返回最快更改状态的那个promise
     - `Promise.any([promise, ...])`：返回最快fulfilled的那个promise
+    - `Promise.resolve(<value>)`：创建一个resolve好的返回value的promise，.then它会接收value并执行
+    - `Promise.reject(<value>)`：创建一个resolve好的返回value(一般是一个error)的promise，onRejected或者.catch它会接收value并执行
 - `async`, `await`
     - async本质就是把函数内的代码作为executor传入一个Promise并尝试返回这个Promise。return时就是resolve调用时。所以async也是立刻执行的
     - 会默认返回undefined的resolve
@@ -1347,7 +1367,7 @@ function sendMsg() {
 - V8引擎的GC机制
     - 把内存分为以下两个空间
         - 新生代
-            - 用来储存生命周期较短的对象
+            - 用来储存生命周期较短的对象：临时变量、函数局部变量
             - 进一步分为两个空间
                 - From 空间：当前正在使用的空间
                 - To 空间：空闲的空间
@@ -1356,7 +1376,8 @@ function sendMsg() {
                 - 把所有对From内对象的引用更新到To中
                 - 把To标记成From，把From标记成To
         - 老生代
-            - 用来储存生命周期较长的对象
+            - 用来储存生命周期较长的对象：全局变量、闭包引用
+                - 所以闭包才会由老生代储存
             - 使用标记整理算法回收垃圾
     - 增量标记 Incremental Marking
         - 把回收时的标记阶段拆分，让单次回收的暂停时间减少，更灵活
@@ -1383,7 +1404,9 @@ function sendMsg() {
 # 浏览器
 - JS 可以操作 DOM，但GUI渲染线程与JS线程是互斥的。所以JS 脚本执行和浏览器布局、绘制不能同时执行。
 ### 文档操作API
-    - DocumentFragment
+- DocumentFragment
+    - 创建一个虚拟容器供减少重排
+    - 这个容器挂载到真实DOM后就直接消失，不会有空标签啥的
 ### Intersection API
 - 可用于懒加载
 - 监听元素视窗进入点和退出点

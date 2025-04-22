@@ -267,7 +267,7 @@
 - 路由器
     - 存着两个表
         - 路由表：目标IP、下一跳ip、对应端口这三者的映射
-        - ARP表：目标ip和目标mac的映射（这个表存在的意义是因为端口不代表MAC，一个端口可以有多个MAC，比如这个端口连着交换机）
+        - ARP表：目标ip和目标mac的映射（这个表存在的意义是因为光路由表的信息不够，端口不代表MAC，一个端口可以有多个MAC，比如这个端口连着交换机）
     - 储存转发机制
         1. 接收完整数据包：
             - 必须接收完整的IP数据包（包括IP头、传输层头和数据）后才进行处理。
@@ -527,18 +527,20 @@
         - pipeline
             - 异步发送请求
             - 注意1.1时pipeline不是默认开启的
+            - 6到8个多路复用限制
         - 能压缩body（其实就是通过Content-Encode来发送gzip之类的数据）
         - 支持更多http方法和header
         - 支持分块传输
     - 劣
         - header不会压缩
-        - 队头阻塞(Head-of-Line Blocking)：哪怕有pipeline，服务端仍然是顺序依次逐个发送响应
+        - 队头阻塞(Head-of-Line Blocking)：哪怕前端有pipeline，后端仍然是顺序依次发送响应而不是异步
         - 请求优先级是什么？
         - 只能客户端单向请求，服务端只能响应
 - /2.0
     - 兼容HTTP/1.1，因为协议url前缀并未改变
     - Frame 二进制分帧
-        - 1.1用纯文本还多了一层文本和二进制互相转换的步骤，2.0直接用二进制表示各种状态和数据，使用更少空间
+        - 一种新的分块传输方法，每个request和response都会被分为多个帧在stream中传输
+        - 1.1用纯文本传数据，多了一层文本和二进制互相转换的步骤，2.0直接用二进制表示各种状态和数据，使用更少空间
         - 帧结构
             - Frame Header
                 - frame一些metadata
@@ -547,17 +549,18 @@
                 - 就是实际的frame数据，或者说是HTTP请求或响应的header和body，被HPACK压缩过
         - 帧的种类根据功能大致分为两种：
             - 数据帧
-                - Header Frame、Data Frame，分别储存header和body
+                - 就是原本1.1传输的内容，比如Header Frame、Data Frame分别储存header和body
                 - Priority Frame，表示Stream优先级
             - 控制帧
+                - 用来对连接进行控制的
                 - 太多了我的老天
     - 支持服务端主动发送信息给客户端
     - Stream
-        - 应用层的multiplexing，是并发concurrent，可以同一时间内发送和接受多个stream
+        - 应用层的multiplexing多路复用，是并发concurrent，可以同一时间内发送和接受多个stream
         - 并发可以乱序，因为最后会根据stream_id配对每一个response和request
         - stream内通信
             - 每个stream里有且只会有一次request和response，传输完就会结束stream
-            - 同一stream内的通信遵守请求-响应模型，虽然只会有一次请求和响应
+            - 同一stream内的通信遵守请求-响应模型（虽然也只会有一次请求和响应）
             - stream中传输的帧必须有序，但可以在stream的并发中分批次发出和接收
         - stream支持服务端主动通信
             - 这样可以在客户端访问某路径时，把其他必须的数据也主动push给客户端
@@ -588,7 +591,7 @@
                     - 剩下的位是动态的，代表value，但尾部不满一字节的会用1补位
             - 动态表
                 - index从62开始
-                - 动态添加其他header键值对，不会只保存header键。因此如果value一直有细微变化，动态表的作用就被限制了
+                - 动态添加静态表没有的header键值对，不会只保存键。因此如果value一直有细微变化，动态表的作用就被限制了
                 - 动态表的内容也会被huffman编码
                 - 采用FIFO来移除过多的键值对
                 - web服务器一般都可以配置类似 http2_max_request 的东西来限制http2的请求数量，以此间接限制动态表占用的内存
@@ -893,6 +896,7 @@
 
 ## WebSocket协议
 - 本质上就是应用层的一个功能，可以视为HTTP的升级双向版，因此也有其大部分现代特性
+- 基于TCP
 - 特点
     - 允许全双工通信
 - 使用：
@@ -925,7 +929,6 @@
         - 4位 opcode：标志数据帧类型。如1等于text类型，2等于字节流类型，8等于关闭连接
         - dynamic的payload长度
             - 7, 16, 32, 16
-
 
 # 传输层
 - seq_num

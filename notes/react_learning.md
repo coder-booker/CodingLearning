@@ -1,5 +1,6 @@
 # Basic
 - 原来在jsx中直接用数组就能正确渲染所有里面的item
+- react本质上就是把JSX的封装DOM为对象语法的操作给封装成了更类似html标签的语法，所以没有子标签的标签本质上就是在声明一个对象返回出去
 ### Diff与虚拟DOM
 - 虚拟DOM
     - 就是一个真实DOM的复制品，充当着中间件的作用减少不必要的重新渲染和排列
@@ -41,6 +42,19 @@
     - unique components: 如果某个子component have unique sub-component, create a folder named components inside the component's folder
     - messy style declaraion: separate it into a components_name.elements.js file. But do this only when it gets really messy or at the end of development
     - inversion of control
+### 事件与处理函数
+- DOM中有很多事件，键盘事件，鼠标事件等等。
+- vue和react中的生命周期，本质上是事件的合集，一般包括四部分：包括初始，挂载，渲染，卸载。
+- 事件处理函数
+    1. 钩子函数(事件开始时的函数-监听函数)
+        - 钩子概念源于Windows的消息处理机制，实现的效果就是能够拦截消息事件并执行一些逻辑，也就是执行钩子函数
+        - vue和react中的生命周期中的钩子函数，本质上是监听了各自事件的开始
+        - 钩子函数本质上就是触发时机比较特殊的回调函数：回调函数是之后触发，钩子是之前触发
+    2. 回调函数(事件结束时的函数-回报函数)
+        - 调用者将回调函数的指针传递给了调用函数，当调用函数执行完毕后，通过函数指针来调用回调函数。
+        - 所有的回调，PHP,node,vue,react的回调函数，本质上都是，事件最后，所运行的函数。
+    3. 两者的区别
+        - 钩子函数在捕获消息的第一时间就执行，而回调函数是捕获结束时，最后一个被执行的。
 
 ### philosophy
 - 一个组件做一件事
@@ -48,7 +62,6 @@
 ### 重新渲染
 - 大部分钩子只会对生命周期(如挂载和卸载)有反应，重新渲染不会改变这些钩子的设置和值
 - 但反过来说，钩子值的改变也会触发重新渲染
-
 ### JSX
 - Fragment: empty tags
 - 标签属性多为驼峰命名
@@ -59,126 +72,120 @@
 - 一些有别于html的tag和attributes
     - label：htmlFor替代了for
     - JSX中，所有标准html标签都可以写为自闭合格式
-
-### experience
-- state + useEffect空依赖可以实现监控组件挂载并在之后进行某些操作
-
 ### key
 - component must have a unique key among its sibling for react to identify and midify it.
 
-### props
-- 类似state，浅对比有没有更新并重新渲染组件
-
+# 内置函数/功能
+- React.memo
+    - 用来缓存组件的，注意和useMemo不一样
+    - 在触发了重新渲染的场景（比如父组件重新渲染），浅对比props来决定要不要重新渲染这个组件
 
 # Hook 钩子
-### useState
-- state不变原则，setState是直接创建和替换新的引用
-- setState会触发重新渲染，但包含setState的函数运行完了才会真正更新state和重新渲染，在此之前对state的更新会被保存在某队列中。
-- 嵌套组件因为是递归的，在所有组件都渲染完了(队列全都排好了)才会更新替换state
-- 更新函数: setState(n => n+1)
-    - 更新函数的n是直接在state更新队列中获取的值，而非当前state的值
-    - n不一定要叫n，惯例是按照state变量名的单词首字母来命名
-- 懒初始化：直接给useState默认值传入一个函数体会自动被调用一次，然后以返回值来当当默认值
-### useEffect
-- 检测state和prop变化（引用变化）
-- 一般使用事件处理程序来执行操作。useEffect是最后手段
-- 闭包陷阱：如果useEffect没有重新更新，useEffect外部的任何值改变都不会被useEffect内察觉到，因为useEffect只会获取更新时的值。（没有依赖数组的话就是初值）
-- useEffect内可以return一个函数，这个函数是回收/卸载函数，可以在useEffect结束时清理资源
-- useEffect和组件的三个生命周期有关
-    - DidMount 已挂载：挂载后才运行
-    - DidUpdate 已更新：依赖数组更新后运行
-    - WillUnmount 将卸载：组件卸载前调用资源回收函数
-### useRef
-- 让某个变量的变化在全局都能在不更新自身的情况下被获取
-### useMemo
-- 缓存某个函数的值
-- 参数是一个函数
-- 生命周期：
-### useParams()
-- 获取以`/path/:param-name`形式访问的路径的`param-name`参数
-- `const { 'param-name': xxx } = useParams();`来指定要哪个参数
-- 其实和query string差不多
-### useContext
-- 首先create一个context，然后用.provider关键字生成一个发送器
-- 向这个context provider传入的value可以被发送器的所有子元素捕获
-- e.g.
-    ```ts
-    const ThemeContext = createContext<{ theme: string, toggleTheme: () => void }>({
-        theme: "light",
-        toggleTheme: () => {},
-    });
-    const ThemeContextProvider = ({
-        children,
-    }: Readonly<{
-        children: React.ReactNode;
-    }>) => {
-        const [theme, setTheme] = useState<string>(getFromLocalStorage);
-        const toggleTheme = () => setTheme(theme === "light" ? "dark" : "light");
-        return <ThemeContext.Provider value={{ theme, toggleTheme }}>{children}</ThemeContext.Provider>;
-    };
-    // example use
-    const ThemeContextConsumer = ({ 
-        children 
-    }: Readonly<{
-        children: React.ReactNode;
-    }>) => {
-        const { theme } = useContext(ThemeContext);
-        const [mounted, setMounted] = useState(false);
-        useEffect(() => setMounted(true), []);
-        return (
-            mounted &&
-            <div className={theme}>
-                {children}
-            </div>
-        );
-    };
-    ```
-### useDeferredValue
-- 先显示旧内容，后台进行新内容的更新，更新完再显示新内容
-- 很神奇，明明只是用钩子返回的值，却能够让组件知道自己要延迟渲染
-### useReducer
-- 类似局部的redux reducer，详情可以看文档
-### useMemo、useCallback、React.lazy、Suspense
-- useMemo 和 useCallback, React.lazy 和 Suspense 的动态路由加载
-    - useMemo
-        - 一个目标函数，一个依赖数组
-        - 当依赖数组的值发生改变就会重新计算目标函数的返回值
-    - useCallback
-        - 缓存函数用的
-        - 一个目标函数，一个依赖数组
-        - 使用场景：
-            - useEffect的依赖数组如果有函数，用useCallback的返回值来替代原本的函数能避免useEffect的错误触发（当然也可以直接用useEffect内的护卫语句来达到类似的效果）
-            - 子组件使用了React.memo之类的优化方式时，useCallback可以缓存传入子组件的函数。
-    - React.lazy
-        - 接收一个thenable的函数，这个函数需要最终返回一个可以被解析为React组件类型的值，例如函数、memo或forwardRef 组件。lazy会抛出包裹这个值的Promise给Suspense捕获
-        - import()
-            - import()是个动态导入语法（Dynamic Import），返回`Promise<React组件>`，但解析后会成为组件
-            - lazy依赖于import()
-            - 用途：
-                - 代码分割（Code Splitting）：将应用的代码拆分成多个小块，按需加载，减少初始加载时间。
-                - 懒加载组件
-                - 条件加载模块：根据某些条件（如用户权限、设备类型）动态加载模块。
-                - 加载非模块代码，例如.json：`import("./data.json", { with: { type: "json" } });`
-        - eg
-        ```tsx
-            // lazy在外面以避免被重新加载
-            const Component = lazy(()=>import("./Component.tsx"));
-            function bruh() {
-                return (
-                    <Suspense fallback={<div>Loading...<div/>}>
-                        <Component />
-                    <Suspense />
-                )
-            }
+- useState
+    - `setState(n => n+1)`：setState传入函数时，其参数是直接在state更新队列中获取的值，所以获取的一定是最新的值
+    - 懒初始化：直接给useState默认值传入一个函数体会自动被调用一次，然后以返回值来当默认值
+    - state不变原则，setState是直接创建和替换新的引用
+    - 自带浅对比优化
+    - setState做的只是把更新加入一个state更新队列，React会等到对应的事件处理函数中的所有代码都运行完毕再处理这个队列
+    - 所以react本身会把所有setState合并为一次更新，不太会频繁操作DOM
+- useEffect
+    - 依赖数组
+    - 所有useEffect都会在组件第一次挂载时运行一次
+    - 小心可能的闭包陷阱（设置好依赖数组就行）
+    - 资源清理函数：useEffect内return的函数会在组件卸载前运行
+    - useEffect和组件的三个生命周期有关
+        - DidMount 已挂载：挂载后才运行
+        - DidUpdate 已更新：依赖数组更新后运行
+        - WillUnmount 将卸载：组件卸载前调用资源回收函数
+- useRef
+    - 让某个变量的变化在全局都能在不更新自身的情况下被获取
+- useParams()
+    - 获取以`/path/:param-name`形式访问的路径的`param-name`参数
+    - `const { 'param-name': xxx } = useParams();`来指定要哪个参数
+    - 其实和query string差不多
+- useContext
+    - 首先create一个context，然后用.provider关键字生成一个发送器
+    - 向这个context provider传入的value可以被发送器的所有子元素捕获
+    - e.g.
+        ```ts
+        const ThemeContext = createContext<{ theme: string, toggleTheme: () => void }>({
+            theme: "light",
+            toggleTheme: () => {},
+        });
+        const ThemeContextProvider = ({
+            children,
+        }: Readonly<{
+            children: React.ReactNode;
+        }>) => {
+            const [theme, setTheme] = useState<string>(getFromLocalStorage);
+            const toggleTheme = () => setTheme(theme === "light" ? "dark" : "light");
+            return <ThemeContext.Provider value={{ theme, toggleTheme }}>{children}</ThemeContext.Provider>;
+        };
+        // example use
+        const ThemeContextConsumer = ({ 
+            children 
+        }: Readonly<{
+            children: React.ReactNode;
+        }>) => {
+            const { theme } = useContext(ThemeContext);
+            const [mounted, setMounted] = useState(false);
+            useEffect(() => setMounted(true), []);
+            return (
+                mounted &&
+                <div className={theme}>
+                    {children}
+                </div>
+            );
+        };
         ```
-    - Suspense
-        - 通过捕获children抛出的Promsie对象来判断要不要用fallback
-        - thrown一个Promise并不会导致报错，只是简单地运行这个Promise并让Suspense捕获而已
-        - 复习下scrollTop
-            - 子元素的offsetTop和非static position的父容器的scrollTop对比下就能实现懒加载
-            - offsetWidth包含padding不包含滚动条。scroll也只到padding不需要考虑滚动条
+- useDeferredValue
+    - 先显示旧内容，后台进行新内容的更新，更新完再显示新内容
+    - 很神奇，明明只是用钩子返回的值，却能够让组件知道自己要延迟渲染
+- useReducer
+    - 类似局部的redux reducer，详情可以看文档
+- useMemo
+    - 一个目标函数，一个依赖数组
+    - 当依赖数组的值发生改变就会重新计算目标函数的返回值
+- useCallback
+    - 缓存函数用的
+    - 一个目标函数，一个依赖数组
+    - 使用场景：
+        - useEffect的依赖数组如果有函数，用useCallback的返回值来替代原本的函数能避免useEffect的错误触发（当然也可以直接用useEffect内的护卫语句来达到类似的效果）
+        - 子组件使用了React.memo之类的优化方式时，useCallback可以缓存传入子组件的函数。
+- React.lazy
+    - 接收一个thenable的函数，这个函数需要最终返回一个可以被解析为React组件类型的值，例如函数、memo或forwardRef 组件。lazy会抛出包裹这个值的Promise给Suspense捕获
+    - import()
+        - import()是个动态导入语法（Dynamic Import），返回`Promise<React组件>`，但解析后会成为组件
+        - lazy依赖于import()
+        - 用途：
+            - 代码分割（Code Splitting）：将应用的代码拆分成多个小块，按需加载，减少初始加载时间。
+            - 懒加载组件
+            - 条件加载模块：根据某些条件（如用户权限、设备类型）动态加载模块。
+            - 加载非模块代码，例如.json：`import("./data.json", { with: { type: "json" } });`
+    - eg
+    ```tsx
+        // lazy在外面以避免被重新加载
+        const Component = lazy(()=>import("./Component.tsx"));
+        function bruh() {
+            return (
+                <Suspense fallback={<div>Loading...<div/>}>
+                    <Component />
+                <Suspense />
+            )
+        }
+    ```
+- Suspense
+    - 通过捕获children抛出的Promsie对象来判断要不要用fallback
+    - thrown一个Promise并不会导致报错，只是简单地运行这个Promise并让Suspense捕获而已
+    - 复习下scrollTop
+        - 子元素的offsetTop和非static position的父容器的scrollTop对比下就能实现懒加载
+        - offsetWidth包含padding不包含滚动条。scroll也只到padding不需要考虑滚动条
 ## 自定义钩子
 - 复用逻辑，复杂状态管理，复杂的副作用逻辑
+## 好用的react第三方钩子
+- useEventCallback
+    - 原本的useCallback为了动态定义函数且在生命周期中持续保存，会把依赖闭包保存在内部（注意箭头函数虽然会捕获，但一次定义只会捕获一次，如果有上下文改变但箭头函数没有被重新定义一次的情况，就会出现闭包陷阱），通过判断依赖来决定要不要更新。
+    - 而useEventCallback则把更新箭头函数定义的工作和跨生命周期保存的工作用useLayoutEffect和ref解决了，使需要更新函数定义的场景能够被正确检测到。
 
 
 # 一些内置的功能

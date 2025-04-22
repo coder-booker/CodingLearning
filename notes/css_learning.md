@@ -163,6 +163,10 @@
 - `transform`
     - `translateX`
     - `translateY`
+    - transform原来会触发GPU加速
+- `opacity`
+    - 指定透明度
+    - 会触发GPU加速
 
 - **calc符号间要空格！！！**
 
@@ -250,3 +254,12 @@
 
 - 自定义属性
     - on tag, write `data-[name]`，可以使用`aaaa[data-xxx="yyy"]`的选择器来捕获
+
+
+
+
+# Sass/SCSS
+- 算是css的拓展吧
+- _xxxx.scss【还得再多看看】
+    - scss有嵌套文件目录表示类似对象的属性的封装，而只用来表达嵌套关系的转发用文件就是partial files，用下划线约定命名
+    - 比如 `theme.primary`可以是`_theme.scss`用`@forward types/primary`文件夹下的的`_pimary.scss`的属性，但是只要`@use "@styles/theme" as theme`就能够被使用

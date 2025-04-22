@@ -62,8 +62,9 @@
 - React的type
     - `JSX.Element`/`React.ReactNode`
         - children就是`React.ReactNode`
-    - `FunctionComponent<<propType>>`
+    - `FunctionComponent<<propType>>`/`FC<<propType>>`
         - 就是一般react会导出的那个组件，可以指定`<propType>`
+        - 注意`React.Component`就是16以前的类组件
     - `React.CSSProperties`
         ```ts
         type HomeStyle = {
@@ -153,8 +154,74 @@
 
 
 # Advanced features
-### declare，.d.ts
-### T
+### declare，.d.ts 与 模块命名空间加载
+- `.d.ts`文件包含了供引擎/开发时识别的命名空间和对应类型定义
+    - 可以理解为声明某个类有哪些属性和方法 及 其类型
+- TypeScript 会自动解析以下内容，因为类型声明本就是是文件路径解析的一部分：
+    - node_modules/@types/ 下的类型声明（全局或模块）。
+    - tsconfig.json 中 "types" 指定的类型。
+    - 项目中匹配 "include" 的 .d.ts 文件和里面声明的模块的.d.ts文件。
+- 一般.d.ts文件有插件可以自动生成
+- 用法
+    - declare var/let/const 声明变量
+        - 不过一般都是const，因为外部模块一般都不应该能够被修改
+    - declare function 声明函数头
+    - declare module 声明模块
+        - 声明模块有啥和其类型，以及提供识别哪些文件是模块的通配符。让 TypeScript 支持非代码文件的导入（如 CSS Modules、图片文件）。
+        - 对于每个模块都会尝试寻找同名的.d.ts文件来获取该模块导入后的类型和命名空间
+        - 局部没有才去找全局的
+    - declare class 声明类的属性和方法
+    - declare enum 声明枚举类型
+        - 纯类型声明，不会生成真实的枚举代码
+    - declare const enum
+        - 声明编译时常量枚举（内联到代码中，运行时不存在）。
+    - declare namespace 声明（含有子属性的）对象
+        - 用于组织代码。
+        - 描述旧版 JavaScript 库的模块化结构（如 jQuery 的 $.ajax）。
+        - 替代早期 TypeScript 的 module 关键字（现已推荐用 declare module）。
+    - declare global 扩展全局作用域的类型。
+    - declare interface / declare type 声明接口或类型
+        - 通常可省略 declare
+- 用export设置作用域
+    - 如果没有export则默认全局，即该项目中任何地方都能使用。
+    - 如果有export就必须通过import来使用
+    - export 导出变量
+    - export namespace 导出（含有子属性的）对象
+    - export default ES6 默认导出
+    - export = commonjs 导出模块
+    - export as namespace UMD 库声明变量
+    - declare global 扩展全局变量
+    - declare module 扩展模块
+    - `/// <reference />` 三斜线指令
+- 比如`lib.es5.d.ts`里就有`JSON`模块、`parseInt`方法等
+
+### T泛型
+- type本身就是一种有很多语法糖的object，所以很多object操作是能够用在type上以实现非常多灵活的功能
+- 一些nb的做法
+    - 动态指定类型为某个类型集合中的哪些类型的Union type，还可以设置默认值为所有类型的Union type
+        ```ts
+        type Person = {
+            name: string;
+            age: number;
+            address: string;
+        };
+        // 泛型函数，T 被约束为 Person 的键，默认是所有键
+        function getProperty<T extends keyof Person = keyof Person>(obj: Person, key: T): Person[T] {
+            return obj[key];
+        }
+        const person: Person = {
+            name: "Alice",
+            age: 30,
+            address: "123 Main St"
+        };
+        // 显式指定 T 为 "name" | "age"
+        getProperty<"name" | "age">(person, "name"); // OK
+        getProperty<"name" | "age">(person, "age"); // OK
+        getProperty<"name" | "age">(person, "address"); // 错误："address" 不在 "name" | "age" 中
+
+        // 不指定 T，默认为 keyof Person（"name" | "age" | "address"）
+        getProperty(person, "address"); // OK，因为 T 默认为所有键
+        ```
 ### Symbol
 
 
