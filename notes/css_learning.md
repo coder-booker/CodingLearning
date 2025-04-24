@@ -161,8 +161,8 @@
         - `word-break`：当过长时，对尾部的最后一个单词整体截断还是换行。(`normal`, `break-all`, `keep-all`(在符号或空格处截断))
         - `text-wrap`: `wrap`（word整体换）, `nowrap`（不换）, `balance`（word整体换且让每一行差不多长）
 - `transform`
-    - `translateX`
-    - `translateY`
+    - `translateX`，`translateY`
+    - 相对原本位置的左上角的画布坐标偏移
     - transform原来会触发GPU加速
 - `opacity`
     - 指定透明度

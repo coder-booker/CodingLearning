@@ -872,9 +872,8 @@
         - 前
             - 资源利用
                 - 团队协作：组织代码审查或头脑风暴会议
-                - 外部资源：查阅Stack Overflow、官方文档、技术博客
-                - 学术研究：搜索相关论文或开源项目类似实现
-            - 备选方案
+                - 外部资源：查阅Stack Overflow、官方文档、技术博客、相关论文或开源项目类似实现
+            - 更改方案
                 - 评估是否有替代方案可以绕过该问题
                 - 考虑是否可以通过重构简化问题
                 - 必要时与利益相关者沟通调整需求
@@ -891,6 +890,223 @@
                 - 适当休息：通过休息获得新视角（如橡皮鸭调试法）
                 - 设定里程碑：将长期问题分解为阶段性目标
                 - 记录过程：保持详细的问题解决日志
+- 腾子的面经
+    - 你认为为什么要学习前端框架/引擎的底层原理？
+        - 复杂bug的解决
+        - 深入到底层的性能优化
+        - 可以自定义拓展高级功能
+        - 对框架的深入理解有助前期技术选型。
+        - 新技术的学习路线更平缓（因为很多技术都是从现有技术慢慢迭代的）
+
+
+八股：
+浏览器渲染流程是什么？能怎么被利用？
+    优化关键渲染路径：
+        缩短关键路径长度（减少渲染阻塞）
+    减少重排重绘：
+        使用transform/opacity等属性触发合成层
+        批量DOM操作、DocumentFragment
+        使用will-change提示浏览器优化
+        合理使用requestAnimationFrame
+
+事件循环能解决什么场景的问题？为什么要设计宏任务和微任务？要怎么平衡宏任务和微任务的使用？
+    事件循环解决的问题：
+        单线程处理多任务：JavaScript是单线程的，事件循环机制使得异步操作成为可能
+        非阻塞I/O：允许在等待I/O操作时执行其他任务
+        任务优先级管理：通过宏任务和微任务区分任务优先级
+    注意，事件循环在浏览器应该是运行js的那一步，所以事件循环要能开始，必须要浏览器主线程也空闲了才行，比如渲染完了页面
+
+宏任务和微任务设计原因：
+    任务优先级：微任务优先级高于宏任务，保证某些高优先级任务能及时执行
+    IO操作和UI渲染也在宏任务内，
+    平衡使用建议：
+        关键更新使用微任务：如状态更新、DOM变更等需要及时反映的操作
+        耗时操作使用宏任务：如大数据处理、复杂计算等，避免阻塞UI更新
+        避免微任务嵌套过深：可能导致页面卡顿
+
+浏览器每一帧中的行为
+- 浏览器事件循环
+    - 检查并执行最老的可执行宏任务
+    - 每个宏任务（注意不是清空队列，而是每个任务）结束后尝试清空微任务队列
+    - 根据一定准则决定要不要触发渲染
+        - 遍历当前浏览上下文中所有的 document ，必须按在列表中找到的顺序处理每个 document 。
+        - 判断渲染时机（Rendering opportunities）：
+            - 根据硬件刷新率限制、页面性能或页面是否在后台等因素。
+            - 不必要的渲染（Unnecessary rendering）：如果浏览器认为不会产生可见效果则取消渲染
+            - 有没有**rAF**，没有则取消渲染（也是因此使用rAF可以实现更丝滑的动画/动态显示效果）
+        - 处理各种事件（window.performance.now() 是一个时间戳，供浏览器计算剩余时间判断应不应该继续把任务放入执行栈）
+            - 处理 resize 事件，传入一个 performance.now() 时间戳。
+            - 处理 scroll 事件，传入一个 performance.now() 时间戳。
+            - 处理媒体查询，传入一个 performance.now() 时间戳。
+            - 运行 CSS 动画，传入一个 performance.now() 时间戳。
+            - 处理全屏事件，传入一个 performance.now() 时间戳。
+        - 执行回调
+            - 执行 **requestAnimationFrame** 回调，传入一个 performance.now() 时间戳。
+            - 执行 intersectionObserver 回调，传入一个 performance.now() 时间戳。
+        - 对每个 document 进行绘制，更新UI呈现。
+    - 看下该不该执行IdleCallback
+    - 回到第一步继续循环
+
+- requestIdleCallback：
+    - 用于不重要也不紧急的任务，因为只有在每一帧时间有剩才运行这个callback
+    - 且最长只会分配50ms
+    - 可以接受第二个参数代表最长等待时间，超过了就强制执行
+    - 以下例子展示了基础使用语法和结合timeout的用法
+        ```js
+        requestIdleCallback(myNonEssentialWork, { timeout: 2000 });
+
+        function myNonEssentialWork(deadline) {
+            // 当回调函数是由于超时才得以执行的话，deadline.didTimeout为true
+            // requestIdleCallback调用回调的条件可以模拟为以下代码：
+            // if ( (deadline.timeRemaining() > 0 || deadline.didTimeout) )
+            if (tasks.length > 0 ) doOneWorkIfNeeded();
+            // 对于比较长的任务，可以再次继续等待
+            if (tasks.length > 0) { requestIdleCallback(myNonEssentialWork); }
+        }
+        ```
+    - 常见使用场景：数据上报；不要用来修改DOM，因为只有重排重绘完了还有空才会idlecallback，改了DOM就直接作废了前面的操作
+    - eg
+        ```js
+        function schedule() {
+            requestIdleCallback(deadline => {
+                while (deadline.timeRemaining() > 1) {
+                    const data = queues.pop();
+                    // 这里就可以处理数据、上传数据
+                }
+                if (queues.length) schedule();
+            });
+        }
+        ```
+
+- js的动画一般怎么实现的？比如常见的动画库是怎么画动画的？
+    - 常用方法
+        - rAF+css transform
+            - transition：简单过渡效果
+            - animation/@keyframes：复杂动画序列
+            - transform/opacity：硬件加速，性能最佳
+        - Web Animations API
+    - 常见动画库实现原理：
+        - GSAP：
+            - 使用rAF实现高性能动画
+            - 复杂的时间轴控制
+            - 硬件加速优化
+        - Anime.js：
+            - 基于CSS transform和rAF
+            - 支持SVG动画
+        - Three.js（3D动画）：
+            - 基于WebGL
+            - 使用requestAnimationFrame实现流畅渲染
+    - 最佳实践：
+        - 优先使用CSS动画实现简单效果
+        - 复杂动画使用rAF+transform/opacity
+        - 避免在动画中触发重排
+        - 使用will-change提示浏览器优化
+项目：
+react router的底层有什么样的优化？有没有按需加载的机制？
+    - 似乎没有，但可以用createBrowserRouterAPI更优雅地设置该不该懒加载（手动封装好）
+多页应用怎么实现相互的通信/信息整合？（类似微前端的场景）
+- URL参数传递：
+    - 通过query string或hash传递数据
+- localStorage/sessionStorage配合storage事件监听变化
+- BroadcastChannel API：
+    // 页面A
+    const channel = new BroadcastChannel('app-channel');
+    channel.postMessage(data);
+    // 页面B
+    const channel = new BroadcastChannel('app-channel');
+    channel.onmessage = (e) => { /* 处理数据 */ };
+- window.postMessage：
+    // 父窗口
+    childWindow.postMessage(data, origin);
+    // 子窗口
+    window.addEventListener('message', (e) => {
+    if (e.origin === expectedOrigin) {
+        // 处理数据
+    }
+    });
+- SharedWorker：
+    适合复杂场景的跨页面通信
+    所有页面通过worker进行数据同步
+- iframe桥接（微前端常用）：
+    主应用和子应用通过iframe通信
+    使用window.parent和contentWindow通信
+
+
+
+MessageChannel
+
+场景题：
+共享文档某个操作导致页面卡顿，问为什么卡顿，怎么解决
+DOM操作过多：频繁的DOM更新导致重排/重绘
+- 同步阻塞：
+    - 大量同步数据阻塞主线程
+    - 文档操作的算法效率低（如O(n²)复杂度）
+    - 未使用虚拟化技术处理大文档
+- 内存泄漏：
+    - 未清理的引用导致内存占用过高
+    - 事件监听过多
+- 解决方案：
+    - 优化DOM操作：
+        - 使用文档片段(DocumentFragment)批量更新
+        - 虚拟DOM或增量更新策略
+        - 使用requestAnimationFrame调度渲染
+    - 数据优化：
+        - 使用差分算法只同步变化部分
+        - Web Worker处理复杂计算
+        - 节流/防抖高频操作
+    - 性能分析工具：
+        - 使用Chrome DevTools的Performance面板分析瓶颈
+        - Memory面板检查内存泄漏
+    - 虚拟化渲染：
+        - 只渲染可视区域内的文档内容
+        - 使用react-window或react-virtualized等库
+    - WebAssembly加速：
+        - 对性能关键路径使用Wasm实现
+
+8. 共享文档要有哪些/要怎么识别和解决可能的性能问题？
+需要关注的性能问题：
+渲染性能：
+大量DOM节点导致的渲染延迟
+复杂样式计算
+协同编辑性能：
+多人同时编辑时的冲突解决效率
+操作转换(OT)或CRDT算法的实现效率
+网络性能：
+频繁的网络同步导致的延迟
+未优化的数据传输格式
+内存使用：
+文档历史版本的内存占用
+未清理的事件监听器
+识别方法：
+性能监控：
+使用Performance API进行指标采集
+关键用户操作的可交互时间(TTI)监控
+压力测试：
+模拟多用户同时编辑场景
+大数据量文档操作测试
+运行时分析：
+Chrome DevTools的Performance记录
+Memory堆快照分析
+解决方案
+架构优化：
+采用增量更新策略
+实现操作压缩/批量处理
+数据优化：
+使用二进制格式(如Protocol Buffers)减少传输数据量
+差分同步代替全量同步
+渲染优化：
+实现画布(Canvas)渲染代替DOM渲染
+按需渲染(虚拟滚动)
+缓存策略：
+本地操作缓存
+离线编辑支持
+代码优化：
+避免同步阻塞操作
+使用Web Worker处理后台任务
+监控系统：
+建立性能指标报警机制
+用户行为轨迹记录分析性能瓶颈
+
 
 # todo
 - 算法

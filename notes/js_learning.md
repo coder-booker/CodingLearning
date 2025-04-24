@@ -623,95 +623,6 @@
     - 类似map，但只返回内部函数返回了true的索引位置的元素
     - 其实有些类似链式调用
 
-
-# with
-- eg
-    ```ts
-    with (obj) {
-        console.log(foo); // 1
-        console.log(bar); // ReferenceError: bar is not defined
-    }
-    ```
-
-# 事件循环
-- nodejs是基于Libuv这个库开发的事件循环
-- 本质上就是不停循环执行多个宏任务，每个宏任务查询执行多个异步任务队列，这些任务队列各自属于不同的阶段，分别处理不同的异步操作。
-- 事件循环开始前，所有同步任务会先被执行
-- 阶段/宏任务
-    1. Timers 阶段
-        - 检查并处理固定时间的回调任务队列，例如 setTimeout 和 setInterval 的回调。
-    2. Pending Callbacks 阶段
-        - 检查并处理一些系统操作的回调任务队列（如 TCP 错误、文件系统错误等）。
-    3. Idle, Prepare 阶段
-        - 内部使用的阶段，通常不需要关注。
-        - Idle用于执行一些内部任务，例如Libuv的资源清理
-        - Prepare用于准备事件循环的下一个阶段，例如初始化一些内部状态
-    4. Poll 阶段
-        - 检查并处理 I/O 事件的任务队列（如文件读取、网络请求等）。
-    5. Check 阶段
-        - 检查并处理 setImmediate 的回调。
-    6. Close Callbacks 阶段
-        - 处理关闭事件的回调（如 socket.on('close', ...)）。
-- 任务队列：
-    - 每个事件循环的阶段都会有一个自己的任务队列供异步操作
-    - 微任务有一个自己的任务队列
-- 宏任务(Macrotask)、微任务(Microtask)
-    - 宏任务
-        - 系统自带的一些回调方法的任务，例如setTimeout的回调这一类
-        - 每个阶段都会尝试清空这个阶段的宏任务的任务队列
-        - 宏任务的任务队列没有优先级
-    - 微任务：
-        - 用户定义的一些任务，例如Promise的回调
-        - 一个宏任务或者事件循环阶段结束，系统就会检查并处理所有微任务
-        - 有两个微任务队列：
-            - process.nextTick，会被优先清空
-            - Promise
-- 值得注意的点：
-    - setTimeout这一类宏任务在被定义时，实际上只是把任务插入了队列中。所以setTimeout(func, 0)并不一定会立马执行，可能会被推到下个事件循环才执行
-
-# 闭包
-- 作用、应用场景
-    - 保存状态：闭包可以保存函数执行时的状态，即使函数已经执行完毕。
-    - 实现私有变量：通过闭包，可以模拟私有变量，避免外部直接访问和修改。
-    - 延迟执行：闭包可以用于实现延迟执行（如回调函数、定时器）。
-    - 模块化：闭包可以用于创建模块，封装私有方法和变量。
-- 需要注意的地方：
-    - 解决闭包的引用错误问题：
-        - 用立刻执行函数再包裹一层，把i传入立刻执行函数就能绑定好参数了
-        - 用let在和函数同级的作用域中定义函数引用的变量，以此让外部的变化影响不了函数内
-    - 箭头函数
-        - 注意箭头函数在闭包中的this和最外层的func是同一个，因为这是箭头函数最基础的捕获上下文
-- eg
-    ```ts
-    function test() {
-        let arr = [];
-        let i = 0;
-        for (; i < 3; ++i ) {
-            // 闭包循环错误
-            arr.push(function() {
-                console.log(i)
-            })  // 333
-            // 解决方法：再套一层闭包+IIFE，绑定参数
-            arr.push((function(i) {
-                return function () {
-                    console.log(i);
-                }
-            })(i))  // 0, 1, 2
-            // 手动绑定参数是没用的
-            arr.push((function() {
-                console.log(i)
-            }).bind(undefined, i))  // 333
-        }
-        // 解决方法2：限制i的作用域，如此i就无法共享了。注意不能用var
-        for (let i = 0; i < 3; ++i ) { 
-            // or
-            let idx = i; // 这样也能限制idx的作用域
-        }
-        return arr;
-    }
-    for ( let k of test() ) {k();}
-    ```
-
 # 内置对象与方法
 ### Math
 - `Math.max(...<item_arr>);` 如果a和b没法转换成number，返回NaN
@@ -779,7 +690,7 @@
     - Pending（等待中）：初始状态，既不是成功也不是失败。
     - Fulfilled（已成功）：操作成功完成。
     - Rejected（已失败）：操作失败。
-# 装饰器
+### 装饰器
 - 装饰器本质上就是个高阶函数的语法糖
 - 装饰器会隐性传入被调用者的this
 - tsconfig中指定`"experimentalDecorators": true`
@@ -825,13 +736,84 @@
 - `setTimeout(func, time)`
     - 创建一个每一定时间内持续执行的宏任务并返回一个标识符
     - 取消该任务：`clearTimeout(<标识符>)`
+    - 就算time是0，也会被node.js强制改为1毫秒
 - `setInterval(func, time)`
     - 创建一个每一定时间就执行的宏任务并返回一个标识符
     - 取消该任务：`clearInterval(<标识符>)`
 - `setImmediate(func)`
+    - nodejs的API
     - 在事件循环的Check阶段被运行
-    - 为了让IO事件结束后能有一个api来让IO的结果立刻被回调（Check之前就是Poll）
-    - 还可以确保代码的执行顺序
+    - 因为事件循环阶段的顺序中check阶段在倒数第二而能够设置setImmiediate的任务的阶段全都必然比check早，所以可以实现“让任务必然在当前这次循环中运行”的效果
+    - 还可以让IO事件结束后能有一个api来让IO的结果立刻被回调（Check之前就是Poll）
+    - 还可以让一些任务完全摆脱时间倒数的束缚而设计的
+- `requestIdleCallback(cb[, {timeout: <timecount>}])`
+    - `cb(<deadlingObj>)`（看下面用例你就懂了）
+    - 用于不重要也不紧急的任务，因为只有在每一帧时间有剩才会运行这个callback
+    - 且最长只会分配50ms
+    - 可以接受第二个参数代表最长等待时间，超过了就强制执行
+    - 用例
+        ```js
+        requestIdleCallback(myNonEssentialWork, { timeout: 2000 });
+
+        function myNonEssentialWork(deadline) {
+            // 当回调函数是由于超时才得以执行的话，deadline.didTimeout为true
+            // requestIdleCallback调用回调的条件可以模拟为以下代码：
+            // if ( (deadline.timeRemaining() > 0 || deadline.didTimeout) )
+            if (tasks.length > 0 ) doOneWorkIfNeeded();
+            // 对于比较长的任务，可以再次继续等待
+            if (tasks.length > 0) { requestIdleCallback(myNonEssentialWork); }
+        }
+        ```
+    - 常见使用场景：数据上报；不要用来修改DOM，因为只有重排重绘完了还有空才会idlecallback，改了DOM就直接作废了前面的操作。eg：
+        ```js
+        function schedule() {
+            requestIdleCallback(deadline => {
+                while (deadline.timeRemaining() > 1) {
+                    const data = queues.pop();
+                    // 这里就可以处理数据、上传数据
+                }
+                if (queues.length) schedule();
+            });
+        }
+        ```
+- `requestAnimation(cb)`
+    - `cb(<timestamp>)`
+    - 浏览器的API
+    - 详细解释可以去看下面的事件循环
+    - 用例：动画
+        ```js
+        const test = document.querySelector<HTMLDivElement>("#test")!;
+        let i = 0;
+        let requestId: number;
+        function animation() {
+            test.style.transform = `translateX(${count}px)`;
+            requestId = requestAnimationFrame(animation);
+            i++;
+            if (i > 200) cancelAnimationFrame(requestId);
+        }
+        animation();
+        ```
+    - 用例：拆分长任务
+        ```js
+        var taskList = breakBigTaskIntoMicroTasks(monsterTaskList);
+        requestAnimationFrame(processTaskList);
+
+        function processTaskList(taskStartTime) {
+            var taskFinishTime;
+            do {
+                // 假设下一个任务被压入 call stack
+                var nextTask = taskList.pop();
+                // 执行下一个 task
+                processTask(nextTask);
+                // 如果时间足够继续执行下一个
+                taskFinishTime = window.performance.now();
+            } while (taskFinishTime - taskStartTime < 3);
+
+            if (taskList.length > 0) {
+                requestAnimationFrame(processTaskList);
+            }
+        }
+        ```
 ### Set/Map
 - general
     - 用引用作为key并不会对比引用的内容
@@ -1055,128 +1037,6 @@ const observedElement = document.getElementById("aaa");
 resizeObserver.observe(observedElement);
 ```
 
-# 浏览器
-- JS 可以操作 DOM，但GUI渲染线程与JS线程是互斥的。所以JS 脚本执行和浏览器布局、绘制不能同时执行。
-### 文档操作API
-- DocumentFragment
-    - eg
-        ```js
-        const fragment = document.createDocumentFragment();
-        for (let i = 0; i < 100; i++) {
-            const div = document.createElement('div');
-            fragment.appendChild(div); // 先在内存中操作
-        }
-        document.body.appendChild(fragment); // 只触发一次重排
-        ```
-    - 和react的`<></>`和`<Fragment>`其实没有关系
-### Intersection API
-- 可用于懒加载
-- 监听元素视窗进入点和退出点
-- eg
-    ```ts
-    const observer = new IntersectionObserver(entries => {
-        for (const i of entries) {
-            if (i.isIntersecting) { // 当目标元素出现在视图内
-                const img = i.target;
-                const trueSrc = img.getAttribute("data-src");
-                setTimeout(() => {
-                    img.setAttribute("src", trueSrc); // 方便展示懒加载效果
-                }, 1000);
-                observer.unobserve(img); // 停止监听此元素
-            }
-        }
-    });
-    ```
-### History API & hashChange
-- 用于路由
-- History API
-    - `history.pushState({}, '', path);`：更改路径并跳转
-        - history.pushState 接收三个参数：
-        - state：一个状态对象，与新的 URL 关联。可以是任意可序列化的数据。
-        - title：新页面的标题。目前大多数浏览器忽略此参数。
-        - url：新的 URL。
-    - `window.popstate`：监听 popstate 事件（浏览器前进/后退时触发）。
-- hashChange
-    - `window.location.hash`
-- routePairs对象：保存路径与对应组件的关系，匹配到path就返回对应的组件
-- pathToRegex函数：解析路径与捕获参数。react的路径定义方法有些语法糖，比如`:id`要变成`"id": <value>`。需要分析哪一段是把接收的path的id捕获出来放进
-- matchPath函数：把输入的path解析并匹配，返回对应keys和components
-- render函数：清除现有DOM，挂载新DOM
-- navigate函数：`history.pushState({}, '', path);`后，render保存的对应组件
-- handleRouteChange函数：匹配当前`window.location.pathname`并渲染对应组件
-- 事件监听：
-    - 在document监听`DOMContentLoaded`以首屏加载
-    - 在window监听`popstate`
-- eg
-    ```ts
-    // 路由配置
-    const routes = [
-        { path: '/', component: Home },
-        { path: '/about', component: About },
-        { path: '/user/:id', component: User },
-        { path: '*', component: NotFound } // 404 页面
-    ];
-    // 路径转正则表达式（简化版）
-    function pathToRegexp(path, keys) {
-        const pattern = path.replace(/:(\w+)/g, (_, key) => {
-            keys.push({ name: key });
-            return '([^\/]+)';
-        });
-        return new RegExp(`^${pattern}$`);
-    }
-    // 路由匹配
-    function matchRoute(path, routes) {
-        for (const route of routes) {
-            const keys = [];
-            const regex = pathToRegexp(route.path, keys);
-            const match = regex.exec(path);
-
-            if (match) {
-                const params = keys.reduce((acc, key, index) => {
-                    acc[key.name] = match[index + 1];
-                    return acc;
-                }, {});
-                return { ...route, params };
-            }
-        }
-        return null;
-    }
-    // 动态组件渲染
-    function render(component, params) {
-        const app = document.getElementById('app');
-        app.innerHTML = '';
-        const element = document.createElement('div');
-        element.innerHTML = component(params);
-        app.appendChild(element);
-    }
-    // 导航
-    function navigate(path) {
-        history.pushState({}, '', path);
-        handleRouteChange();
-    }
-    // 处理路由变化
-    function handleRouteChange() {
-        const path = window.location.pathname;
-        const matchedRoute = matchRoute(path, routes);
-
-        if (matchedRoute) {
-            render(matchedRoute.component, matchedRoute.params);
-        } else {
-            render(NotFound);
-        }
-    }
-    // 初始化
-    window.addEventListener('popstate', handleRouteChange);
-    document.addEventListener('DOMContentLoaded', handleRouteChange);
-    // 组件定义
-    function Home() {return '<h1>Home</h1>';}
-    // ...
-
-    // 初始化渲染
-    handleRouteChange();
-    ```
-
-
 # Event
 ### DragEvent
 - dataTransfer
@@ -1250,6 +1110,121 @@ function sendMsg() {
     });
 }
 ```
+# with
+- eg
+    ```ts
+    with (obj) {
+        console.log(foo); // 1
+        console.log(bar); // ReferenceError: bar is not defined
+    }
+    ```
+
+# 事件循环【还得仔细看看https://cloud.tencent.com/developer/article/1717260】
+- nodejs是基于Libuv这个库开发的事件循环
+- 本质上就是不停循环执行多个宏任务，每个宏任务查询执行多个异步任务队列，这些任务队列各自属于不同的阶段，分别处理不同的异步操作。
+- 事件循环开始前，所有同步任务会先被执行
+- 事件循环：
+    - 宏任务一个一个进行
+- 任务队列：
+    - 宏任务一个任务队列，微任务一个任务队列
+- 宏任务(Macrotask)、微任务(Microtask)
+    - 宏任务
+        - 系统自带的一些回调方法的任务，例如setTimeout的回调这一类
+        - 每个阶段都会尝试清空这个阶段的宏任务的任务队列
+        - 宏任务的任务队列没有优先级
+    - 微任务：
+        - 用户定义的一些任务，例如Promise的回调
+        - 一个宏任务或者事件循环阶段结束，系统就会检查并处理所有微任务
+        - 有两个微任务队列：
+            - process.nextTick，会被优先清空（这个是Nodejs的功能）
+            - Promise
+- 执行栈：
+    - 所有的代码都会被放入执行栈才能被执行，至于什么时候放入则由事件循环来决定。
+    - eg rAF、js 宏任务微任务、用户互动事件
+- 浏览器事件循环
+    - 检查并执行最老的可执行宏任务
+    - 每个宏任务（注意不是清空队列，而是每个任务）结束后尝试清空微任务队列
+    - 根据一定准则决定要不要触发渲染
+        - 遍历当前浏览上下文中所有的 document ，必须按在列表中找到的顺序处理每个 document 。
+        - 判断渲染时机（Rendering opportunities）：
+            - 根据硬件刷新率限制、页面性能或页面是否在后台等因素。
+            - 不必要的渲染（Unnecessary rendering）：如果浏览器认为不会产生可见效果则取消渲染
+            - 有没有**rAF**，没有则取消渲染（也是因此使用rAF可以实现更丝滑的动画/动态显示效果）
+        - 处理各种事件（window.performance.now() 是一个时间戳，供浏览器计算剩余时间判断应不应该继续把任务放入执行栈）
+            - 处理 resize 事件，传入一个 performance.now() 时间戳。
+            - 处理 scroll 事件，传入一个 performance.now() 时间戳。
+            - 处理媒体查询，传入一个 performance.now() 时间戳。
+            - 运行 CSS 动画，传入一个 performance.now() 时间戳。
+            - 处理全屏事件，传入一个 performance.now() 时间戳。
+        - 执行回调
+            - 执行 **requestAnimationFrame** 回调，传入一个 performance.now() 时间戳。
+            - 执行 intersectionObserver 回调，传入一个 performance.now() 时间戳。
+        - 对每个 document 进行绘制，更新UI呈现。
+    - 看下该不该执行IdleCallback
+    - 回到第一步继续循环
+- nodejs的事件循环
+    - 宏任务
+        1. Timers 阶段
+            - 检查并处理固定时间的回调任务队列，例如 setTimeout 和 setInterval 的回调。
+        2. Pending Callbacks 阶段
+            - 检查并处理一些系统操作的回调任务队列（如 TCP 错误、文件系统错误等）。
+        3. Idle, Prepare 阶段
+            - 内部使用的阶段，通常不需要关注。
+            - Idle用于执行一些内部任务，例如Libuv的资源清理
+            - Prepare用于准备事件循环的下一个阶段，例如初始化一些内部状态
+        4. Poll 阶段
+            - 检查并处理 I/O 事件的任务队列（如文件读取、网络请求等）。
+        5. Check 阶段（Nodejs）
+            - 检查并处理 setImmediate 的回调。
+        6. Close Callbacks 阶段
+            - 处理关闭事件的回调（如 socket.on('close', ...)）。
+- 值得注意的点：
+    - setTimeout这一类宏任务在被定义时，实际上只是把任务插入了队列中。所以setTimeout(func, 0)并不一定会立马执行，可能会被推到下个事件循环才执行
+
+# 闭包
+- 作用、应用场景
+    - 保存状态：闭包可以保存函数执行时的状态，即使函数已经执行完毕。
+    - 实现私有变量：通过闭包，可以模拟私有变量，避免外部直接访问和修改。
+    - 延迟执行：闭包可以用于实现延迟执行（如回调函数、定时器）。
+    - 模块化：闭包可以用于创建模块，封装私有方法和变量。
+- 需要注意的地方：
+    - 解决闭包的引用错误问题：
+        - 用立刻执行函数再包裹一层，把i传入立刻执行函数就能绑定好参数了
+        - 用let在和函数同级的作用域中定义函数引用的变量，以此让外部的变化影响不了函数内
+    - 箭头函数
+        - 注意箭头函数在闭包中的this和最外层的func是同一个，因为这是箭头函数最基础的捕获上下文
+- eg
+    ```ts
+    function test() {
+        let arr = [];
+        let i = 0;
+        for (; i < 3; ++i ) {
+            // 闭包循环错误
+            arr.push(function() {
+                console.log(i)
+            })  // 333
+            // 解决方法：再套一层闭包+IIFE，绑定参数
+            arr.push((function(i) {
+                return function () {
+                    console.log(i);
+                }
+            })(i))  // 0, 1, 2
+            // 手动绑定参数是没用的
+            arr.push((function() {
+                console.log(i)
+            }).bind(undefined, i))  // 333
+        }
+        // 解决方法2：限制i的作用域，如此i就无法共享了。注意不能用var
+        for (let i = 0; i < 3; ++i ) { 
+            // or
+            let idx = i; // 这样也能限制idx的作用域
+        }
+        return arr;
+    }
+    for ( let k of test() ) {k();}
+    ```
+
+
 
 
 # other
