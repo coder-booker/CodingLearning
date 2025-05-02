@@ -869,7 +869,7 @@
                 - 让AI组织和筛选杂乱的信息
                 - 知识检索可以更加高效自由，如跨语言检索、快速筛选等
     - 解决问题的方法论
-        - 前
+        - 前：提升我方，降低敌方
             - 资源利用
                 - 团队协作：组织代码审查或头脑风暴会议
                 - 外部资源：查阅Stack Overflow、官方文档、技术博客、相关论文或开源项目类似实现
@@ -881,15 +881,16 @@
                 - 重新分析问题：用不同方式表述问题，确认真正痛点
                 - 分解问题：将大问题拆分为可管理的小模块（如使用分治法）
                 - 绘制流程图：可视化问题场景和数据流
-        - 中
+        - 中：调整我方，解决敌方
             - 技术解决策略
                 - 多角度验证：尝试不同的算法/架构方案
                 - 原型验证：为可能的解决方案构建最小可行原型
                 - 日志与调试：增加详细日志，使用条件断点调试
+                - 设定里程碑：将长期问题分解为阶段性目标
             - 心态与时间管理
                 - 适当休息：通过休息获得新视角（如橡皮鸭调试法）
-                - 设定里程碑：将长期问题分解为阶段性目标
-                - 记录过程：保持详细的问题解决日志
+        - 后：记录敌方和我方
+            - 记录过程：保持详细的问题解决日志
 - 腾子的面经
     - 你认为为什么要学习前端框架/引擎的底层原理？
         - 复杂bug的解决
@@ -900,13 +901,30 @@
 
 
 八股：
-浏览器渲染流程是什么？能怎么被利用？
-    优化关键渲染路径：
-        缩短关键路径长度（减少渲染阻塞）
-    减少重排重绘：
-        使用transform/opacity等属性触发合成层
-        批量DOM操作、DocumentFragment
-        使用will-change提示浏览器优化
+- 浏览器渲染流程是什么？能怎么被利用？
+    - 关键渲染路径（Critical Rendering Path, CRP）
+        - 构建 DOM 树：解析 HTML → 生成 DOM（Document Object Model）。
+        - 构建 CSSOM 树：解析 CSS → 生成 CSSOM（CSS Object Model）。
+        - 合并成 Render Tree：DOM + CSSOM → 渲染树（仅包含可见元素）。
+        - Layout（布局/重排）：计算每个节点的位置和大小。
+        - Paint（绘制）：将渲染树转换为屏幕上的像素。
+        - Composite（合成）：将不同图层合并显示（GPU 加速）。
+    - 合成层
+        - 浏览器会将某些元素单独提升为合成层（GPU 加速）
+        - 修改这些属性时，只会重新合成（Composite），不会触发重排重绘。
+        - 使用transform/opacity等属性触发合成层
+    - will-change
+        - 用于提示浏览器某个元素即将发生变化，让浏览器提前优化（如提升为合成层）。
+        - 会增加内存占用
+        - rAF可以利用：will-change一般都是用在合成层元素上的，rAF利用will-change不会触发重排重绘
+        - eg 
+            .element {
+                will-change: transform; /* 告诉浏览器这个元素会变化 */
+            }
+        - eg
+            .scrollable-content {
+                will-change: scroll-position;   /* 减少滚动卡顿 */
+            }
         合理使用requestAnimationFrame
 
 事件循环能解决什么场景的问题？为什么要设计宏任务和微任务？要怎么平衡宏任务和微任务的使用？
@@ -923,18 +941,17 @@
         关键更新使用微任务：如状态更新、DOM变更等需要及时反映的操作
         耗时操作使用宏任务：如大数据处理、复杂计算等，避免阻塞UI更新
         避免微任务嵌套过深：可能导致页面卡顿
-
-浏览器每一帧中的行为
-- 浏览器事件循环
-    - 检查并执行最老的可执行宏任务
-    - 每个宏任务（注意不是清空队列，而是每个任务）结束后尝试清空微任务队列
-    - 根据一定准则决定要不要触发渲染
+- 浏览器渲染流程（每一帧中的行为）
+    - 事件循环
+        - 检查并执行最老的可执行宏任务
+        - 每个宏任务（注意不是清空队列，而是每个任务）结束后尝试清空微任务队列
+    - 尝试渲染（根据一定准则决定要不要触发渲染）
         - 遍历当前浏览上下文中所有的 document ，必须按在列表中找到的顺序处理每个 document 。
         - 判断渲染时机（Rendering opportunities）：
-            - 根据硬件刷新率限制、页面性能或页面是否在后台等因素。
-            - 不必要的渲染（Unnecessary rendering）：如果浏览器认为不会产生可见效果则取消渲染
-            - 有没有**rAF**，没有则取消渲染（也是因此使用rAF可以实现更丝滑的动画/动态显示效果）
-        - 处理各种事件（window.performance.now() 是一个时间戳，供浏览器计算剩余时间判断应不应该继续把任务放入执行栈）
+            - 动态因素：根据硬件刷新率限制、页面性能或页面是否在后台等因素。
+            - 不必要的渲染（Unnecessary rendering）：浏览器认为会不会产生可见效果
+            - rAF：有没有**rAF**，有则渲染（也是因此使用rAF可以实现更丝滑的动画/动态显示效果）
+        - 处理各种视觉改变事件（window.performance.now() 是一个时间戳，供浏览器计算剩余时间判断应不应该继续把任务放入执行栈）
             - 处理 resize 事件，传入一个 performance.now() 时间戳。
             - 处理 scroll 事件，传入一个 performance.now() 时间戳。
             - 处理媒体查询，传入一个 performance.now() 时间戳。
@@ -945,8 +962,7 @@
             - 执行 intersectionObserver 回调，传入一个 performance.now() 时间戳。
         - 对每个 document 进行绘制，更新UI呈现。
     - 看下该不该执行IdleCallback
-    - 回到第一步继续循环
-
+    - 回到第一步事件循环
 - requestIdleCallback：
     - 用于不重要也不紧急的任务，因为只有在每一帧时间有剩才运行这个callback
     - 且最长只会分配50ms
@@ -1002,110 +1018,76 @@
         - 避免在动画中触发重排
         - 使用will-change提示浏览器优化
 项目：
-react router的底层有什么样的优化？有没有按需加载的机制？
+- react router的底层有什么样的优化？有没有按需加载的机制？
     - 似乎没有，但可以用createBrowserRouterAPI更优雅地设置该不该懒加载（手动封装好）
-多页应用怎么实现相互的通信/信息整合？（类似微前端的场景）
-- URL参数传递：
-    - 通过query string或hash传递数据
-- localStorage/sessionStorage配合storage事件监听变化
-- BroadcastChannel API：
-    // 页面A
-    const channel = new BroadcastChannel('app-channel');
-    channel.postMessage(data);
-    // 页面B
-    const channel = new BroadcastChannel('app-channel');
-    channel.onmessage = (e) => { /* 处理数据 */ };
-- window.postMessage：
-    // 父窗口
-    childWindow.postMessage(data, origin);
-    // 子窗口
-    window.addEventListener('message', (e) => {
-    if (e.origin === expectedOrigin) {
-        // 处理数据
-    }
-    });
-- SharedWorker：
-    适合复杂场景的跨页面通信
-    所有页面通过worker进行数据同步
-- iframe桥接（微前端常用）：
-    主应用和子应用通过iframe通信
-    使用window.parent和contentWindow通信
-
-
+- 多页应用怎么实现相互的通信/信息整合？（类似微前端的场景）
+    - URL参数传递：
+        - 通过query string或hash传递数据
+    - localStorage/sessionStorage配合storage事件监听变化
+    - BroadcastChannel API：
+        ```js
+        // 页面A
+        const channel = new BroadcastChannel('app-channel');
+        channel.postMessage(data);
+        // 页面B
+        const channel = new BroadcastChannel('app-channel');
+        channel.onmessage = (e) => { /* 处理数据 */ };
+        ```
+    - `window.postMessage`：
+        ```js
+        // 父窗口
+        childWindow.postMessage(data, origin);
+        // 子窗口
+        window.addEventListener('message', (e) => {
+        if (e.origin === expectedOrigin) {
+            // 处理数据
+        }
+        });
+        ```
+    - SharedWorker：
+        - 适合复杂场景的跨页面通信
+        - 所有页面通过worker进行数据同步
+    - iframe桥接（微前端常用）：
+        - 主应用和子应用通过iframe通信
+        - 使用window.parent和contentWindow通信
 
 MessageChannel
 
 场景题：
-共享文档某个操作导致页面卡顿，问为什么卡顿，怎么解决
-DOM操作过多：频繁的DOM更新导致重排/重绘
-- 同步阻塞：
-    - 大量同步数据阻塞主线程
-    - 文档操作的算法效率低（如O(n²)复杂度）
-    - 未使用虚拟化技术处理大文档
-- 内存泄漏：
-    - 未清理的引用导致内存占用过高
-    - 事件监听过多
-- 解决方案：
-    - 优化DOM操作：
-        - 使用文档片段(DocumentFragment)批量更新
-        - 虚拟DOM或增量更新策略
-        - 使用requestAnimationFrame调度渲染
-    - 数据优化：
-        - 使用差分算法只同步变化部分
-        - Web Worker处理复杂计算
-        - 节流/防抖高频操作
-    - 性能分析工具：
-        - 使用Chrome DevTools的Performance面板分析瓶颈
-        - Memory面板检查内存泄漏
-    - 虚拟化渲染：
-        - 只渲染可视区域内的文档内容
-        - 使用react-window或react-virtualized等库
-    - WebAssembly加速：
-        - 对性能关键路径使用Wasm实现
+- 共享文档优化
+    - 可能的卡顿问题：
+        - 网络卡顿：大数据块传输、频繁的同步请求
+        - 渲染卡顿：大量DOM节点导致的渲染延迟
+        - 同步代码卡顿：大量同步数据、大量同步操作导致阻塞
+        - 算法卡顿：文档操作的算法效率低（如O(n²)复杂度）
+        - 内存卡顿：占用过高
+    - 识别方法：
+        - 上线前
+            - 测试：（略）
+            - 性能监控：Chrome DevTools的Performance记录、Memory堆快照分析
+        - 运行中：
+            - 实时监控：
+                - 对关键指标进行监控（如关键操作的可交互时间(TTI)监控）
+                - 建立性能指标报警机制
+                - 监控用户行为轨迹记录
+    - 解决方案：
+        - 代码优化：
+            - 操作压缩/批量处理：如用文档片段(DocumentFragment)批量更新
+            - 尽量别同步：
+            - 多线程：Web Worker后台处理复杂计算
+            - WebAssembly：对性能关键路径使用Wasm实现
+        - 渲染优化：
+            - 增量+差分：大量更新时采用增量更新 + 差分算法
+            - rAF：使用requestAnimationFrame调度渲染
+            - Canvas：实现画布(Canvas)渲染代替DOM渲染
+            - 懒加载/虚拟化：只渲染可视区域内的文档内容
+        - 数据优化：
+            - 使用二进制格式(如Protocol Buffers)减少传输数据量
+            - 节流/防抖高频操作
+            - 本地操作缓存
 
-8. 共享文档要有哪些/要怎么识别和解决可能的性能问题？
-需要关注的性能问题：
-渲染性能：
-大量DOM节点导致的渲染延迟
-复杂样式计算
-协同编辑性能：
-多人同时编辑时的冲突解决效率
-操作转换(OT)或CRDT算法的实现效率
-网络性能：
-频繁的网络同步导致的延迟
-未优化的数据传输格式
-内存使用：
-文档历史版本的内存占用
-未清理的事件监听器
-识别方法：
-性能监控：
-使用Performance API进行指标采集
-关键用户操作的可交互时间(TTI)监控
-压力测试：
-模拟多用户同时编辑场景
-大数据量文档操作测试
-运行时分析：
-Chrome DevTools的Performance记录
-Memory堆快照分析
-解决方案
-架构优化：
-采用增量更新策略
-实现操作压缩/批量处理
-数据优化：
-使用二进制格式(如Protocol Buffers)减少传输数据量
-差分同步代替全量同步
-渲染优化：
-实现画布(Canvas)渲染代替DOM渲染
-按需渲染(虚拟滚动)
-缓存策略：
-本地操作缓存
-离线编辑支持
-代码优化：
-避免同步阻塞操作
-使用Web Worker处理后台任务
-监控系统：
-建立性能指标报警机制
-用户行为轨迹记录分析性能瓶颈
+
+
 
 
 # todo
@@ -1148,6 +1130,11 @@ Memory堆快照分析
     - 实际应用下的防抖函数（state的改变可能检测不到）
     - 实现一个modal
     - 实现一个下拉框（absolute）（为什么float不行？）
+    - 自定义hook
+    - 现代软开用的一些开发流程架构、规范等等
+    - 怎么解决大量同步数据被插入文档后的卡顿问题
+    - 要怎么监控TTI？
+    - Canvas对比DOM渲染有什么优势？
 - Network
     - HTTPS能防以下什么：hijacking、XSS、Dos、
     - TCP可靠传输协议：滑动窗口咋就可靠了

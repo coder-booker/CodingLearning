@@ -184,10 +184,11 @@
 - 复用逻辑，复杂状态管理，复杂的副作用逻辑
 ## 好用的react第三方钩子
 - useEventCallback
+    - 注意，useCallback的最大作用就是让函数作为props传递时不会重新渲染，因为每次传的都是同一个函数指针
     - 用ref来记录输入的回调函数实现返回值地址固定，但仍然能调用最新的回调函数的返回值
     - 原本的useCallback为了动态定义函数且在生命周期中持续保存，会把依赖闭包保存在内部（注意箭头函数虽然会捕获，但一次定义只会捕获一次，如果有上下文改变但箭头函数没有被重新定义一次的情况，就会出现闭包陷阱），通过判断依赖来决定要不要更新。
     - 而useEventCallback则把更新箭头函数定义的工作和跨生命周期保存的工作用useLayoutEffect和ref解决了，使需要更新函数定义的场景能够被正确检测到以刷新回调函数的上下文。
-    - 不能再render中调用useEvent的返回值
+    - 不能在render中调用useEvent的返回值
         1. 实际上并不是用useLayoutEffect更新的，但是是刚好在其之前更新的。而因为子组件的 useLayoutEffect比父组件的执行更早，如果这样用的话，子组件的 useLayoutEffect中访问到的 ref一定是旧的。
         2. 调用useEvent的返回值时layoutEffect还没触发，所以渲染中调用的useEvent返回值一定是旧的还没更新的
 

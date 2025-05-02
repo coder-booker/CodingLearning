@@ -1,23 +1,20 @@
-
+// cd ./test\test_ts
 // node --loader ts-node/esm .\test.ts
 
-type AAA = {
-  id: string;
-  name: string;
-  uid: number;
-};
-type BBB = Omit<AAA, "name" | "uid">; // {id: string}
-
-
-function temp(x: BBB) {
-  console.log(x)
+function useRequest(url: string, {auto}: {auto: boolean}) {
+  const [res, setRes] = useState();
+  const action = () => {
+    return fetch(url);
+  }
+  // useEffect(() => {
+  if ( auto ) {
+    action().then((value) => {
+      setRes(value);
+    })
+  }
+  // }, [])
+  return {
+    action, 
+    res
+  }
 }
-
-const bruh = {
-  id: "123123", 
-  name: "123123",
-  uid: "123123"
-};
-temp(bruh)
-
-

@@ -462,7 +462,7 @@
         - `Content-Security-Policy-Report-Only`则是用作debug的：不阻止资源加载，只是report出不遵守策略的资源
         - eg `Content-Security-Policy-Report-Only: default-src 'self'; report-uri /csp-violation-report-endpoint;`
     - 缓存：有两种，但第二种一般配合第一种使用
-        - 强制缓存：只从本地缓存读取，不会后台问要不要更新。有两种header
+        - 强制缓存：从本地缓存和CDN读取，过期了再问后端要不要更新。有两种header
             - `Cache-Control`
                 - 由Response设置
                 - 优先级比`Expires`高，且选择更精细
