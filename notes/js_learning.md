@@ -1151,6 +1151,7 @@ function sendMsg() {
 - 浏览器事件循环
     - 检查并执行最老的可执行宏任务
     - 每个宏任务（注意不是清空队列，而是每个任务）结束后尝试清空微任务队列
+        - 宏任务包括 setTimeout、setInterval、I/O、UI 渲染 等。
     - 根据一定准则决定要不要触发渲染
         - 遍历当前浏览上下文中所有的 document ，必须按在列表中找到的顺序处理每个 document 。
         - 判断渲染时机（Rendering opportunities）：

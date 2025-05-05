@@ -88,11 +88,12 @@
     - 自带浅对比优化
     - setState做的只是把更新加入一个state更新队列，React会等到对应的事件处理函数中的所有代码都运行完毕再处理这个队列
     - 所以react本身会把所有setState合并为一次更新，不太会频繁操作DOM
-- useEffect
-    - 依赖数组
+- useEffect(callBack, [dep1, dep2, ...])
     - 所有useEffect都会在组件第一次挂载时运行一次
     - 小心可能的闭包陷阱（设置好依赖数组就行）
-    - 资源清理函数：useEffect内return的函数会在组件卸载前运行
+    - 资源清理函数：
+        - 在组件卸载前运行
+        - 在同一个useEffect第二次触发前运行
     - useEffect和组件的三个生命周期有关
         - DidMount 已挂载：挂载后才运行
         - DidUpdate 已更新：依赖数组更新后运行

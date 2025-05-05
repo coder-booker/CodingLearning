@@ -925,22 +925,75 @@
             .scrollable-content {
                 will-change: scroll-position;   /* 减少滚动卡顿 */
             }
-        合理使用requestAnimationFrame
-
-事件循环能解决什么场景的问题？为什么要设计宏任务和微任务？要怎么平衡宏任务和微任务的使用？
-    事件循环解决的问题：
-        单线程处理多任务：JavaScript是单线程的，事件循环机制使得异步操作成为可能
-        非阻塞I/O：允许在等待I/O操作时执行其他任务
-        任务优先级管理：通过宏任务和微任务区分任务优先级
-    注意，事件循环在浏览器应该是运行js的那一步，所以事件循环要能开始，必须要浏览器主线程也空闲了才行，比如渲染完了页面
-
-宏任务和微任务设计原因：
-    任务优先级：微任务优先级高于宏任务，保证某些高优先级任务能及时执行
-    IO操作和UI渲染也在宏任务内，
-    平衡使用建议：
-        关键更新使用微任务：如状态更新、DOM变更等需要及时反映的操作
-        耗时操作使用宏任务：如大数据处理、复杂计算等，避免阻塞UI更新
-        避免微任务嵌套过深：可能导致页面卡顿
+    - 合理使用requestAnimationFrame
+        - 可以用来修改element的style.transform
+        - 可以用来高频更新
+        - eg
+            ```js
+            function smoothScrollTo(target) {
+                const start = window.scrollY;
+                const distance = target - start;
+                const duration = 1000; // 1s，表示进度上限（或者说预期的动画持续时间）
+                let startTime = null;
+                
+                function step(timestamp) {      // 根据时间戳与预期持续时间的差异滚动对应距离
+                    if (!startTime) startTime = timestamp;
+                    
+                    const progress = timestamp - startTime;
+                    const percent = Math.min(progress / duration, 1);
+                    window.scrollTo(0, start + distance * percent);
+                    if (progress < duration) {  // 在目前进度还没有到达上限的时候继续注册rAF
+                        requestAnimationFrame(step);
+                    }
+                }
+                requestAnimationFrame(step);    // 开始动画
+            }
+            ``` 
+- 【to learn】Web Animations API
+    - 就是css animate和keyframe的js版本
+    - eg
+        ```js
+        const element = document.querySelector('.box');
+        const animation = element.animate(
+            [
+                { transform: 'translateX(0)' },
+                { transform: 'translateX(100px)' }
+            ],
+            {
+                duration: 1000,
+                iterations: Infinity,
+                easing: 'ease-in-out',
+            }
+        );
+        // 控制动画
+        animation.pause();
+        animation.play();
+        animation.cancel();
+        ```
+- 宏任务和微任务设计原因：
+    - 任务优先级：微任务优先级高于宏任务，保证某些高优先级任务能及时执行
+    - IO操作和UI渲染也在宏任务内
+    - 平衡使用建议：
+        - 关键任务用微任务（如状态更新、DOM变更等需要及时反映的操作）。
+        - 非关键/耗时任务用宏任务（如日志上报、大数据处理、复杂计算等，避免阻塞UI更新）。
+        - 如果全部用微任务，可能导致 UI 卡顿（如无限递归 Promise.then）。
+        - 如果全部用宏任务，高优先级任务可能延迟执行。
+- MutationObserver
+    - 用于监听 DOM 变化（如属性、子节点变化）。
+    - eg
+        ```js
+        const observer = new MutationObserver((mutations) => {
+        mutations.forEach((mutation) => {
+                console.log('DOM changed!', mutation);
+            });
+        });
+        observer.observe(document.body, {
+            attributes: true, // 监听属性变化
+            childList: true,  // 监听子节点变化
+            subtree: true,    // 监听所有后代节点
+        });
+        observer.disconnect();  // 停止监听
+        ```
 - 浏览器渲染流程（每一帧中的行为）
     - 事件循环
         - 检查并执行最老的可执行宏任务
@@ -993,7 +1046,6 @@
             });
         }
         ```
-
 - js的动画一般怎么实现的？比如常见的动画库是怎么画动画的？
     - 常用方法
         - rAF+css transform
@@ -1091,6 +1143,74 @@ MessageChannel
 
 
 # todo
+- 比较紧急的
+    - 怎么解决大量同步数据被插入文档后的卡顿问题（比如excel一下子插入大量内容
+    - 自定义钩子的说辞（form）
+        - 本质上就是和生命周期挂钩的utils的封装
+        - 什么场景下应该使用钩子：
+            - 集中管理状态
+                - Form
+                    - 把UI和控制分开
+                    - 一个formInstance实例用来提供表单整体方法和管理字段方法
+                    - 通过跨组件状态传递让子组件也能访问这个formInstance
+                    - 控制翻转：注册自己，获得val，设置val，验证val，val重渲染逻辑
+            - 逻辑复用
+                - 半静态constant的钩子（为什么要这么做？）
+                    - 在创建时有些动态的，但创建后就静态了的内容
+                    - sessionToken的获得与传递
+                - 一些功能的封装
+                    - 缓存
+                    - 监控：对selector状态的监控
+            - 组织代码
+                - 逻辑抽象
+                    - redux的action就是了
+                - 层级设计
+                    - 用hooks来管理原始selector，避免创建新的selector并同一层之中互相调用
+                    - 比如数据获取、验证、parse的场景
+                        - 其实redux的query或者thunk本身就是一种基于钩子思维开发的组件
+                        - 跨api的数据要二次parsing，用钩子封装
+                            - 比如数组变成set/map的情况  
+    - 性能优化说辞
+        - 性能监控钩子
+            - 倒计时超过某个秒数就发送log
+        - 行为监控钩子
+            - 钩子的作用：
+                - 每次被运行都可以把接受的参数字符串保存到log中，于是可以用在onchange之类的地方
+            - 简单的去重：
+                - 对比前一次、两次、三次的操作，变成数字
+            - 简单的节流：
+                - 无操作一分钟、页面关闭、页面失去焦点、页面切换就发出log
+                    ```js
+                    window.addEventListener('beforeunload', (event) => {
+                        event.preventDefault();
+                        // ...
+                    });
+                    document.addEventListener('blur', () => { // 文档失去焦点
+                        // ...
+                    }, true);
+                    document.addEventListener('focus', () => {  // 文档获得焦点
+                        // ...
+                    }, true);
+                    document.addEventListener('visibilitychange', () => {
+                        if (document.visibilityState === 'hidden') {
+                            // 页面被切换到其他标签页/最小化
+                        } else {
+                            // 页面重新可见
+                        }
+                    });
+                    ```
+    - 【还没做过的】前端错误监控
+    - web worker与service worker
+        - 后者其实是基于前者开发的，所以不是同级关系
+        - web worker就是开的另一个线程，通过message和主线程沟通
+        - service worker
+            - 可以理解为持久化的web worker，哪怕浏览器关闭了也可以运行
+            - 目的是创建有效的离线应用体验和拦截网络请求，并根据网络是否可用和更新来自服务器上的新资源而采取适当的操作。它们还被允许访问推送通知和后台同步API。
+            - 可以类比为 "浏览器操作系统中的常驻后台服务进程"
+
+    - 八股
+        - visibilityState为hidden时，定时器会全部被降频到至多1秒甚至直接冻结（safari会冻结）
+
 - 算法
     - 最大团问题
     - 给定一堆区间，给出有多少区间的两两组合符合以下条件：max(l) <= min(r)
@@ -1132,7 +1252,6 @@ MessageChannel
     - 实现一个下拉框（absolute）（为什么float不行？）
     - 自定义hook
     - 现代软开用的一些开发流程架构、规范等等
-    - 怎么解决大量同步数据被插入文档后的卡顿问题
     - 要怎么监控TTI？
     - Canvas对比DOM渲染有什么优势？
 - Network
