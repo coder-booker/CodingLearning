@@ -783,7 +783,7 @@
             });
         }
         ```
-- `requestAnimation(cb)`
+- `requestAnimationFrame(cb)`
     - `cb(<timestamp>)`
     - 浏览器的API
     - 详细解释可以去看下面的事件循环

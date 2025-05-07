@@ -1,7 +1,7 @@
 
 # 前端优化
 - 资源优化
-    - 优化资源的加载策略
+    - 优化加载策略
         - 预加载关键资源
             - 让关键资源优先加载和缓存，因为http/1.1有并行限制，优先加载可以避免堵塞
             - 关键渲染路径（CRP）例如首屏的js和css就可以被预加载
@@ -50,7 +50,7 @@
             - 避免嵌套过深（如 .nav ul li a → .nav-link）。
         - 使用 CSS3 动画替代 JS 动画
             - js动画需要主线程的布局与绘制
-            - CSS3 的 transform 和 opacity 属性会触发 GPU 硬件加速，跳过主线程的布局和绘制计算
+            - CSS3 的 transform 和 opacity 属性会提升该元素到合成层，用GPU 硬件加速，跳过主线程的布局和绘制计算
                 - eg：`transform: translateZ(0);`，`transition: transform 0.3s ease;`
     - V8 引擎与 JS 执行优化
         - 隐藏类（Hidden Class）优化

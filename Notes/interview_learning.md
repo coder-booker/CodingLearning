@@ -149,6 +149,7 @@
         - 短期计划：大三找能够深入学习、有mentor的长期技术实习，学习成熟先进的技术，并寻求转正机会。
         - 长期计划：5年内深入了解毕业公司的技术架构和提升这一行业中的认知，成为业内的专业人士。
         - 更长期的计划：在我对业内的了解越来越多，自然就会慢慢显现出来
+    
 - 公司相关
     - 为什么选择这家公司
         - 科技公司，我一定能在其中学习到很多
@@ -180,10 +181,10 @@
         - 薪资？
 ### 项目
 - CorpusChat亮点：
-    - 1. 真实项目，需要与客户沟通、设计整套软件流程。还涉及了一部分的UI设计
-    - 2. 实现了一个很热门的概念：RAG，因此比较了解AI服务的一些前端要点，还给AI绑定了不少工具
-    - 3. 全栈
-    - 4. 云服务
+    - 真实项目，需要与客户沟通、设计整套软件流程。还涉及了一部分的UI设计
+    - 实现了一个很热门的概念：RAG，因此比较了解AI服务的一些前端要点，还给AI绑定了不少工具
+    - 全栈
+    - 云服务
 - CorpusChat难点：
     - 使用了Azure的beta功能：AI 助理。实际开发中有很多不可控的因素，例如
         - 需要配合Azure云服务的数据结构，自己封装AI的输入与输出并与前端交互
@@ -476,7 +477,9 @@
         - 复用、封装逻辑
         - 分离逻辑：把和UI没有直接关系的运算、数据获取逻辑全部封装成钩子，让组件只关心怎么用数据渲染UI，而不用理会数据的预处理
 - 路由
-    - 那你就要知道路由用纯JS怎么实现，监听hashChange和History API两种方式的话，又怎么写代码呢？
+    - History路由 vs Hash路由
+        - 两者其实都是前端拦截url改变的请求，但同时两者都不会拦截刷新网页时对前端服务器的请求
+        - 前者的url会在刷新页面时保留，但也因此需要前端服务器对不同url的支持。后者刷新时会直接清空变成#前的url
     - History API
         - `history.pushState({}, '', path);`：更改路径并跳转
             - history.pushState 接收三个参数：
@@ -484,7 +487,8 @@
             - title：新页面的标题。目前大多数浏览器忽略此参数。
             - url：新的 URL。
         - `window.popstate`：监听 popstate 事件（浏览器前进/后退时触发）。
-    - `hashchange`事件 & `window.onhashchange`
+    - Hash 路由
+        - 监听`hashchange`事件 & `window.onhashchange`
         - `window.location.hash`访问hash
         - `HashChangeEvent.newURL` 用事件来访问
             - 只读
@@ -899,8 +903,6 @@
         - 对框架的深入理解有助前期技术选型。
         - 新技术的学习路线更平缓（因为很多技术都是从现有技术慢慢迭代的）
 
-
-八股：
 - 浏览器渲染流程是什么？能怎么被利用？
     - 关键渲染路径（Critical Rendering Path, CRP）
         - 构建 DOM 树：解析 HTML → 生成 DOM（Document Object Model）。
@@ -910,7 +912,7 @@
         - Paint（绘制）：将渲染树转换为屏幕上的像素。
         - Composite（合成）：将不同图层合并显示（GPU 加速）。
     - 合成层
-        - 浏览器会将某些元素单独提升为合成层（GPU 加速）
+        - 浏览器会将某些元素单独提升为合成层（其实就是GPU加速）
         - 修改这些属性时，只会重新合成（Composite），不会触发重排重绘。
         - 使用transform/opacity等属性触发合成层
     - will-change
@@ -936,7 +938,7 @@
                 const duration = 1000; // 1s，表示进度上限（或者说预期的动画持续时间）
                 let startTime = null;
                 
-                function step(timestamp) {      // 根据时间戳与预期持续时间的差异滚动对应距离
+                function step(timestamp) {      // 根据时间戳与预期持续时间的差异 滚动对应距离
                     if (!startTime) startTime = timestamp;
                     
                     const progress = timestamp - startTime;
@@ -1046,7 +1048,7 @@
             });
         }
         ```
-- js的动画一般怎么实现的？比如常见的动画库是怎么画动画的？
+- js的动画
     - 常用方法
         - rAF+css transform
             - transition：简单过渡效果
@@ -1069,43 +1071,47 @@
         - 复杂动画使用rAF+transform/opacity
         - 避免在动画中触发重排
         - 使用will-change提示浏览器优化
-项目：
 - react router的底层有什么样的优化？有没有按需加载的机制？
     - 似乎没有，但可以用createBrowserRouterAPI更优雅地设置该不该懒加载（手动封装好）
-- 多页应用怎么实现相互的通信/信息整合？（类似微前端的场景）
+- 多页应用相互的通信
     - URL参数传递：
         - 通过query string或hash传递数据
-    - localStorage/sessionStorage配合storage事件监听变化
-    - BroadcastChannel API：
+    - localStorage/sessionStorage
+        - 配合storage事件监听变化
+    - window.postMessage/MessageChannel/BroadcastChannel API：
+        - postMessage：唯一跨域通信方法，单向通信。
+        - MessageChannel/BroadcastChannel：只能同域，双向通信通道，还有深拷贝的神秘用法
+        - 同时可以用来和web worker通信
         ```js
-        // 页面A
+        // postMessage
+        childWindow.postMessage(data, origin);
+        window.addEventListener('message', (e) => {
+            if (e.origin === expectedOrigin) {// 处理数据}
+        });
+        // Channel
         const channel = new BroadcastChannel('app-channel');
         channel.postMessage(data);
-        // 页面B
         const channel = new BroadcastChannel('app-channel');
         channel.onmessage = (e) => { /* 处理数据 */ };
-        ```
-    - `window.postMessage`：
-        ```js
-        // 父窗口
-        childWindow.postMessage(data, origin);
-        // 子窗口
-        window.addEventListener('message', (e) => {
-        if (e.origin === expectedOrigin) {
-            // 处理数据
-        }
-        });
         ```
     - SharedWorker：
         - 适合复杂场景的跨页面通信
         - 所有页面通过worker进行数据同步
     - iframe桥接（微前端常用）：
+        - 嵌入其他网页，实现沙盒隔离（如微前端）。
         - 主应用和子应用通过iframe通信
         - 使用window.parent和contentWindow通信
-
-MessageChannel
-
-场景题：
+        - eg
+            `<iframe src="https://example.com" frameborder="0"></iframe>```
+            ```js
+            // 父页面向 iframe 发送消息
+            iframe.contentWindow.postMessage('Hello', 'https://example.com');
+            // iframe 接收消息
+            window.addEventListener('message', (e) => {
+                if (e.origin === 'https://parent.com') {...}
+            });
+            ```
+    - sentry的错误追踪方案
 - 共享文档优化
     - 可能的卡顿问题：
         - 网络卡顿：大数据块传输、频繁的同步请求
@@ -1124,9 +1130,8 @@ MessageChannel
                 - 监控用户行为轨迹记录
     - 解决方案：
         - 代码优化：
-            - 操作压缩/批量处理：如用文档片段(DocumentFragment)批量更新
-            - 尽量别同步：
-            - 多线程：Web Worker后台处理复杂计算
+            - 操作压缩/批量处理：如用文档片段(DocumentFragment)批量更新、监听剪切板分批处理
+            - 多线程：Web Worker后台处理复杂计算，主线程只承担通信成本（setTimeout或者idleCallback处理）
             - WebAssembly：对性能关键路径使用Wasm实现
         - 渲染优化：
             - 增量+差分：大量更新时采用增量更新 + 差分算法
@@ -1137,80 +1142,123 @@ MessageChannel
             - 使用二进制格式(如Protocol Buffers)减少传输数据量
             - 节流/防抖高频操作
             - 本地操作缓存
-
+- 自定义钩子的说辞（form）
+    - 本质上就是和生命周期挂钩的utils的封装
+    - 什么场景下应该使用钩子：
+        - 高级组件
+            - Form
+                - 一个formInstance实例用来提供表单整体方法和管理字段方法
+                - 通过跨组件状态传递让子组件也能访问这个formInstance
+                - 控制翻转：注册自己，获得val，设置val，验证val，val重渲染逻辑
+        - 逻辑复用
+            - 性能/行为监控钩子
+        - 组织代码/逻辑抽象
+            - 半静态constant的钩子
+                - 较长时间不需变更，但仍然有变更机会的数据，比如i18n的内容
+            - 层级设计
+                - 用hooks来管理原始selector，避免创建新的selector并同一层之中互相调用
+                - 比如数据获取、验证、parse的场景
+                    - 其实redux的query或者thunk本身就是一种基于钩子思维开发的组件
+                    - 跨api的数据要二次parsing，用钩子封装
+                        - 比如数组变成set/map的情况  
+- 性能优化说辞
+    - 性能监控钩子
+        - 给一些关键操作进行计时
+        - 倒计时超过某个秒数就发送log
+    - 行为监控钩子
+        - 钩子的作用：
+            - 每次被运行都可以把接受的参数字符串保存到log中，于是可以用在onchange之类的地方
+        - 简单的去重：
+            - 对比前一次、两次、三次的操作，变成数字
+        - 简单的节流：
+            - 无操作一分钟、页面关闭、页面失去焦点、页面切换就发出log
+                ```js
+                window.addEventListener('beforeunload', (event) => {
+                    event.preventDefault();
+                    // ...
+                });
+                document.addEventListener('blur', () => { // 文档失去焦点
+                    // ...
+                }, true);
+                document.addEventListener('focus', () => {  // 文档获得焦点
+                    // ...
+                }, true);
+                document.addEventListener('visibilitychange', () => {
+                    if (document.visibilityState === 'hidden') {
+                        // 页面被切换到其他标签页/最小化
+                    } else {
+                        // 页面重新可见
+                    }
+                });
+                ```
+- 【还没做过的】前端错误监控
+- web worker与service worker
+    - 后者其实是基于前者开发的，所以不是同级关系
+    - web worker就是开的另一个线程，通过message和主线程沟通
+    - service worker
+        - 可以理解为持久化的web worker，哪怕浏览器关闭了也可以运行
+        - 目的是创建有效的离线应用体验和拦截网络请求，并根据网络是否可用和更新来自服务器上的新资源而采取适当的操作。它们还被允许访问推送通知和后台同步API。
+        - 可以类比为 "浏览器操作系统中的常驻后台服务进程"
+- 八股
+    - visibilityState为hidden时，定时器会全部被降频到至多1秒甚至直接冻结（safari会冻结）
+    - SSE和Websocket的异同
+        - wss有自己的协议，SSE基于HTTP
+        - wss连接开销（协议升级）和资源开销（和TCP交互、帧头）较大
+        - wss带宽效率比较高，因为可以传输文本文件
+        - wss代码实现比较复杂（可以自定义，可以用二进制数据流）
+    - 前端资源加载阻塞
+        - 一般都会，但可以优化
+            - css分包+preload
 
 
 
 
 # todo
 - 比较紧急的
-    - 怎么解决大量同步数据被插入文档后的卡顿问题（比如excel一下子插入大量内容
-    - 自定义钩子的说辞（form）
-        - 本质上就是和生命周期挂钩的utils的封装
-        - 什么场景下应该使用钩子：
-            - 集中管理状态
-                - Form
-                    - 把UI和控制分开
-                    - 一个formInstance实例用来提供表单整体方法和管理字段方法
-                    - 通过跨组件状态传递让子组件也能访问这个formInstance
-                    - 控制翻转：注册自己，获得val，设置val，验证val，val重渲染逻辑
-            - 逻辑复用
-                - 半静态constant的钩子（为什么要这么做？）
-                    - 在创建时有些动态的，但创建后就静态了的内容
-                    - sessionToken的获得与传递
-                - 一些功能的封装
-                    - 缓存
-                    - 监控：对selector状态的监控
-            - 组织代码
-                - 逻辑抽象
-                    - redux的action就是了
-                - 层级设计
-                    - 用hooks来管理原始selector，避免创建新的selector并同一层之中互相调用
-                    - 比如数据获取、验证、parse的场景
-                        - 其实redux的query或者thunk本身就是一种基于钩子思维开发的组件
-                        - 跨api的数据要二次parsing，用钩子封装
-                            - 比如数组变成set/map的情况  
-    - 性能优化说辞
-        - 性能监控钩子
-            - 倒计时超过某个秒数就发送log
-        - 行为监控钩子
-            - 钩子的作用：
-                - 每次被运行都可以把接受的参数字符串保存到log中，于是可以用在onchange之类的地方
-            - 简单的去重：
-                - 对比前一次、两次、三次的操作，变成数字
-            - 简单的节流：
-                - 无操作一分钟、页面关闭、页面失去焦点、页面切换就发出log
-                    ```js
-                    window.addEventListener('beforeunload', (event) => {
-                        event.preventDefault();
-                        // ...
-                    });
-                    document.addEventListener('blur', () => { // 文档失去焦点
-                        // ...
-                    }, true);
-                    document.addEventListener('focus', () => {  // 文档获得焦点
-                        // ...
-                    }, true);
-                    document.addEventListener('visibilitychange', () => {
-                        if (document.visibilityState === 'hidden') {
-                            // 页面被切换到其他标签页/最小化
-                        } else {
-                            // 页面重新可见
-                        }
-                    });
-                    ```
-    - 【还没做过的】前端错误监控
-    - web worker与service worker
-        - 后者其实是基于前者开发的，所以不是同级关系
-        - web worker就是开的另一个线程，通过message和主线程沟通
-        - service worker
-            - 可以理解为持久化的web worker，哪怕浏览器关闭了也可以运行
-            - 目的是创建有效的离线应用体验和拦截网络请求，并根据网络是否可用和更新来自服务器上的新资源而采取适当的操作。它们还被允许访问推送通知和后台同步API。
-            - 可以类比为 "浏览器操作系统中的常驻后台服务进程"
-
-    - 八股
-        - visibilityState为hidden时，定时器会全部被降频到至多1秒甚至直接冻结（safari会冻结）
-
+    - 流式传输场景
+        - 前端流式传输：监控paste行为，分批读取clipboard
+            - ReadableStream + Web Worker
+        - 媒体（音视频）：MediaSource API + MSE 分片
+    - general
+        - 你能力点是什么介绍一下
+            - 性格：善于反思（反思反思这个行为本身，以避免灯下黑的情况）
+            - 能力：善用工具（不只是怎么利用，更是怎么避免滥用）
+        - 你这一年来的亮点/学习到了什么说一下
+            - 技术
+                - 代码设计能力：把思维从代码层面升级到了架构层面，实现一个功能时学会了考虑更多维度
+                    - 独立完成项目+实习中需要适配已有项目，锻炼出了这种思维
+            - 非技术
+                - 工作场合的怯魅：怎么与不同性格、年龄段的同事相处，怎么协作写代码
+                    - 通过实习和CorpusChat实际业务两者建立对出社会工作的初步认知
+                - 解难能力：独立接触业务的压力
+                    - CorpusChat的压力让我形成了一套解难方法论
+        - 遇到了什么困难，怎么解决的
+            - 解难能力：CorpusChat强迫走出舒适圈，形成方法论
+            - 代码设计能力：CorpusChat需要设计整个架构，对比各种方案的优劣
+                - 把思维从代码层面升级到了架构层面
+            - 实际代码难题：因为文档原因要重新写代码
+                - 自己设计新的架构
+                - 以后要仔细阅读文档
+        - 职业规划
+            - 短期计划：找能够深入学习、有mentor的长期技术实习，学习成熟先进的技术，并寻求转正机会。
+            - 长期计划：5年内深入了解毕业公司的技术架构，提升个人行业影响力，成为业内的专业人士。
+        - 对计算机及ai的知识储备
+            - 
+        - 觉得自己技术上还有哪些需要提升的地方，以及怎么提升
+            - 缺乏大型产品的实操经验。可以通过积极寻找高质量实习来突破
+        - 你会怎么描述自己？
+        - 公司相关
+            - 为什么选择这家公司/你期望的实习环境是怎么样的（反之可以思考什么情况下会考虑辞职）
+                - 有充足个人发挥空间：扁平化，实现个人价值
+                - 有充足个人发展机会：学习行业前沿技术；在市场上留下足迹，提升影响力（尤其是在AI环境下）
+                - 福利好：好的环境对生产力和长期工作的可持续性都有帮助
+            - 对之前几次面试的感受：
+                - 面试官比较专业，问了一些我从未想过的角度，我从面试中也学到很多知识
+            - 能为公司带来什么？
+                - 新鲜血液：创造力、时代的洞察力
+            - 你认为实习时可预见的困难
+                - 工作环境的差异：和香港不一样，但多少也有一些经验，能够适应
+                - 技术积累的追赶：大项目、历史积累
 - 算法
     - 最大团问题
     - 给定一堆区间，给出有多少区间的两两组合符合以下条件：max(l) <= min(r)
@@ -1250,7 +1298,6 @@ MessageChannel
     - 实际应用下的防抖函数（state的改变可能检测不到）
     - 实现一个modal
     - 实现一个下拉框（absolute）（为什么float不行？）
-    - 自定义hook
     - 现代软开用的一些开发流程架构、规范等等
     - 要怎么监控TTI？
     - Canvas对比DOM渲染有什么优势？

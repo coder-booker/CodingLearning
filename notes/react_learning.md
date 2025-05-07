@@ -89,6 +89,8 @@
     - setState做的只是把更新加入一个state更新队列，React会等到对应的事件处理函数中的所有代码都运行完毕再处理这个队列
     - 所以react本身会把所有setState合并为一次更新，不太会频繁操作DOM
 - useEffect(callBack, [dep1, dep2, ...])
+    - 页面paint完后运行
+    - 异步运行
     - 所有useEffect都会在组件第一次挂载时运行一次
     - 小心可能的闭包陷阱（设置好依赖数组就行）
     - 资源清理函数：
@@ -98,6 +100,14 @@
         - DidMount 已挂载：挂载后才运行
         - DidUpdate 已更新：依赖数组更新后运行
         - WillUnmount 将卸载：组件卸载前调用资源回收函数
+- useLayoutEffect
+    - 执行时机和rAF差不多：重排重绘前
+    - 同步运行
+    - useLayoutEffect会绕过react直接操作DOM，所以有一些react操作不应该在其中做，比如setState会直接回去重新render而非继续重排重绘
+    - 使用场景：
+        - 某些操作（如测量 DOM 后调整位置等会触发重排重绘的行为）必须在浏览器渲染前完成，避免视觉闪烁。
+        - React 将 useLayoutEffect 设计为 最后手段，用于 React 自身无法处理的边缘情况。
+        - 
 - useRef
     - 让某个变量的变化在全局都能在不更新自身的情况下被获取
 - useParams()
