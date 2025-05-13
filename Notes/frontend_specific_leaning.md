@@ -42,9 +42,28 @@
                 - 但如果读写在同一个循环中，就会导致所有操作都不连续，也就不会批量处理并导致频繁的重排
             - react本身会把所有setState合并为一次更新，所以不太会频繁操作DOM
     - react
+        - 跟随diff的假设
         - 懒加载、虚拟列表
         - 钩子缓存
         - 预加载
+            - useEffect
+            - 手动import
+            - 实现`.preload`
+            ```ts
+            function lazyWithPreload(loader) {  // loader就是一个封装了import语句的函数，让我们可以自己决定什么时候import
+                let component = null;
+                const promise = loader().then(module => {   // import()返回一个promise，传入的是对应module
+                    component = module.default;
+                });
+                const LazyComponent = React.lazy(loader);
+                LazyComponent.preload = () => promise; // 添加preload方法
+                return LazyComponent;
+            }
+            // 使用lazyWithPreload
+            const LazyComponent = lazyWithPreload(() => import('./LazyComponent'));
+            // 预加载组件
+            LazyComponent.preload();
+            ```
     - css
         - 优化选择器性能
             - 避免嵌套过深（如 .nav ul li a → .nav-link）。
@@ -57,14 +76,14 @@
             - V8 为每个对象创建隐藏类，记录属性布局（如偏移量），加速属性访问。
             - 避免动态添加属性和删除属性:
                 ```js
-                    // ❌
-                    const obj = {};
-                    obj.a = 1;
-                    obj.b = 2;
-                    delete obj.a;
-                    // ✅
-                    const obj = { a: 1, b: 2 };
-                    obj.a = null;
+                // ❌
+                const obj = {};
+                obj.a = 1;
+                obj.b = 2;
+                delete obj.a;
+                // ✅
+                const obj = { a: 1, b: 2 };
+                obj.a = null;
                 ```
         - 优化热路径（Hot Path）
             - 减少函数参数：
@@ -87,27 +106,35 @@
         - 没有多路复用限制，preload的解决http1.1多路复用限制的特点就没用了
         - 不过有兼容性问题
         - 不过仍然会有TCP层可能的阻塞
-- 性能监控
-    - 性能分析：
-        - Lighthouse：综合评分与优化建议。
-        - Chrome DevTools：各种网站指标
-            - Performance Tab：分析帧率、长任务。
-            - Coverage test：检测未使用的代码。
-    - 用户体验：
-        - RUM（Real User Monitoring）：
-            - 使用 web-vitals 监控核心指标（LCP、FID、CLS）。
-        - Synthetic Monitoring：模拟用户行为测试。
-
-# 前端多线程：Service worker/Web worker
-- Service worker
+- SEO与前端
+    - SSR：服务端渲染的html可用性
+    - Core Web Vitals：FCP（首屏加载时间）、LCP（最大内容绘制时间）、CLS（累计布局偏移）、FID（首次输入延迟）
+    - 语义化：语义化html、语义化url、meta tags的网页标题、描述等
+    - 可访问性：alt和aria属性、@media适配移动端、i18n
+        - aria属性：
+            - 给没有语义性的tag手动添加语义
+            - 描述交互状态，比如是否展开
+            - 供屏幕阅读器识别要阅读啥东西，特别是对优先级不同的内容（比如动态添加的新消息要被阅读）
+    - 页面链接权重：网页中被更多链接指向的页面权重更高
+    - sitemap.xml、Robots.txt
+# 前端多线程
+- web worker与service worker
+    - 后者其实是基于前者开发的，所以不是同级关系
+    - web worker就是开的另一个线程，通过message和主线程沟通
+    - service worker
+        - 可以理解为持久化的web worker，哪怕浏览器关闭了也可以运行
+        - 目的是创建有效的离线应用体验和拦截网络请求，并根据网络是否可用和更新来自服务器上的新资源而采取适当的操作。它们还被允许访问推送通知和后台同步API。
+        - 可以类比为 "浏览器操作系统中的常驻后台服务进程"
 
 # 浏览器
 - 浏览器渲染流程
-    - DOM树构建：渲染引擎使用HTML解析器（调用XML解析器）解析HTML文档，将各个HTML元素逐个转化成DOM节点，从而生成DOM树；
-    - CSSOM树构建：CSS解析器解析CSS，并将其转化为CSS对象，将这些CSS对象组装起来，构建CSSOM树；
-    - 渲染树构建：DOM 树和 CSSOM 树都构建完成以后，浏览器会根据这两棵树构建出一棵渲染树；
-    - 页面布局（重排）：渲染树构建完毕之后，元素的位置关系以及需要应用的样式就确定了，这时浏览器会计算出所有元素的大小和绝对位置；
-    - 页面绘制（重绘）：页面布局完成之后，浏览器会将根据处理出来的结果，把每一个页面图层转换为像素，并对所有的媒体文件进行解码。
+    - 构建 DOM 树：解析 HTML → 生成 DOM（Document Object Model）。
+    - 构建 CSSOM 树：解析 CSS → 生成 CSSOM（CSS Object Model）。
+    - 合并成 Render Tree：DOM + CSSOM → 渲染树（仅包含可见元素）。
+    - 运行js：可以和DOM构建同步，也可以异步
+    - Layout（布局/重排）：计算每个节点的位置和大小。
+    - Paint（绘制）：将渲染树转换为屏幕上的像素，并对所有的媒体文件进行解码。
+    - Composite（合成）：将不同图层合并显示，有合成层时才会有task要做。
 - 重排与重绘
     - 重排是元素的几何属性改变就会触发
         - 同步重排：有些属性的获取操作会强制进行同步重排以返回最新的布局信息，如：
@@ -116,12 +143,70 @@
             - clientTop/left/Width/Height
     - 重绘负责绘制新UI
         - 有些改变只会触发重绘而不会重排，例如背景色改变
-# 场景题
-## 前端加密
+- 合成层
+    - 浏览器会将某些元素单独提升为合成层（其实就是GPU加速）
+    - 修改这些属性时，只会重新合成（Composite），不会触发重排重绘。
+    - 使用transform/opacity等属性触发合成层
+- will-change
+    - 用于提示浏览器某个元素即将发生变化，让浏览器提前优化（如提升为合成层）。
+    - 会增加内存占用
+    - rAF可以利用：will-change一般都是用在合成层元素上的，rAF利用will-change不会触发重排重绘
+    - eg 
+        ```css
+        .element { will-change: transform; /* 告诉浏览器这个元素会变化 */ }
+        .scrollable-content { will-change: scroll-position;   /* 减少滚动卡顿 */ }
+        ```
+- 一帧中发生的行为
+    - 运行js：事件循环
+        - 检查并执行最老的可执行宏任务
+        - 每个宏任务（注意不是清空队列，而是每个任务）结束后尝试清空微任务队列
+    - 尝试渲染（根据一定准则决定要不要触发渲染）
+        - 遍历当前浏览上下文中所有的 document ，必须按在列表中找到的顺序处理每个 document 。
+        - 判断渲染时机（Rendering opportunities）：
+            - 动态因素：根据硬件刷新率限制、页面性能或页面是否在后台等因素。
+            - 不必要的渲染（Unnecessary rendering）：浏览器认为会不会产生可见效果
+            - rAF：有没有**rAF**，有则渲染（也是因此使用rAF可以实现更丝滑的动画/动态显示效果）
+        - 处理各种视觉改变事件（window.performance.now() 是一个时间戳，供浏览器计算剩余时间判断应不应该继续把任务放入执行栈）
+            - 处理 resize 事件，传入一个 performance.now() 时间戳。
+            - 处理 scroll 事件，传入一个 performance.now() 时间戳。
+            - 处理媒体查询，传入一个 performance.now() 时间戳。
+            - 运行 CSS 动画，传入一个 performance.now() 时间戳。
+            - 处理全屏事件，传入一个 performance.now() 时间戳。
+        - 执行回调
+            - 执行 **requestAnimationFrame** 回调，传入一个 performance.now() 时间戳。
+            - 执行 intersectionObserver 回调，传入一个 performance.now() 时间戳。
+        - 对每个 document 进行绘制，更新UI呈现。
+    - 看下该不该执行IdleCallback
+    - 回到第一步事件循环
+- 合理使用requestAnimationFrame
+    - 可以用来修改element的style.transform
+    - 可以用来高频更新
+    - eg
+        ```js
+        function smoothScrollTo(target) {
+            const start = window.scrollY;
+            const distance = target - start;
+            const duration = 1000; // 1s，表示进度上限（或者说预期的动画持续时间）
+            let startTime = null;
+            
+            function step(timestamp) {      // 根据时间戳与预期持续时间的差异 滚动对应距离
+                if (!startTime) startTime = timestamp;
+                
+                const progress = timestamp - startTime;
+                const percent = Math.min(progress / duration, 1);
+                window.scrollTo(0, start + distance * percent);
+                if (progress < duration) {  // 在目前进度还没有到达上限的时候继续注册rAF
+                    requestAnimationFrame(step);
+                }
+            }
+            requestAnimationFrame(step);    // 开始动画
+        }
+        ``` 
+# 前端加密
 - 就是让前端的js完成类似https的加密流程
 - 但是性能和安全性受限，比如密钥容易泄露
 
-## 前端防爬虫
+# 前端防爬虫
 - 验证机制
     - User-Agent检测：检查请求头中的User-Agent，拦截已知爬虫工具和异常UA
     - 请求频率验证码限制：对频繁请求的IP/同一用户进行限制或验证码验证
@@ -141,6 +226,8 @@
 - 高级技术
     - WebAssembly：将关键逻辑用WASM实现，增加逆向难度
     - 反调试技术：检测开发者工具是否打开
+
+# 功能实现
 ## 遮罩
 - 通过z-index保证显示在顶层
 - 禁用事件
@@ -509,11 +596,87 @@
     }
     ```
 
-# 前端指标
+# 钩子
+- 本质上就是utils的封装
+- 什么场景下应该使用钩子：
+    - 高级组件
+        - Form
+            - 一个formInstance实例用来提供表单整体方法和管理字段方法
+            - 通过跨组件状态传递让子组件也能访问这个formInstance
+            - 控制翻转：注册自己，获得val，设置val，验证val，val重渲染逻辑
+    - 逻辑复用
+        - 性能/行为监控钩子
+    - 组织代码/逻辑抽象
+        - 半静态constant的钩子
+            - 较长时间不需变更，但仍然有变更机会的数据，比如i18n的内容
+        - 层级设计
+            - 用hooks来管理原始selector，避免创建新的selector并同一层之中互相调用
+            - 比如数据获取、验证、parse的场景
+                - 其实redux的query或者thunk本身就是一种基于钩子思维开发的组件
+                - 跨api的数据要二次parsing，用钩子封装
+                    - 比如数组变成set/map的情况  
+
+# 前端指标、监控、提升
+- 开发环境监控方法：
+    - 性能分析：
+        - Lighthouse：综合评分与优化建议。
+        - Chrome DevTools：各种网站指标
+            - Performance Tab：分析帧率、长任务。
+            - Coverage test：检测未使用的代码。
+    - 用户体验：
+        - RUM（Real User Monitoring）：
+            - 使用 web-vitals 监控核心指标（LCP、FID、CLS）。
+        - Synthetic Monitoring：模拟用户行为测试。
+    - Performance面板
+        - 在隐身模式下打开 Chrome。隐身模式可确保 Chrome 以干净状态运行，例如浏览器的扩展可能会在性能评估中产生影响。
+        - 在 DevTools 中，单击“Performance”选项卡，并进行一些基础配置（更多参考官方说明 (opens new window)）并记录各种指标。
+        - 查看 FPS 图表：当在 FPS 上方看到红色条形时，表示帧速率下降得太低，以至于可能损害用户体验。通常，绿色条越高，FPS 越高
+        - 查看 CPU 图表：CPU 图表在 FPS 图表下方。CPU 图表的颜色对应于性能板的底部的 Summary 选项卡
+        - 查看 火焰图：火焰图直观地表示出了内部的 CPU 分析，横轴是时间，纵轴是调用指针，调用栈最顶端的函数在最下方。启用 JS 分析器后，火焰图会显示调用的每个 JavaScript 函数，可用于分析具体函数
+        - 查看 Buttom-up：此视图可以看到某些函数对性能影响最大，并能够检查这些函数的调用路径
+- 用户环境监控方法：
+    - 性能监控钩子
+        - 给一些关键操作进行计时
+    - 行为监控钩子
+        - 钩子的作用：每次被运行都可以把接受的参数字符串保存到log中，于是可以用在onchange之类的地方
+        - 简单的去重：对比前一次、两次、三次的操作，变成数字
+        - 简单的节流：无操作一分钟、页面关闭、页面失去焦点、页面切换就发出log
+            ```js
+            window.addEventListener('beforeunload', (event) => {    // 页面关闭
+                event.preventDefault();
+                // ...
+            });
+            document.addEventListener('blur', () => { // 文档失去焦点
+                // ...
+            }, true);
+            document.addEventListener('focus', () => {  // 文档获得焦点
+                // ...
+            }, true);
+            document.addEventListener('visibilitychange', () => {
+                if (document.visibilityState === 'hidden') {
+                    // 页面被切换到其他标签页/最小化
+                } else {
+                    // 页面重新可见
+                }
+            });
+            ```
+- SEO与前端
+    - SSR：服务端渲染的html可用性
+    - Core Web Vitals：FCP（首屏加载时间）、LCP（最大内容绘制时间）、CLS（累计布局偏移）、FID（首次输入延迟）
+    - 语义化：语义化html、语义化url、meta tags的网页标题、描述等
+    - 可访问性：alt和aria属性、@media适配移动端、i18n
+        - aria属性：
+            - 给没有语义性的tag手动添加语义
+            - 描述交互状态，比如是否展开
+            - 供屏幕阅读器识别要阅读啥东西，特别是对优先级不同的内容（比如动态添加的新消息要被阅读）
+    - 页面链接权重：网页中被更多链接指向的页面权重更高
+    - sitemap.xml、Robots.txt
 - 核心前端指标
+    - FCP（首屏加载时间）
     - LCP（最大内容绘制时间）衡量感知「加载速度」
-    - FID（首次输入延迟）衡量「响应性」
     - CLS（累积布局偏移）衡量「视觉稳定性」
+        - 页面在加载过程中出现的所有布局位移的累积值。CLS 值越小，表示页面加载过程中的布局位移越少，用户体验越好。
+    - FID（首次输入延迟）衡量「响应性」
 - 硬性指标
     - 可访问性/响应性（Accessibility/Responsiveness）
         - 定义：页面是否对所有用户友好，包括残障人士。

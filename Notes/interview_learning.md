@@ -226,7 +226,6 @@
         - Python是**解释型语言**，执行效率较低，不适合高并发或实时性要求高的场景。
             - 但可以通过多进程或异步编程（如 asyncio）优化。
         - Python 的异步性能和事件驱动机制不如 Node.js，不适合开发实时应用（如 WebSocket、SSE）。
-前端：
 - Redux
     - Context缺点
         - 大量switch来判断fetch操作
@@ -292,54 +291,6 @@
                 // components.tsx
                 const openAIChatModels = useSelector(selectOpenAIChatModels)
                 ```
-- 性能优化：
-    - API：
-        - 因为Redux封装好了，直接算就行
-    - 手动预加载与懒加载
-        - useEffect预加载
-            - 手动import
-            - 实现`.preload`
-            ```ts
-            function lazyWithPreload(loader) {
-                let component = null;
-                const promise = loader().then(module => {
-                    component = module.default;
-                });
-
-                const LazyComponent = React.lazy(loader);
-
-                LazyComponent.preload = () => promise; // 添加preload方法
-                return LazyComponent;
-            }
-
-            // 使用lazyWithPreload
-            const LazyComponent = lazyWithPreload(() => import('./LazyComponent'));
-
-            // 预加载组件
-            LazyComponent.preload();
-            ```
-    - 根据react原理优化
-        - diff的假设
-- 前端指标监控
-    - 测试环境：Performance面板
-        - 在隐身模式下打开 Chrome。隐身模式可确保 Chrome 以干净状态运行，例如浏览器的扩展可能会在性能评估中产生影响。
-        - 在 DevTools 中，单击“Performance”选项卡，并进行一些基础配置（更多参考官方说明 (opens new window)）。
-        - 按照提示单击记录，开始记录。进行完相应的操作之后，点击停止。
-        - 当页面运行时，DevTools 捕获性能指标。停止记录后，DevTools 处理数据，然后在 Performance 面板上显示结果。
-        
-        - 查看 FPS 图表：当在 FPS 上方看到红色条形时，表示帧速率下降得太低，以至于可能损害用户体验。通常，绿色条越高，FPS 越高
-        - 查看 CPU 图表：CPU 图表在 FPS 图表下方。CPU 图表的颜色对应于性能板的底部的 Summary 选项卡
-        - 查看 火焰图：火焰图直观地表示出了内部的 CPU 分析，横轴是时间，纵轴是调用指针，调用栈最顶端的函数在最下方。启用 JS 分析器后，火焰图会显示调用的每个 JavaScript 函数，可用于分析具体函数
-        - 查看 Buttom-up：此视图可以看到某些函数对性能影响最大，并能够检查这些函数的调用路径
-
-        - Cumulative Layout Shift (CLS) 是衡量页面稳定性的一个指标，用于衡量页面在加载过程中出现的所有布局位移的累积值。CLS 值越小，表示页面加载过程中的布局位移越少，用户体验越好。
-        - LCP
-        - Layout是布局
-    - 用户环境：
-        - 路由监控访问路径
-        - log的记录
-    - SEO
-        - 部分路由返回静态HTML
 - 后端
     - SW在项目中的完整流程解说：
         1. 需求分析和系统设计
@@ -598,7 +549,66 @@
     // 初始化渲染
     handleRouteChange();
     ```
-
+- 自定义钩子的说辞（form）
+    - 本质上就是utils的封装
+    - 什么场景下应该使用钩子：
+        - 高级组件
+            - Form
+                - 一个formInstance实例用来提供表单整体方法和管理字段方法
+                - 通过跨组件状态传递让子组件也能访问这个formInstance
+                - 控制翻转：注册自己，获得val，设置val，验证val，val重渲染逻辑
+        - 逻辑复用
+            - 性能/行为监控钩子
+        - 组织代码/逻辑抽象
+            - 半静态constant的钩子
+                - 较长时间不需变更，但仍然有变更机会的数据，比如i18n的内容
+            - 层级设计
+                - 用hooks来管理原始selector，避免创建新的selector并同一层之中互相调用
+                - 比如数据获取、验证、parse的场景
+                    - 其实redux的query或者thunk本身就是一种基于钩子思维开发的组件
+                    - 跨api的数据要二次parsing，用钩子封装
+                        - 比如数组变成set/map的情况  
+- Corpus的工程化优化：
+    - splitChunk：
+        - 把第三方库独立打包
+        - 用动态导入分离模块+预加载
+            - 每个懒加载组件生成独立的 chunk 文件（如 Home.chunk.js）。
+            - `const Home = React.lazy(() => import(/* webpackPrefetch: true */ './Home'))`;
+        - 合并小chunk
+            optimization: {
+                splitChunks: {
+                    minSize: 20000, // 小于 20KB 不单独打包
+                },
+            }
+    - 开发模式的行为
+        - css-/style-loader
+        - eval-source-map
+        - DevServer for HMR
+    - 生产模式的行为
+        - Terser和MinimizeCSS的plugin
+        - manifest.json
+            - 作用：记录模块 ID 与生成文件（chunk）的映射关系。
+            - 解决的问题：当应用代码更新时，通过 manifest 知道哪些 chunk 需要重新加载。
+            - 长期缓存：即使业务代码变化，第三方库（如 react）的 chunk 哈希不变，可长期缓存。
+            - 固定第三方库的哈希
+                ```js
+                optimization: {
+                    moduleIds: 'deterministic', // 模块 ID 根据路径生成，内容不变则 ID 不变
+                    chunkIds: 'deterministic'   // 同上
+                }
+                ```
+- Corpus的redux优化
+    - useSelector按需更新
+    - 精细化state的selector
+    - 生产环境禁用dev tool的历史记录
+        ```js
+        const store = createStore(
+            reducer,
+            process.env.NODE_ENV === 'production' 
+                ? undefined 
+                : window.__REDUX_DEVTOOLS_EXTENSION__?.()
+        );
+        ```
 ### 八股
 - 前端
     - css实现水平居中的方式，多说几种
@@ -745,70 +755,37 @@
     - CPU分析：统计耗时和使用率
     - 内存分析：检测泄露、统计使用率、统计转储文件
     - I/O分析：统计时间
-
-
+- visibilityState为hidden时，定时器会全部被降频到至多1秒甚至直接冻结（safari会冻结）
+- SSE和Websocket的异同
+    - wss有自己的协议，SSE基于HTTP
+    - wss连接开销（协议升级）和资源开销（和TCP交互、帧头）较大
+    - wss带宽效率比较高，因为可以传输文本文件
+    - wss代码实现比较复杂（可以自定义，可以用二进制数据流）
+- 前端资源加载阻塞
+    - 一般都会，但可以优化：css分包+preload
+- 浏览器渲染流程是什么？能怎么被利用？：看frontend_learning
+- 宏任务和微任务设计原因：看frontend_learning
+- css选择器优先级
+    - 总顺序
+        1. `!important`会覆盖页面内任何位置的元素样式，权值为正无穷
+        2. 内联样式，如`style="color: green"`，权值为1000
+        3. ID选择器，如`#app`，权值为0100
+        4. 类、伪类、属性选择器，如`.foo`, `:first-child`, `div[class="foo"]`，权值为0010
+        5. 标签、伪元素选择器，如`div::first-line`，权值为0001
+        6. 通配符、子类选择器、兄弟选择器，如`*`, `>`, `+`，权值为0000
+        7. 继承的样式没有权值
+    - 权值计算：
+        - 一行选择器的优先级 = ABCD
+        - 如果存在内联样式，那么 A = 1, 否则 A = 0
+        - B 的值等于 ID选择器出现的次数
+        - C 的值等于 类选择器 和 属性选择器 和 伪类 出现的总次数
+        - D 的值等于 标签选择器 和 伪元素 出现的总次数
+        - eg `.main .123[class="foo"]`中，A=0，B=0，C=3，D=0，最终权值为0030
+    - 权重相同的情况下，后者覆盖前者
+    - 权值其实是256进制的
 
 # todo WIP
-- Corpus的工程化优化：
-    - splitChunk：
-        - 把第三方库独立打包
-        - 用动态导入分离模块+预加载
-            - 每个懒加载组件生成独立的 chunk 文件（如 Home.chunk.js）。
-            - `const Home = React.lazy(() => import(/* webpackPrefetch: true */ './Home'))`;
-        - 合并小chunk
-            optimization: {
-                splitChunks: {
-                    minSize: 20000, // 小于 20KB 不单独打包
-                },
-            }
-    - 开发模式的行为
-        - css-/style-loader
-        - eval-source-map
-        - DevServer for HMR
-    - 生产模式的行为
-        - Terser和MinimizeCSS的plugin
-        - manifest.json
-            - 作用：记录模块 ID 与生成文件（chunk）的映射关系。
-            - 解决的问题：当应用代码更新时，通过 manifest 知道哪些 chunk 需要重新加载。
-            - 长期缓存：即使业务代码变化，第三方库（如 react）的 chunk 哈希不变，可长期缓存。
-            - 固定第三方库的哈希
-                ```js
-                optimization: {
-                    moduleIds: 'deterministic', // 模块 ID 根据路径生成，内容不变则 ID 不变
-                    chunkIds: 'deterministic'   // 同上
-                }
-                ```
-- Corpus的redux优化
-    - useSelector按需更新
-    - 精细化state的selector
-    - 生产环境禁用dev tool的历史记录
-        ```js
-        const store = createStore(
-            reducer,
-            process.env.NODE_ENV === 'production' 
-                ? undefined 
-                : window.__REDUX_DEVTOOLS_EXTENSION__?.()
-        );
-        ```
 - 前端
-    - css选择器优先级
-        - 总顺序
-            1. `!important`会覆盖页面内任何位置的元素样式，权值为正无穷
-            2. 内联样式，如`style="color: green"`，权值为1000
-            3. ID选择器，如`#app`，权值为0100
-            4. 类、伪类、属性选择器，如`.foo`, `:first-child`, `div[class="foo"]`，权值为0010
-            5. 标签、伪元素选择器，如`div::first-line`，权值为0001
-            6. 通配符、子类选择器、兄弟选择器，如`*`, `>`, `+`，权值为0000
-            7. 继承的样式没有权值
-        - 权值计算：
-            - 一行选择器的优先级 = ABCD
-            - 如果存在内联样式，那么 A = 1, 否则 A = 0
-            - B 的值等于 ID选择器出现的次数
-            - C 的值等于 类选择器 和 属性选择器 和 伪类 出现的总次数
-            - D 的值等于 标签选择器 和 伪元素 出现的总次数
-            - eg `.main .123[class="foo"]`中，A=0，B=0，C=3，D=0，最终权值为0030
-        - 权重相同的情况下，后者覆盖前者
-        - 权值其实是256进制的
 - 面经
     - 逻辑题就是脑筋急转弯
         - 可以多用数学的思维，比如符号标记啥的
@@ -874,7 +851,7 @@
                 - 将自动化拓展到人文领域：合规性自动检查（法律/财务文档风险识别）
                 - 会议录音→结构化笔记自动生成
             - 交互体验提升
-                - 以非文字方式访问数字世界，例如手势、语音
+                - 拓展控制方式：以非文字方式访问数字世界，例如手势、语音
                 - 多模态：语音、视觉、文字混合交互，例如让ai根据图片和说的内容生成内容
                 - 逻辑简化：简化交互逻辑，把更复杂的内容交给ai处理
             - 知识管理革命
@@ -911,54 +888,7 @@
         - 对框架的深入理解有助前期技术选型。
         - 新技术的学习路线更平缓（因为很多技术都是从现有技术慢慢迭代的）
 
-- 浏览器渲染流程是什么？能怎么被利用？
-    - 关键渲染路径（Critical Rendering Path, CRP）
-        - 构建 DOM 树：解析 HTML → 生成 DOM（Document Object Model）。
-        - 构建 CSSOM 树：解析 CSS → 生成 CSSOM（CSS Object Model）。
-        - 合并成 Render Tree：DOM + CSSOM → 渲染树（仅包含可见元素）。
-        - Layout（布局/重排）：计算每个节点的位置和大小。
-        - Paint（绘制）：将渲染树转换为屏幕上的像素。
-        - Composite（合成）：将不同图层合并显示（GPU 加速）。
-    - 合成层
-        - 浏览器会将某些元素单独提升为合成层（其实就是GPU加速）
-        - 修改这些属性时，只会重新合成（Composite），不会触发重排重绘。
-        - 使用transform/opacity等属性触发合成层
-    - will-change
-        - 用于提示浏览器某个元素即将发生变化，让浏览器提前优化（如提升为合成层）。
-        - 会增加内存占用
-        - rAF可以利用：will-change一般都是用在合成层元素上的，rAF利用will-change不会触发重排重绘
-        - eg 
-            .element {
-                will-change: transform; /* 告诉浏览器这个元素会变化 */
-            }
-        - eg
-            .scrollable-content {
-                will-change: scroll-position;   /* 减少滚动卡顿 */
-            }
-    - 合理使用requestAnimationFrame
-        - 可以用来修改element的style.transform
-        - 可以用来高频更新
-        - eg
-            ```js
-            function smoothScrollTo(target) {
-                const start = window.scrollY;
-                const distance = target - start;
-                const duration = 1000; // 1s，表示进度上限（或者说预期的动画持续时间）
-                let startTime = null;
-                
-                function step(timestamp) {      // 根据时间戳与预期持续时间的差异 滚动对应距离
-                    if (!startTime) startTime = timestamp;
-                    
-                    const progress = timestamp - startTime;
-                    const percent = Math.min(progress / duration, 1);
-                    window.scrollTo(0, start + distance * percent);
-                    if (progress < duration) {  // 在目前进度还没有到达上限的时候继续注册rAF
-                        requestAnimationFrame(step);
-                    }
-                }
-                requestAnimationFrame(step);    // 开始动画
-            }
-            ``` 
+
 - 【to learn】Web Animations API
     - 就是css animate和keyframe的js版本
     - eg
@@ -980,14 +910,7 @@
         animation.play();
         animation.cancel();
         ```
-- 宏任务和微任务设计原因：
-    - 任务优先级：微任务优先级高于宏任务，保证某些高优先级任务能及时执行
-    - IO操作和UI渲染也在宏任务内
-    - 平衡使用建议：
-        - 关键任务用微任务（如状态更新、DOM变更等需要及时反映的操作）。
-        - 非关键/耗时任务用宏任务（如日志上报、大数据处理、复杂计算等，避免阻塞UI更新）。
-        - 如果全部用微任务，可能导致 UI 卡顿（如无限递归 Promise.then）。
-        - 如果全部用宏任务，高优先级任务可能延迟执行。
+
 - MutationObserver
     - 用于监听 DOM 变化（如属性、子节点变化）。
     - eg
@@ -1004,28 +927,6 @@
         });
         observer.disconnect();  // 停止监听
         ```
-- 浏览器渲染流程（每一帧中的行为）
-    - 事件循环
-        - 检查并执行最老的可执行宏任务
-        - 每个宏任务（注意不是清空队列，而是每个任务）结束后尝试清空微任务队列
-    - 尝试渲染（根据一定准则决定要不要触发渲染）
-        - 遍历当前浏览上下文中所有的 document ，必须按在列表中找到的顺序处理每个 document 。
-        - 判断渲染时机（Rendering opportunities）：
-            - 动态因素：根据硬件刷新率限制、页面性能或页面是否在后台等因素。
-            - 不必要的渲染（Unnecessary rendering）：浏览器认为会不会产生可见效果
-            - rAF：有没有**rAF**，有则渲染（也是因此使用rAF可以实现更丝滑的动画/动态显示效果）
-        - 处理各种视觉改变事件（window.performance.now() 是一个时间戳，供浏览器计算剩余时间判断应不应该继续把任务放入执行栈）
-            - 处理 resize 事件，传入一个 performance.now() 时间戳。
-            - 处理 scroll 事件，传入一个 performance.now() 时间戳。
-            - 处理媒体查询，传入一个 performance.now() 时间戳。
-            - 运行 CSS 动画，传入一个 performance.now() 时间戳。
-            - 处理全屏事件，传入一个 performance.now() 时间戳。
-        - 执行回调
-            - 执行 **requestAnimationFrame** 回调，传入一个 performance.now() 时间戳。
-            - 执行 intersectionObserver 回调，传入一个 performance.now() 时间戳。
-        - 对每个 document 进行绘制，更新UI呈现。
-    - 看下该不该执行IdleCallback
-    - 回到第一步事件循环
 - requestIdleCallback：
     - 用于不重要也不紧急的任务，因为只有在每一帧时间有剩才运行这个callback
     - 且最长只会分配50ms
@@ -1153,56 +1054,8 @@
             - 使用二进制格式(如Protocol Buffers)减少传输数据量
             - 节流/防抖高频操作
             - 本地操作缓存
-- 自定义钩子的说辞（form）
-    - 本质上就是和生命周期挂钩的utils的封装
-    - 什么场景下应该使用钩子：
-        - 高级组件
-            - Form
-                - 一个formInstance实例用来提供表单整体方法和管理字段方法
-                - 通过跨组件状态传递让子组件也能访问这个formInstance
-                - 控制翻转：注册自己，获得val，设置val，验证val，val重渲染逻辑
-        - 逻辑复用
-            - 性能/行为监控钩子
-        - 组织代码/逻辑抽象
-            - 半静态constant的钩子
-                - 较长时间不需变更，但仍然有变更机会的数据，比如i18n的内容
-            - 层级设计
-                - 用hooks来管理原始selector，避免创建新的selector并同一层之中互相调用
-                - 比如数据获取、验证、parse的场景
-                    - 其实redux的query或者thunk本身就是一种基于钩子思维开发的组件
-                    - 跨api的数据要二次parsing，用钩子封装
-                        - 比如数组变成set/map的情况  
-- 性能优化说辞
-    - 性能监控钩子
-        - 给一些关键操作进行计时
-        - 倒计时超过某个秒数就发送log
-    - 行为监控钩子
-        - 钩子的作用：
-            - 每次被运行都可以把接受的参数字符串保存到log中，于是可以用在onchange之类的地方
-        - 简单的去重：
-            - 对比前一次、两次、三次的操作，变成数字
-        - 简单的节流：
-            - 无操作一分钟、页面关闭、页面失去焦点、页面切换就发出log
-                ```js
-                window.addEventListener('beforeunload', (event) => {
-                    event.preventDefault();
-                    // ...
-                });
-                document.addEventListener('blur', () => { // 文档失去焦点
-                    // ...
-                }, true);
-                document.addEventListener('focus', () => {  // 文档获得焦点
-                    // ...
-                }, true);
-                document.addEventListener('visibilitychange', () => {
-                    if (document.visibilityState === 'hidden') {
-                        // 页面被切换到其他标签页/最小化
-                    } else {
-                        // 页面重新可见
-                    }
-                });
-                ```
-- 【还没做过的】前端错误监控
+
+
 - web worker与service worker
     - 后者其实是基于前者开发的，所以不是同级关系
     - web worker就是开的另一个线程，通过message和主线程沟通
@@ -1210,23 +1063,29 @@
         - 可以理解为持久化的web worker，哪怕浏览器关闭了也可以运行
         - 目的是创建有效的离线应用体验和拦截网络请求，并根据网络是否可用和更新来自服务器上的新资源而采取适当的操作。它们还被允许访问推送通知和后台同步API。
         - 可以类比为 "浏览器操作系统中的常驻后台服务进程"
-- 八股
-    - visibilityState为hidden时，定时器会全部被降频到至多1秒甚至直接冻结（safari会冻结）
-    - SSE和Websocket的异同
-        - wss有自己的协议，SSE基于HTTP
-        - wss连接开销（协议升级）和资源开销（和TCP交互、帧头）较大
-        - wss带宽效率比较高，因为可以传输文本文件
-        - wss代码实现比较复杂（可以自定义，可以用二进制数据流）
-    - 前端资源加载阻塞
-        - 一般都会，但可以优化
-            - css分包+preload
+
 
 
 
 
 # todo
-- 比较紧急的
-
+- 紧急些的
+    - 对HR面的总结
+        - 软技能与实际应用：有没有什么软技能的方法论，在现实中（比如项目、实习、生活中）怎么应用的
+            - 学习能力
+            - 解难能力
+            - 团队协作能力
+            - 个人优缺点
+        - 个人偏好与该岗位的匹配度
+            - 为什么选这个领域
+            - 为什么选这个岗位
+            - 为什么选这个公司
+            - 有没有别的offer/面试机会？会选哪个？
+            - 个人兴趣爱好
+        - 其他（比较无关紧要的小问题，感觉不怎么影响面试结果，但曾经hr真的问过我才放进来的）
+            - 生活态度
+            - 生活习惯
+            - 个人健康
 - 算法
     - 最大团问题
     - 给定一堆区间，给出有多少区间的两两组合符合以下条件：max(l) <= min(r)
@@ -1273,6 +1132,11 @@
     - regex在js
     - 怎么理解泛型的
     - all和race的区别
+    - 【还没做过的】前端错误监控
+        - errorBoundary
+        - window.onerror
+        - response的error
+    - rAF、performance.now()、IntersectionObserver、requestIdleCallback好像有些关系，得仔细看看
 - Network
     - HTTPS能防以下什么：hijacking、XSS、Dos、
     - TCP可靠传输协议：滑动窗口咋就可靠了
@@ -1292,6 +1156,7 @@
     - 模块的解耦程度
     - class diagram的+，-，#的含义
     - 你觉得自己的优势在哪里，语言，操作系统，还是什么？
+
 
 
 如果有基础的话，可以试试更进阶的，比如 Codeforces 上面的div 2，可以给自己开virtual participation，如果2h的比赛可以稳定独立做出3~4个题，笔试和面试阶段的算法题应该不会难住你了。
