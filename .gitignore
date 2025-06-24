@@ -4,3 +4,6 @@ beauty-of-design-pattern-master/*
 *.zip
 **/*/app/*
 JS-React-Example
+tencent/**
+!tencent/腾讯note.md
+
