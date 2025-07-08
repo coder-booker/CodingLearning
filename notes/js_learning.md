@@ -1,8 +1,10 @@
 
 # experience
 - js相当灵活，只要你觉得可以的操作一般都真的可以，比如给函数添加属性和方法
-- Promise
-
+- 一些有趣的，但是一般不会用的hack skills
+    - eval
+    - 函数构造器
+    - Array-like和Array.prototype.call
 
 # 变量与赋值
 - 数组解构：
@@ -17,8 +19,16 @@
     - 定义默认值: `const { a = 10, b = 20, c = 30 } = {a: 20, b, c: 20}` -> `a=20, b=20, c=20` (以键来标识)
     - alias: `const {aaa: bbb} = {aaa: "123"};` bbb = "123"
 - 储存基本类型/原始值的变量被赋值给别的变量时，是复制了一份副本给这个新变量。
-- 暂时性死区
-    - 只要一进入当前作用域，所要使用的变量就已经存在了，但不可获取（否则报错），只有等到声明的那一行代码出现，才可以获取和使用。
+- 暂时性死区与变量提升
+    - 暂时性死区：
+        - 只要一进入当前作用域，所要使用的变量就已经存在了，但不可获取（否则报错），只有等到声明的那一行代码出现，才可以获取和使用。
+        - let和const
+    - 变量提升
+        - var的变量定义会被提升
+        - 但注意对其的赋值不会提升
+- 链式变量赋值
+    - `let a = b = c = 1;`
+    - 是个坑，因为后面的b和c会被js理解为全局变量，也就是 `let a = ( b = ( c = 1 ) );`
 
 
 # 类型转换
@@ -398,7 +408,11 @@
             console.log(obj.name); // 读取 name 属性
             ```
     - 内置对象的所有属性都是不可配置的(configurable=false)
-
+- 内置getter和setter
+    - 关键字get/set放在方法名前可以实现getter和setter
+    - 如果设置了getter，除了配套的setter外没人能修改这个变量
+    - 可以用来鉴权、动态计算属性等
+    - eg `public get aaa() { return xxxx + yyyy; }`
 
 
 # 类
@@ -651,6 +665,8 @@
     - 注意Promise必须要显性改变状态，否则不会进入下一个阶段
     - 因为executor的运行是同步的，但插入的微任务是异步的，所以出现".then在同步代码后运行"的现象是正常的
     - **所以Promise本身并不是微任务，状态改变的回调才是**。
+    - **当把async或者Promise当作回调传给别的方法时，要注意别的方法不会await这个异步操作，因此回调返回的一定是一个Promise而非结果的值**
+        - 这可能导致一些错误，比如Array.prototype.every会衡为真
 - `new Promise((resolve, reject) => { resolve("value"); reject("error") })`
     - 接收一个executor函数，这个函数可以选择pending Promise传入的`resolve`和`reject`状态改变函数。
         - `resolve`把Promise变为fulfilled态，`reject`则变为rejected态，然后把各自的.then或者.catch中的回调函数推入微任务队列等待执行
@@ -878,6 +894,7 @@
 - `JSON.stringify()`把对象转变为json字符串样式
 - `.json()`不只是解析json内容，同时还会转化为js的对象
 - 无论用那种语法传输，背后都是json字符串形式的？？？？
+- JSON解析其实挺危险的，要使用安全的解析方式如JSON.parse，不要用eval
 ### eval
 - eval() 函数会将传入的字符串当做 JavaScript 代码进行执行。
 ### Proxy

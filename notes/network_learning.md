@@ -445,7 +445,7 @@
             2. 如果浏览器不能获取请求源，那么origin满足上面情况也会携带，不过其值为null。referer则不同，浏览器如果不能获取请求源，那么请求头中不会携带referer。
             3. origin的值只包括协议、域名和端口，而referer还包括路径和参数。
     - `Content-Security-Policy` & `Content-Security-Policy-Report-Only`：
-        - 用来控制网页能够加载哪些资源的（记住，加载基本等于运行，无非就是看看有没有实际调用而言）
+        - 用来控制网页能够加载哪些资源的（记住，加载基本等于运行，无非就是看看有没有实际调用而已）
         - response设置
         - 有以下可选策略：
             - default-src：默认资源加载策略（如脚本、图片、样式等）。
@@ -455,6 +455,8 @@
             - connect-src：限制 AJAX 请求的来源。
             - frame-ancestors：限制页面是否可以被嵌入到 iframe 中。
             - report-uri：指定违规报告的上报地址。
+        - `nonce`：
+            - 为script生成随机数，只有和随机数匹配的script能被加载
         - 常见选项：
             - `default-src 'self' https://xxx.com`
             - `'report-uri' /api/report`

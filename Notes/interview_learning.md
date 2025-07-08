@@ -982,12 +982,13 @@
         - 使用will-change提示浏览器优化
 - react router的底层有什么样的优化？有没有按需加载的机制？
     - 似乎没有，但可以用createBrowserRouterAPI更优雅地设置该不该懒加载（手动封装好）
-- 多页应用相互的通信
+- 前端跨域通信/多页应用的通信
     - URL参数传递：
         - 通过query string或hash传递数据
     - localStorage/sessionStorage
         - 配合storage事件监听变化
-    - window.postMessage/MessageChannel/BroadcastChannel API：
+    - 【最危险的】document.domain降域
+    - 【最安全的】window.postMessage/MessageChannel/BroadcastChannel API：
         - postMessage：唯一跨域通信方法，单向通信。
         - MessageChannel/BroadcastChannel：只能同域，双向通信通道，还有深拷贝的神秘用法
         - 同时可以用来和web worker通信
@@ -1020,7 +1021,6 @@
                 if (e.origin === 'https://parent.com') {...}
             });
             ```
-    - sentry的错误追踪方案
 - 共享文档优化
     - 可能的卡顿问题：
         - 网络卡顿：大数据块传输、频繁的同步请求
@@ -1132,11 +1132,12 @@
     - regex在js
     - 怎么理解泛型的
     - all和race的区别
-    - 【还没做过的】前端错误监控
+    - 【还没做过的】前端错误监控：sentry
         - errorBoundary
         - window.onerror
         - response的error
     - rAF、performance.now()、IntersectionObserver、requestIdleCallback好像有些关系，得仔细看看
+    - p_skey验证登录态？
 - Network
     - HTTPS能防以下什么：hijacking、XSS、Dos、
     - TCP可靠传输协议：滑动窗口咋就可靠了

@@ -22,4 +22,12 @@
     - shortcut: Ctrl + '
 - console ninja
     - js/ts fast console.log when server launched
+- 内置的snippet
+    - ToolBar -> File -> Preference -> Configure Snippets
+    - settings.json:  
+        ```
+        "[<filename>]":  {
+            "editor.quickSuggestions": true
+        }
+        ```
 

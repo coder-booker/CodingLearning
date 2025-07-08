@@ -129,7 +129,8 @@
     - 数据分配：数据存储在顺时针方向最近的节点上。
     - 动态扩展与收缩：添加或删除节点时，只需重新分配少量数据，而不是全部。
 
-# 规范化版本管理
+# git
+### 规范化版本管理
 - SemVer
     - 版本号的管理
     - MAJOR.MINOR.PATCH[-PRERELEASE]
@@ -170,6 +171,12 @@
             - Reviewed-by: xxxx
             - Refs: #123（也可以是另一个commit的id）
             - BREAKING CHANGE：xxxxyyyy（破坏性 API 变更，也就是需要改 MAJOR 的commit）
+- 常用命令：
+    - rebase：被rebase的分支会接到当前分支后，视为新的commit之类的
+    - merge：分支融合，不是接上，且会保留两遍分别的记录而非想rebase一样合成同一个
+    - amend：用于修改上次commit，代码和信息都可以
+
+
 
 # 奇怪的电脑知识
 ### .env
@@ -210,35 +217,4 @@
     - arm架构的32/64位CPU
     - 一般是手机平板苹果用的
 
-
-
-# VSCode
-### 快捷键
-- 终端: Ctrl + `
-- setting搜索: Ctrl + Shift + p
-- 游标整词移动：Ctrl + 方向
-- 手动触发code hint: Alt + s (我自己绑定的，原本是 Ctrl + Space)
-- 任何父级(或者自动选中的)括号快捷删除(包括左右): Ctrl + Alt + Backspace
-- 快捷选中所有相同内容：Ctrl + Shift + L
-- 快捷选中上下行相同位置的内容：Ctrl + Shift + Alt + 上下
-- 全局搜索文件：Ctrl + T
-- 关闭所有标签页：Ctrl + K + W
-- 创建文件：Ctrl + Shift + Alt + F
-- 创建文件夹: Ctrl + Shift + Alt + D
-- 切换到文件视窗：Ctrl + 0
-### 拓展
-- snippet creator
-- vscode pet
-- toggle quotes
-    - shortcut: Ctrl + '
-- console ninja
-    - js/ts fast console.log when server launched
-- 内置的snippet
-    - ToolBar -> File -> Preference -> Configure Snippets
-    - settings.json:  
-        ```
-        "[<filename>]":  {
-            "editor.quickSuggestions": true
-        }
-        ```
 
