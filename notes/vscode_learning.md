@@ -30,4 +30,4 @@
             "editor.quickSuggestions": true
         }
         ```
-
+- git lenz快捷查看旧代码
