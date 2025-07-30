@@ -31,3 +31,7 @@
         }
         ```
 - git lenz快捷查看旧代码
+
+
+### 标签页换行
+workbench.editor.wrapTabs

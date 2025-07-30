@@ -661,6 +661,7 @@
 - Promise大致流程：
     - Promsie实例化后立刻执行executor函数，状态改变后创建一个新的微任务，这个微任务的任务就是处理Promise操作的下一个状态阶段的回调函数，例如.then的和.catch的
     - 但状态改变的语句可以被异步操作的回调包裹，这样异步操作结束后才会改变状态。Promise也是因此适合异步操作
+- executor内的同步代码会被立刻运行，异步代码则会被正常加入任务队列，如果这些异步代码使用了resolve或reject则会触发整个promise的状态改变
 - 注意事项：
     - 注意Promise必须要显性改变状态，否则不会进入下一个阶段
     - 因为executor的运行是同步的，但插入的微任务是异步的，所以出现".then在同步代码后运行"的现象是正常的
@@ -705,12 +706,32 @@
     - async本质就是把函数内的代码作为executor传入一个Promise并尝试返回这个Promise。return时就是resolve调用时。所以async也是立刻执行的
     - 会默认返回undefined的resolve
     - await的原理
-        - 暂停async的运行并运行await后的代码，返回一个Promise
+        - 仍然会继续运行同步代码，但如果遇到异步代码会暂停上一级调用该async函数的代码运行，返回一个Promise
         - Promise的状态脱离pending就会创建一个**返回这个作用域这一行后继续运行**的微任务。注意最后await获得的值是：fulfilled就返回resolve传递的值，rejected就直接抛出错误。
         - await与后一行之间可能会被同步代码插队。
         - 底层是用的**yield**
     - await只能保证其所在作用域的顺序执行，不能保证外部其他操作会不会在await的作用域内的代码间插队执行
     - 如果函数的返回值已经是Promise，不会变成Promise.resolve
+    - eg
+        ```js
+        function outerNonAsyncFunction() {
+            console.log("1. Outer function starts");
+            innerAsyncFunction(); // 不会等待
+            console.log("4. Outer function ends");
+        }
+
+        async function innerAsyncFunction() {
+            console.log("2. Inner async function starts");
+            await anotherAsyncFunction();
+            console.log("5. Inner async function completes");
+        }
+
+        async function anotherAsyncFunction() {
+            console.log("3 Another async function starts");
+            return new Promise(resolve => setTimeout(resolve, 1000));
+        }
+        // output: 12345
+        ```
 - 三种状态：
     - Pending（等待中）：初始状态，既不是成功也不是失败。
     - Fulfilled（已成功）：操作成功完成。
