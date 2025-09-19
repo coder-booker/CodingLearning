@@ -218,3 +218,6 @@
     - x86是32位，x64/amd64是64位
     - x64 = amd64 = x86-64
 
+# 其他
+- 截长图
+    - chrome：开发者工具，右上角三个点，输入找 capture full size screen shot
