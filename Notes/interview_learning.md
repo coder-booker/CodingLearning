@@ -938,7 +938,6 @@
 - 硬件都来了
     - 【解决】基带和频带
     - 【解决】比特率和波特率
-<<<<<<< Updated upstream
 - AI
     - AI的影响
         - AI边缘
@@ -997,9 +996,6 @@
         - 对框架的深入理解有助前期技术选型。
         - 新技术的学习路线更平缓（因为很多技术都是从现有技术慢慢迭代的）
 
-=======
-- general
->>>>>>> Stashed changes
 
 - 【to learn】Web Animations API
     - 就是css animate和keyframe的js版本
