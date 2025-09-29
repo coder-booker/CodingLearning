@@ -116,7 +116,23 @@
 
 
 # Interview prepare
-### General/HR 面
+# 通用/HR 面
+- 对HR面的总结
+    - 软技能与实际应用：有没有什么软技能的方法论，在现实中（比如项目、实习、生活中）怎么应用的
+        - 学习能力
+        - 解难能力
+        - 团队协作能力
+        - 个人优缺点
+    - 个人偏好与该岗位的匹配度
+        - 为什么选这个领域
+        - 为什么选这个岗位
+        - 为什么选这个公司
+        - 有没有别的offer/面试机会？会选哪个？
+        - 个人兴趣爱好
+    - 其他（比较无关紧要的小问题，感觉不怎么影响面试结果，但曾经hr真的问过我才放进来的）
+        - 生活态度
+        - 生活习惯
+        - 个人健康
 - 个人
     - 自我介紹
     - 你的缺点和优点/能力点是什么
@@ -151,18 +167,38 @@
                 - 通过实习和CorpusChat实际业务两者建立对出社会工作的初步认知
             - 解难能力：独立接触业务的压力
                 - CorpusChat的压力强迫走出舒适圈，让我形成了一套解难方法论
-            - AI应用设计
+            - 工程师思维：
+                - 思考产品而非代码
     - 觉得自己技术上还有哪些需要提升的地方，以及怎么提升
         - 缺乏大型产品的实操经验和行业前沿的开发经验。
             - 可以通过积极寻找高质量实习来突破
     - 你的解难方法论、学习方法论是什么？
-        - 解难方法论：尽可能削弱问题（查资料也好、分化也好）-> 设计解决方案 -> 测试效果 -> 持续记录过程供复盘
-        - 学习方法论：掌握基础知识/大背景 -> 不停主动问问题（清晰思路、主动思考、最小化学习成本） -> 建立个人理解的知识图谱 -> 持续记录过程供复盘
+        - 前：提升我方，降低敌方
+            - 资源利用
+                - 团队协作：组织代码审查或头脑风暴会议
+                - 外部资源：查阅Stack Overflow、官方文档、技术博客、相关论文或开源项目类似实现
+            - 更改方案
+                - 评估是否有替代方案可以绕过该问题
+                - 考虑是否可以通过重构简化问题
+                - 必要时与利益相关者沟通调整需求
+            - 问题分析与拆解
+                - 重新分析问题：用不同方式表述问题，确认真正痛点
+                - 分解问题：将大问题拆分为可管理的小模块（如使用分治法）
+                - 绘制流程图：可视化问题场景和数据流
+        - 中：调整我方，解决敌方
+            - 技术解决策略
+                - 多角度验证：尝试不同的算法/架构方案
+                - 原型验证：为可能的解决方案构建最小可行原型
+                - 日志与调试：增加详细日志，使用条件断点调试
+                - 设定里程碑：将长期问题分解为阶段性目标
+            - 心态与时间管理
+                - 适当休息：通过休息获得新视角（如橡皮鸭调试法）
+        - 后：记录敌方和我方
+            - 记录过程：保持详细的问题解决日志
 - 公司相关
     - 为什么选择这家公司/你期望的实习环境是怎么样的（反之可以思考什么情况下会考虑辞职）
         - 有充足个人发挥空间：扁平化，实现个人价值
         - 有充足个人发展机会：学习行业前沿技术；在市场上留下足迹，提升影响力（尤其是在AI环境下）
-        - 福利好：好的环境对生产力和长期工作的可持续性都有帮助
     - 对之前几次面试的感受：
         - 面试官比较专业，问了一些我从未想过的角度，我从面试中也学到很多知识
     - 你认为实习时可预见的困难
@@ -187,7 +223,15 @@
         - 怎么解决压力
             - 加班无非就是保持productive更长时间，我有经验
             - 学会自我调节（长期短期）
-### 项目
+# 经验
+- 逻辑题就是脑筋急转弯
+    - 可以多用数学的思维，比如符号标记啥的
+    - 逆向思考：排除不对的答案
+- 场景题可以大刀阔斧地改
+- 先从简单的做起，进入状态
+
+# 项目
+### CorpusChat
 - CorpusChat亮点：
     - 真实项目，需要与客户沟通、设计整套软件流程。还涉及了一部分的UI设计
     - 实现了一个很热门的概念：RAG，因此比较了解AI服务的一些前端要点，还给AI绑定了不少工具
@@ -609,80 +653,99 @@
                 : window.__REDUX_DEVTOOLS_EXTENSION__?.()
         );
         ```
-### 八股
-- 前端
-    - css实现水平居中的方式，多说几种
+# 八股
+### 前端
+- css
+    - 实现水平居中的方式，多说几种
         - margin: 0 auto;
         - jusitify-content: center;
-        - trans
-    - 如何清除浮动
-        - 浮动元素前的块会顶开浮动元素，后的块则会被覆盖。
-            - 当然如果float方向不会覆盖到后面的块自然不会影响显示后面的块，只是位置会不同：float被顶开的距离只会计算前面块，后面的块会被忽略
-        - 设置块状clear的空后兄弟元素撑起父容器，具体left/right/both再判断
-            - 伪元素`:after`、空div都可以
-            - 注意clear的含义其实就是不允许某个方向上有人浮动，所以float的left和right与clear的left和right注意需要互相对着
-                - 比如float在前且float:left，你后面的元素clear:right是没用的
-                - 此外，因为float前的块会顶开float，对前块设置clear没用
-        - 父级变成BFC
-            - overflow不为visible
-            - `display: flow-root`
-            - 注意只能让父元素能够识别和包含浮动元素，float的后子元素仍然会被覆盖
-    - 文字超出盒子的宽高，对其隐藏设置什么属性
-        - white-space: nowrap; /* 禁止换行 */
-        - overflow: hidden; /* 超出部分隐藏 */
-        - text-overflow: ellipsis; /* 显示省略号 */
-    - 如何解决塌陷问题：例如 父元素里有子元素，给子元素设置margin-top:50;父盒子和子盒子一块塌陷 
-        - 隔离父盒子和子盒子
-        - 父级变成BFC
-    - ES6新特性有哪些
-    - 说下原型链
-    - 普通函数和箭头函数有什么区别
-        - args、this、构造函数
-    - 修改this的几种方式
-        - 因为this的使用永远和函数或者方法有关，所以只考虑call apply bind就行
-        - call：传入上下文和逐一传入参数并立刻运行
-        - apply：传入上下文和参数数组并立刻运行
-        - bind：绑定上下文和一部分参数并返回一个新函数。这个新函数的参数会优先接收绑定的参数再顺序接收调用传入的参数
-    - sessionStorage和localStorage的区别
-        - sessionStorage：
-            - 生命周期：页面会话期间有效，关闭页面后数据被清除。
-            - 作用域：仅在当前标签页有效。
-        - localStorage：
-            - 生命周期：永久存储，除非手动清除。
-            - 作用域：跨标签页共享。
-    - ts中type和interface的相同点
-        - 定义类型：都可以用来定义对象、函数、类等的类型。
-        - 扩展：都可以通过 extends 或 & 进行扩展。
-        - 实现：都可以被类实现（implements）。
-    - 懒加载
-        - 关键在于进入点和停止监听点
-        - 进阶一点就是懒加载用纯JS怎么实现
-            - 子元素offsetTop < 父元素clientHeight + 父元素scrollTop
-            - window.pageYOffset ? window.pageYOffset : window.document.documentElement.scrollTop
-            - Intersection Observer API
-                - eg
-                    ```ts
-                    const observer = new IntersectionObserver(entries => {
-                        for (const i of entries) {
-                            if (i.isIntersecting) { // 当目标元素出现在视图内
-                                const img = i.target;
-                                const trueSrc = img.getAttribute("data-src");
-                                setTimeout(() => {
-                                    img.setAttribute("src", trueSrc); // 方便展示懒加载效果
-                                }, 1000);
-                                observer.unobserve(img); // 停止监听此元素
-                            }
+        - transform
+    - css选择器优先级
+        - 总顺序
+            1. `!important`会覆盖页面内任何位置的元素样式，权值为正无穷
+            2. 内联样式，如`style="color: green"`，权值为1000
+            3. ID选择器，如`#app`，权值为0100
+            4. 类、伪类、属性选择器，如`.foo`, `:first-child`, `div[class="foo"]`，权值为0010
+            5. 标签、伪元素选择器，如`div::first-line`，权值为0001
+            6. 通配符、子类选择器、兄弟选择器，如`*`, `>`, `+`，权值为0000
+            7. 继承的样式没有权值
+        - 权值计算：
+            - 一行选择器的优先级 = ABCD
+            - 如果存在内联样式，那么 A = 1, 否则 A = 0
+            - B 的值等于 ID选择器出现的次数
+            - C 的值等于 类选择器 和 属性选择器 和 伪类 出现的总次数
+            - D 的值等于 标签选择器 和 伪元素 出现的总次数
+            - eg `.main .123[class="foo"]`中，A=0，B=0，C=3，D=0，最终权值为0030
+        - 权重相同的情况下，后者覆盖前者
+        - 权值其实是256进制的
+- 如何清除浮动
+    - 浮动元素前的块会顶开浮动元素，后的块则会被覆盖。
+        - 当然如果float方向不会覆盖到后面的块自然不会影响显示后面的块，只是位置会不同：float被顶开的距离只会计算前面块，后面的块会被忽略
+    - 设置块状clear的空后兄弟元素撑起父容器，具体left/right/both再判断
+        - 伪元素`:after`、空div都可以
+        - 注意clear的含义其实就是不允许某个方向上有人浮动，所以float的left和right与clear的left和right注意需要互相对着
+            - 比如float在前且float:left，你后面的元素clear:right是没用的
+            - 此外，因为float前的块会顶开float，对前块设置clear没用
+    - 父级变成BFC
+        - overflow不为visible
+        - `display: flow-root`
+        - 注意只能让父元素能够识别和包含浮动元素，float的后子元素仍然会被覆盖
+- 文字超出盒子的宽高，对其隐藏设置什么属性
+    - white-space: nowrap; /* 禁止换行 */
+    - overflow: hidden; /* 超出部分隐藏 */
+    - text-overflow: ellipsis; /* 显示省略号 */
+- 如何解决塌陷问题：例如 父元素里有子元素，给子元素设置margin-top:50;父盒子和子盒子一块塌陷 
+    - 隔离父盒子和子盒子
+    - 父级变成BFC
+- ES6新特性有哪些
+- 说下原型链
+- 普通函数和箭头函数有什么区别
+    - args、this、构造函数
+- 修改this的几种方式
+    - 因为this的使用永远和函数或者方法有关，所以只考虑call apply bind就行
+    - call：传入上下文和逐一传入参数并立刻运行
+    - apply：传入上下文和参数数组并立刻运行
+    - bind：绑定上下文和一部分参数并返回一个新函数。这个新函数的参数会优先接收绑定的参数再顺序接收调用传入的参数
+- sessionStorage和localStorage的区别
+    - sessionStorage：
+        - 生命周期：页面会话期间有效，关闭页面后数据被清除。
+        - 作用域：仅在当前标签页有效。
+    - localStorage：
+        - 生命周期：永久存储，除非手动清除。
+        - 作用域：跨标签页共享。
+- ts中type和interface的相同点
+    - 定义类型：都可以用来定义对象、函数、类等的类型。
+    - 扩展：都可以通过 extends 或 & 进行扩展。
+    - 实现：都可以被类实现（implements）。
+- 懒加载
+    - 关键在于进入点和停止监听点
+    - 进阶一点就是懒加载用纯JS怎么实现
+        - 子元素offsetTop < 父元素clientHeight + 父元素scrollTop
+        - window.pageYOffset ? window.pageYOffset : window.document.documentElement.scrollTop
+        - Intersection Observer API
+            - eg
+                ```ts
+                const observer = new IntersectionObserver(entries => {
+                    for (const i of entries) {
+                        if (i.isIntersecting) { // 当目标元素出现在视图内
+                            const img = i.target;
+                            const trueSrc = img.getAttribute("data-src");
+                            setTimeout(() => {
+                                img.setAttribute("src", trueSrc); // 方便展示懒加载效果
+                            }, 1000);
+                            observer.unobserve(img); // 停止监听此元素
                         }
-                    });
-                    ```
-    - 说几条性能优化的方案
-        - http请求减少、资源压缩
-        - 按需加载
-        - 服务端渲染
-        - 防抖与节流
-            - 防抖：短时间内多次，只算最后一次
-            - 节流：短时间内多次，每一稳定时间区间只算一次
-- 闭包原理、作用、应用场景
+                    }
+                });
+                ```
+- 说几条性能优化的方案
+    - http请求减少、资源压缩
+    - 按需加载
+    - 服务端渲染
+    - 防抖与节流
+        - 防抖：短时间内多次，只算最后一次
+        - 节流：短时间内多次，每一稳定时间区间只算一次
+- 闭包
     - 保存状态：闭包可以保存函数执行时的状态，即使函数已经执行完毕。
     - 实现私有变量：通过闭包，可以模拟私有变量，避免外部直接访问和修改。
     - 延迟执行：闭包可以用于实现延迟执行（如回调函数、定时器）。
@@ -713,7 +776,7 @@
             - 输入过滤：对用户输入进行转义（如 < 转义为 &lt;）。
             - 输出编码：根据输出场景（HTML/JS/URL）使用不同编码库。
             - 设置 HTTP 头：Content-Security-Policy (CSP) 限制脚本来源。
-- 计算机网络
+- 计算机网络与前端
     - 输入url发生什么
         - URL 解析：解析 URL，提取协议、域名、路径等信息。
         - DNS 解析：将域名解析为 IP 地址。
@@ -732,6 +795,29 @@
                 - 网页交互：处理用户交互事件，动态更新页面。
                 - 关闭连接：通过四次挥手关闭 TCP 连接。
                 - 缓存：缓存静态资源，加速下次访问。
+    - SSE 和 Websocket 的异同
+        - wss有自己的协议，SSE基于HTTP
+        - wss连接开销（协议升级）和资源开销（和TCP交互、帧头）较大
+        - wss带宽效率比较高，因为可以传输文本文件
+        - wss代码实现比较复杂（可以自定义，可以用二进制数据流）
+    - 前端资源加载阻塞
+        - 一般都会发生，但可以优化：分包 + 优先级 + preload
+- 前端性能分析
+    - CPU分析：
+        - 统计不同文件/代码的线程占用耗时和使用率（火焰图）
+    - 内存分析：
+        - 检测泄露、统计使用率、统计转储文件
+        - 内存峰值，内存平均值，内存利用率/占用率
+    - IO/网络 IO 分析：
+        - 统计时间、次数、频率
+- 浏览器
+    - 多标签页：visibilityState 为 hidden时，定时器会全部被降频到至多1秒甚至直接冻结（safari会冻结）
+
+- 浏览器渲染流程是什么？能怎么被利用？：看frontend_learning
+- 宏任务和微任务设计原因：看frontend_learning
+
+
+### 后端
 - 如何设计一个高并发的系统？
     - 分布式架构：
         - 水平扩展（如微服务、分片）。
@@ -751,47 +837,8 @@
     - 限流与熔断：
         - 令牌桶限流（如Guava RateLimiter）。
         - 熔断降级（如Hystrix）。
-- 性能分析工具
-    - CPU分析：统计耗时和使用率
-    - 内存分析：检测泄露、统计使用率、统计转储文件
-    - I/O分析：统计时间
-- visibilityState为hidden时，定时器会全部被降频到至多1秒甚至直接冻结（safari会冻结）
-- SSE和Websocket的异同
-    - wss有自己的协议，SSE基于HTTP
-    - wss连接开销（协议升级）和资源开销（和TCP交互、帧头）较大
-    - wss带宽效率比较高，因为可以传输文本文件
-    - wss代码实现比较复杂（可以自定义，可以用二进制数据流）
-- 前端资源加载阻塞
-    - 一般都会，但可以优化：css分包+preload
-- 浏览器渲染流程是什么？能怎么被利用？：看frontend_learning
-- 宏任务和微任务设计原因：看frontend_learning
-- css选择器优先级
-    - 总顺序
-        1. `!important`会覆盖页面内任何位置的元素样式，权值为正无穷
-        2. 内联样式，如`style="color: green"`，权值为1000
-        3. ID选择器，如`#app`，权值为0100
-        4. 类、伪类、属性选择器，如`.foo`, `:first-child`, `div[class="foo"]`，权值为0010
-        5. 标签、伪元素选择器，如`div::first-line`，权值为0001
-        6. 通配符、子类选择器、兄弟选择器，如`*`, `>`, `+`，权值为0000
-        7. 继承的样式没有权值
-    - 权值计算：
-        - 一行选择器的优先级 = ABCD
-        - 如果存在内联样式，那么 A = 1, 否则 A = 0
-        - B 的值等于 ID选择器出现的次数
-        - C 的值等于 类选择器 和 属性选择器 和 伪类 出现的总次数
-        - D 的值等于 标签选择器 和 伪元素 出现的总次数
-        - eg `.main .123[class="foo"]`中，A=0，B=0，C=3，D=0，最终权值为0030
-    - 权重相同的情况下，后者覆盖前者
-    - 权值其实是256进制的
 
-# todo WIP
-- 前端
-- 面经
-    - 逻辑题就是脑筋急转弯
-        - 可以多用数学的思维，比如符号标记啥的
-        - 逆向思考：排除不对的答案
-    - 场景题可以大刀阔斧地改
-    - 先从简单的做起，进入状态
+# 算法记录
 - 算法
     - 【解决】用中序和前序出tree
         1. 在中序数组找前序第一个元素，标记为pivot
@@ -808,6 +855,67 @@
         - 其实就是模拟
     - 【大致解决】演奏方法的所有组合（固定条件下的子串分组）
         - dp
+# AI 相关
+- AI的影响
+    - AI边缘
+        - 私有数据训练的道德规范
+        - 新兴技能需求
+            - 提示工程（Prompt Engineering）成为必备技能
+            - AI生成内容的审查与质量控制
+            - 人机协作开发模式规范制定
+            - AI协作能力，无论IDE工具还是聊天机器人
+        - 商业模式创新
+            - 按需算力租赁（处理超大型文档分析）
+    - AI核心
+        - 智能生产力工具
+            - 生成稿件、代码、文档
+            - 个性化助手服务
+            - 行业垂直解决方案（教育/医疗专用模板引擎）
+        - 生产力提升工具（工作流加速）
+            - 多语言实时协作（自动翻译保持格式）
+            - 将自动化拓展到人文领域：合规性自动检查（法律/财务文档风险识别）
+            - 会议录音→结构化笔记自动生成
+        - 交互体验提升
+            - 拓展控制方式：以非文字方式访问数字世界，例如手势、语音
+            - 多模态：语音、视觉、文字混合交互，例如让ai根据图片和说的内容生成内容
+            - 逻辑简化：简化交互逻辑，把更复杂的内容交给ai处理
+        - 知识管理革命
+            - 让AI组织和筛选杂乱的信息
+            - 知识检索可以更加高效自由，如跨语言检索、快速筛选等
+# 共享文档
+- 可能的卡顿问题：
+    - 网络卡顿：大数据块传输、频繁的同步请求
+    - 渲染卡顿：大量DOM节点导致的渲染延迟
+    - 同步代码卡顿：大量同步数据、大量同步操作导致阻塞
+    - 算法卡顿：文档操作的算法效率低（如O(n²)复杂度）
+    - 内存卡顿：占用过高
+- 识别方法：
+    - 上线前
+        - 测试：（略）
+        - 性能监控：Chrome DevTools的Performance记录、Memory堆快照分析
+    - 运行中：
+        - 实时监控：
+            - 对关键指标进行监控（如关键操作的可交互时间(TTI)监控）
+            - 建立性能指标报警机制
+            - 监控用户行为轨迹记录
+- 解决方案：
+    - 代码优化：
+        - 操作压缩/批量处理：如用文档片段(DocumentFragment)批量更新、监听剪切板分批处理
+        - 多线程：Web Worker后台处理复杂计算，主线程只承担通信成本（setTimeout或者idleCallback处理）
+        - WebAssembly：对性能关键路径使用 Wasm 实现，比如计算
+    - 渲染优化：
+        - 增量+差分：大量更新时采用增量更新 + 差分算法
+            - 前端流式传输：监控paste行为，分批读取clipboard
+                - ReadableStream + Web Worker
+            - 媒体（音视频）：MediaSource API + MSE 分片
+        - rAF：使用requestAnimationFrame调度渲染
+        - Canvas：实现画布(Canvas)渲染代替DOM渲染
+        - 懒加载/虚拟化：只渲染可视区域内的文档内容
+    - 数据优化：
+        - 使用二进制格式(如Protocol Buffers)减少传输数据量
+        - 节流/防抖高频操作
+        - 本地操作缓存
+# todo WIP
 - network
     - 【解决】路由器、交换机的所有知识
 	    - 路由器转发分组的储存转发机制
@@ -830,6 +938,7 @@
 - 硬件都来了
     - 【解决】基带和频带
     - 【解决】比特率和波特率
+<<<<<<< Updated upstream
 - AI
     - AI的影响
         - AI边缘
@@ -888,6 +997,9 @@
         - 对框架的深入理解有助前期技术选型。
         - 新技术的学习路线更平缓（因为很多技术都是从现有技术慢慢迭代的）
 
+=======
+- general
+>>>>>>> Stashed changes
 
 - 【to learn】Web Animations API
     - 就是css animate和keyframe的js版本
@@ -911,181 +1023,10 @@
         animation.cancel();
         ```
 
-- MutationObserver
-    - 用于监听 DOM 变化（如属性、子节点变化）。
-    - eg
-        ```js
-        const observer = new MutationObserver((mutations) => {
-        mutations.forEach((mutation) => {
-                console.log('DOM changed!', mutation);
-            });
-        });
-        observer.observe(document.body, {
-            attributes: true, // 监听属性变化
-            childList: true,  // 监听子节点变化
-            subtree: true,    // 监听所有后代节点
-        });
-        observer.disconnect();  // 停止监听
-        ```
-- requestIdleCallback：
-    - 用于不重要也不紧急的任务，因为只有在每一帧时间有剩才运行这个callback
-    - 且最长只会分配50ms
-    - 可以接受第二个参数代表最长等待时间，超过了就强制执行
-    - 以下例子展示了基础使用语法和结合timeout的用法
-        ```js
-        requestIdleCallback(myNonEssentialWork, { timeout: 2000 });
-
-        function myNonEssentialWork(deadline) {
-            // 当回调函数是由于超时才得以执行的话，deadline.didTimeout为true
-            // requestIdleCallback调用回调的条件可以模拟为以下代码：
-            // if ( (deadline.timeRemaining() > 0 || deadline.didTimeout) )
-            if (tasks.length > 0 ) doOneWorkIfNeeded();
-            // 对于比较长的任务，可以再次继续等待
-            if (tasks.length > 0) { requestIdleCallback(myNonEssentialWork); }
-        }
-        ```
-    - 常见使用场景：数据上报；不要用来修改DOM，因为只有重排重绘完了还有空才会idlecallback，改了DOM就直接作废了前面的操作
-    - eg
-        ```js
-        function schedule() {
-            requestIdleCallback(deadline => {
-                while (deadline.timeRemaining() > 1) {
-                    const data = queues.pop();
-                    // 这里就可以处理数据、上传数据
-                }
-                if (queues.length) schedule();
-            });
-        }
-        ```
-- js的动画
-    - 常用方法
-        - rAF+css transform
-            - transition：简单过渡效果
-            - animation/@keyframes：复杂动画序列
-            - transform/opacity：硬件加速，性能最佳
-        - Web Animations API
-    - 常见动画库实现原理：
-        - GSAP：
-            - 使用rAF实现高性能动画
-            - 复杂的时间轴控制
-            - 硬件加速优化
-        - Anime.js：
-            - 基于CSS transform和rAF
-            - 支持SVG动画
-        - Three.js（3D动画）：
-            - 基于WebGL
-            - 使用requestAnimationFrame实现流畅渲染
-    - 最佳实践：
-        - 优先使用CSS动画实现简单效果
-        - 复杂动画使用rAF+transform/opacity
-        - 避免在动画中触发重排
-        - 使用will-change提示浏览器优化
-- react router的底层有什么样的优化？有没有按需加载的机制？
-    - 似乎没有，但可以用createBrowserRouterAPI更优雅地设置该不该懒加载（手动封装好）
-- 前端跨域通信/多页应用的通信
-    - URL参数传递：
-        - 通过query string或hash传递数据
-    - localStorage/sessionStorage
-        - 配合storage事件监听变化
-    - 【最危险的】document.domain降域
-    - 【最安全的】window.postMessage/MessageChannel/BroadcastChannel API：
-        - postMessage：唯一跨域通信方法，单向通信。
-        - MessageChannel/BroadcastChannel：只能同域，双向通信通道，还有深拷贝的神秘用法
-        - 同时可以用来和web worker通信
-        ```js
-        // postMessage
-        childWindow.postMessage(data, origin);
-        window.addEventListener('message', (e) => {
-            if (e.origin === expectedOrigin) {// 处理数据}
-        });
-        // Channel
-        const channel = new BroadcastChannel('app-channel');
-        channel.postMessage(data);
-        const channel = new BroadcastChannel('app-channel');
-        channel.onmessage = (e) => { /* 处理数据 */ };
-        ```
-    - SharedWorker：
-        - 适合复杂场景的跨页面通信
-        - 所有页面通过worker进行数据同步
-    - iframe桥接（微前端常用）：
-        - 嵌入其他网页，实现沙盒隔离（如微前端）。
-        - 主应用和子应用通过iframe通信
-        - 使用window.parent和contentWindow通信
-        - eg
-            `<iframe src="https://example.com" frameborder="0"></iframe>```
-            ```js
-            // 父页面向 iframe 发送消息
-            iframe.contentWindow.postMessage('Hello', 'https://example.com');
-            // iframe 接收消息
-            window.addEventListener('message', (e) => {
-                if (e.origin === 'https://parent.com') {...}
-            });
-            ```
-- 共享文档优化
-    - 可能的卡顿问题：
-        - 网络卡顿：大数据块传输、频繁的同步请求
-        - 渲染卡顿：大量DOM节点导致的渲染延迟
-        - 同步代码卡顿：大量同步数据、大量同步操作导致阻塞
-        - 算法卡顿：文档操作的算法效率低（如O(n²)复杂度）
-        - 内存卡顿：占用过高
-    - 识别方法：
-        - 上线前
-            - 测试：（略）
-            - 性能监控：Chrome DevTools的Performance记录、Memory堆快照分析
-        - 运行中：
-            - 实时监控：
-                - 对关键指标进行监控（如关键操作的可交互时间(TTI)监控）
-                - 建立性能指标报警机制
-                - 监控用户行为轨迹记录
-    - 解决方案：
-        - 代码优化：
-            - 操作压缩/批量处理：如用文档片段(DocumentFragment)批量更新、监听剪切板分批处理
-            - 多线程：Web Worker后台处理复杂计算，主线程只承担通信成本（setTimeout或者idleCallback处理）
-            - WebAssembly：对性能关键路径使用Wasm实现
-        - 渲染优化：
-            - 增量+差分：大量更新时采用增量更新 + 差分算法
-                - 前端流式传输：监控paste行为，分批读取clipboard
-                    - ReadableStream + Web Worker
-                - 媒体（音视频）：MediaSource API + MSE 分片
-            - rAF：使用requestAnimationFrame调度渲染
-            - Canvas：实现画布(Canvas)渲染代替DOM渲染
-            - 懒加载/虚拟化：只渲染可视区域内的文档内容
-        - 数据优化：
-            - 使用二进制格式(如Protocol Buffers)减少传输数据量
-            - 节流/防抖高频操作
-            - 本地操作缓存
-
-
-- web worker与service worker
-    - 后者其实是基于前者开发的，所以不是同级关系
-    - web worker就是开的另一个线程，通过message和主线程沟通
-    - service worker
-        - 可以理解为持久化的web worker，哪怕浏览器关闭了也可以运行
-        - 目的是创建有效的离线应用体验和拦截网络请求，并根据网络是否可用和更新来自服务器上的新资源而采取适当的操作。它们还被允许访问推送通知和后台同步API。
-        - 可以类比为 "浏览器操作系统中的常驻后台服务进程"
-
-
-
-
 
 # todo
 - 紧急些的
-    - 对HR面的总结
-        - 软技能与实际应用：有没有什么软技能的方法论，在现实中（比如项目、实习、生活中）怎么应用的
-            - 学习能力
-            - 解难能力
-            - 团队协作能力
-            - 个人优缺点
-        - 个人偏好与该岗位的匹配度
-            - 为什么选这个领域
-            - 为什么选这个岗位
-            - 为什么选这个公司
-            - 有没有别的offer/面试机会？会选哪个？
-            - 个人兴趣爱好
-        - 其他（比较无关紧要的小问题，感觉不怎么影响面试结果，但曾经hr真的问过我才放进来的）
-            - 生活态度
-            - 生活习惯
-            - 个人健康
+    - 如果有基础的话，可以试试更进阶的，比如 Codeforces 上面的div 2，可以给自己开virtual participation，如果2h的比赛可以稳定独立做出3~4个题，笔试和面试阶段的算法题应该不会难住你了。
 - 算法
     - 最大团问题
     - 给定一堆区间，给出有多少区间的两两组合符合以下条件：max(l) <= min(r)
@@ -1158,21 +1099,8 @@
     - 模块的解耦程度
     - class diagram的+，-，#的含义
     - 你觉得自己的优势在哪里，语言，操作系统，还是什么？
-- maybe or maybe not 
-    - 工作职责
-        1. 研究前沿AI技术（如大语言模型、多智能体系统、生成式AI等），探索其在游戏研发管线优化及体验升级中的应用场景；
-        2. 设计并开发基于AI Agent的研发工具链。覆盖代码审查、自动化测试、美术资源生成和优化、策划配置生成等环节；
-        3. 定制引擎和工具流。协同策划、美术、程序团队重构工业化管线，建立AI驱动的敏捷研发新模式。
-    - 任职要求
-        1. 深入了解大模型的原理、能力边界及应用场景，具备实际项目中的应用经验（ Claude、GPT、Gemeni、Qwen、DeepSeek 等）；
-        2. 了解 Agent 技术（记忆系统、工具使用、决策框架、多Agent协作等）和 Prompt Engineering技巧，有实际应用经验；
-        3. 了解游戏引擎和游戏开发流程，具备跨领域技术视野，能分析研发痛点并设计高效的技术解决方案；
-        4. 有游戏技术栈开发优先，参与过 AIGC 工业化工具开发优先；
-        5. 对AI与游戏结合的前沿探索有浓厚兴趣，愿意推动技术落地与创新发展。
 
 
-
-如果有基础的话，可以试试更进阶的，比如 Codeforces 上面的div 2，可以给自己开virtual participation，如果2h的比赛可以稳定独立做出3~4个题，笔试和面试阶段的算法题应该不会难住你了。
 
 # company target
 - Tech
@@ -1201,5 +1129,4 @@
     - big four: Deloitte, PWC, EY, KPMG
     - banks: HSBC, Bank of China
     - morgan stanley
-
-
+    

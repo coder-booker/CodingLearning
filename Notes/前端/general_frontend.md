@@ -127,81 +127,199 @@
         - 可以类比为 "浏览器操作系统中的常驻后台服务进程"
 
 # 浏览器
-- 浏览器渲染流程
-    - 构建 DOM 树：解析 HTML → 生成 DOM（Document Object Model）。
-    - 构建 CSSOM 树：解析 CSS → 生成 CSSOM（CSS Object Model）。
-    - 合并成 Render Tree：DOM + CSSOM → 渲染树（仅包含可见元素）。
-    - 运行js：可以和DOM构建同步，也可以异步
-    - Layout（布局/重排）：计算每个节点的位置和大小。
-    - Paint（绘制）：将渲染树转换为屏幕上的像素，并对所有的媒体文件进行解码。
-    - Composite（合成）：将不同图层合并显示，有合成层时才会有task要做。
-- 重排与重绘
-    - 重排是元素的几何属性改变就会触发
-        - 同步重排：有些属性的获取操作会强制进行同步重排以返回最新的布局信息，如：
-            - offsetTop/left/Width/Height
-            - scrollTop/left/Width/Height
-            - clientTop/left/Width/Height
-    - 重绘负责绘制新UI
-        - 有些改变只会触发重绘而不会重排，例如背景色改变
-- 合成层
-    - 浏览器会将某些元素单独提升为合成层（其实就是GPU加速）
-    - 修改这些属性时，只会重新合成（Composite），不会触发重排重绘。
-    - 使用transform/opacity等属性触发合成层
-- will-change
-    - 用于提示浏览器某个元素即将发生变化，让浏览器提前优化（如提升为合成层）。
-    - 会增加内存占用
-    - rAF可以利用：will-change一般都是用在合成层元素上的，rAF利用will-change不会触发重排重绘
-    - eg 
-        ```css
-        .element { will-change: transform; /* 告诉浏览器这个元素会变化 */ }
-        .scrollable-content { will-change: scroll-position;   /* 减少滚动卡顿 */ }
-        ```
-- 一帧中发生的行为
-    - 运行js：事件循环
-        - 检查并执行最老的可执行宏任务
-        - 每个宏任务（注意不是清空队列，而是每个任务）结束后尝试清空微任务队列
-    - 尝试渲染（根据一定准则决定要不要触发渲染）
-        - 遍历当前浏览上下文中所有的 document ，必须按在列表中找到的顺序处理每个 document 。
-        - 判断渲染时机（Rendering opportunities）：
-            - 动态因素：根据硬件刷新率限制、页面性能或页面是否在后台等因素。
-            - 不必要的渲染（Unnecessary rendering）：浏览器认为会不会产生可见效果
-            - rAF：有没有**rAF**，有则渲染（也是因此使用rAF可以实现更丝滑的动画/动态显示效果）
-        - 处理各种视觉改变事件（window.performance.now() 是一个时间戳，供浏览器计算剩余时间判断应不应该继续把任务放入执行栈）
-            - 处理 resize 事件，传入一个 performance.now() 时间戳。
-            - 处理 scroll 事件，传入一个 performance.now() 时间戳。
-            - 处理媒体查询，传入一个 performance.now() 时间戳。
-            - 运行 CSS 动画，传入一个 performance.now() 时间戳。
-            - 处理全屏事件，传入一个 performance.now() 时间戳。
-        - 执行回调
-            - 执行 **requestAnimationFrame** 回调，传入一个 performance.now() 时间戳。
-            - 执行 intersectionObserver 回调，传入一个 performance.now() 时间戳。
-        - 对每个 document 进行绘制，更新UI呈现。
-    - 看下该不该执行IdleCallback
-    - 回到第一步事件循环
-- 合理使用requestAnimationFrame
-    - 可以用来修改element的style.transform
-    - 可以用来高频更新
-    - eg
-        ```js
-        function smoothScrollTo(target) {
-            const start = window.scrollY;
-            const distance = target - start;
-            const duration = 1000; // 1s，表示进度上限（或者说预期的动画持续时间）
-            let startTime = null;
-            
-            function step(timestamp) {      // 根据时间戳与预期持续时间的差异 滚动对应距离
-                if (!startTime) startTime = timestamp;
+- 浏览器渲染
+    - 流程
+        - 构建 DOM 树：解析 HTML → 生成 DOM（Document Object Model）。
+        - 构建 CSSOM 树：解析 CSS → 生成 CSSOM（CSS Object Model）。
+        - 合并成 Render Tree：DOM + CSSOM → 渲染树（仅包含可见元素）。
+        - 运行js：可以和DOM构建同步，也可以异步
+        - Layout（布局/重排）：计算每个节点的位置和大小。
+        - Paint（绘制）：将渲染树转换为屏幕上的像素，并对所有的媒体文件进行解码。
+        - Composite（合成）：将不同图层合并显示，有合成层时才会有task要做。
+    - 重排与重绘
+        - 重排是元素的几何属性改变就会触发
+            - 同步重排：有些属性的获取操作会强制进行同步重排以返回最新的布局信息，如：
+                - offsetTop/left/Width/Height
+                - scrollTop/left/Width/Height
+                - clientTop/left/Width/Height
+        - 重绘负责绘制新UI
+            - 有些改变只会触发重绘而不会重排，例如背景色改变
+    - 合成层
+        - 浏览器会将某些元素单独提升为合成层（其实就是GPU加速）
+        - 修改这些属性时，只会重新合成（Composite），不会触发重排重绘。
+        - 使用transform/opacity等属性触发合成层
+    - will-change
+        - 用于提示浏览器某个元素即将发生变化，让浏览器提前优化（如提升为合成层）。
+        - 会增加内存占用
+        - rAF可以利用：will-change一般都是用在合成层元素上的，rAF利用will-change不会触发重排重绘
+        - eg 
+            ```css
+            .element { will-change: transform; /* 告诉浏览器这个元素会变化 */ }
+            .scrollable-content { will-change: scroll-position;   /* 减少滚动卡顿 */ }
+            ```
+    - 一帧中发生的行为
+        - 运行js：事件循环
+            - 检查并执行最老的可执行宏任务
+            - 每个宏任务（注意不是清空队列，而是每个任务）结束后尝试清空微任务队列
+        - 尝试渲染（根据一定准则决定要不要触发渲染）
+            - 遍历当前浏览上下文中所有的 document ，必须按在列表中找到的顺序处理每个 document 。
+            - 判断渲染时机（Rendering opportunities）：
+                - 动态因素：根据硬件刷新率限制、页面性能或页面是否在后台等因素。
+                - 不必要的渲染（Unnecessary rendering）：浏览器认为会不会产生可见效果
+                - rAF：有没有**rAF**，有则渲染（也是因此使用rAF可以实现更丝滑的动画/动态显示效果）
+            - 处理各种视觉改变事件（window.performance.now() 是一个时间戳，供浏览器计算剩余时间判断应不应该继续把任务放入执行栈）
+                - 处理 resize 事件，传入一个 performance.now() 时间戳。
+                - 处理 scroll 事件，传入一个 performance.now() 时间戳。
+                - 处理媒体查询，传入一个 performance.now() 时间戳。
+                - 运行 CSS 动画，传入一个 performance.now() 时间戳。
+                - 处理全屏事件，传入一个 performance.now() 时间戳。
+            - 执行回调
+                - 执行 **requestAnimationFrame** 回调，传入一个 performance.now() 时间戳。
+                - 执行 intersectionObserver 回调，传入一个 performance.now() 时间戳。
+            - 对每个 document 进行绘制，更新UI呈现。
+        - 看下该不该执行IdleCallback
+        - 回到第一步事件循环
+    - 合理使用requestAnimationFrame
+        - 可以用来修改element的style.transform
+        - 可以用来高频更新
+        - eg
+            ```js
+            function smoothScrollTo(target) {
+                const start = window.scrollY;
+                const distance = target - start;
+                const duration = 1000; // 1s，表示进度上限（或者说预期的动画持续时间）
+                let startTime = null;
                 
-                const progress = timestamp - startTime;
-                const percent = Math.min(progress / duration, 1);
-                window.scrollTo(0, start + distance * percent);
-                if (progress < duration) {  // 在目前进度还没有到达上限的时候继续注册rAF
-                    requestAnimationFrame(step);
+                function step(timestamp) {      // 根据时间戳与预期持续时间的差异 滚动对应距离
+                    if (!startTime) startTime = timestamp;
+                    
+                    const progress = timestamp - startTime;
+                    const percent = Math.min(progress / duration, 1);
+                    window.scrollTo(0, start + distance * percent);
+                    if (progress < duration) {  // 在目前进度还没有到达上限的时候继续注册rAF
+                        requestAnimationFrame(step);
+                    }
                 }
+                requestAnimationFrame(step);    // 开始动画
             }
-            requestAnimationFrame(step);    // 开始动画
-        }
-        ``` 
+            ``` 
+- 浏览器 API
+    - Performance API：监控标签页各种性能数值的
+    - MutationObserver
+        - 用于监听 DOM 变化（如属性、子节点变化）。
+        - eg
+            ```js
+            const observer = new MutationObserver((mutations) => {
+            mutations.forEach((mutation) => {
+                    console.log('DOM changed!', mutation);
+                });
+            });
+            observer.observe(document.body, {
+                attributes: true, // 监听属性变化
+                childList: true,  // 监听子节点变化
+                subtree: true,    // 监听所有后代节点
+            });
+            observer.disconnect();  // 停止监听
+            ```
+    - requestIdleCallback：
+        - 用于不重要也不紧急的任务，因为只有在每一帧时间有剩才运行这个callback
+        - 且最长只会分配50ms
+        - 可以接受第二个参数代表最长等待时间，超过了就强制执行
+        - 以下例子展示了基础使用语法和结合timeout的用法
+            ```js
+            requestIdleCallback(myNonEssentialWork, { timeout: 2000 });
+
+            function myNonEssentialWork(deadline) {
+                // 当回调函数是由于超时才得以执行的话，deadline.didTimeout为true
+                // requestIdleCallback调用回调的条件可以模拟为以下代码：
+                // if ( (deadline.timeRemaining() > 0 || deadline.didTimeout) )
+                if (tasks.length > 0 ) doOneWorkIfNeeded();
+                // 对于比较长的任务，可以再次继续等待
+                if (tasks.length > 0) { requestIdleCallback(myNonEssentialWork); }
+            }
+            ```
+        - 常见使用场景：数据上报；不要用来修改DOM，因为只有重排重绘完了还有空才会idlecallback，改了DOM就直接作废了前面的操作
+        - eg
+            ```js
+            function schedule() {
+                requestIdleCallback(deadline => {
+                    while (deadline.timeRemaining() > 1) {
+                        const data = queues.pop();
+                        // 这里就可以处理数据、上传数据
+                    }
+                    if (queues.length) schedule();
+                });
+            }
+            ```
+- 浏览器性能
+    - requestIdleCallback
+    - rAF
+    - Performance API
+
+# 跨域通信/多页通信
+- URL参数传递：
+    - 通过query string或hash传递数据
+- localStorage/sessionStorage
+    - 配合storage事件监听变化
+- 【最危险的】document.domain降域
+- 【最安全的】window.postMessage/MessageChannel/BroadcastChannel API：
+    - postMessage：唯一跨域通信方法，单向通信。
+    - MessageChannel/BroadcastChannel：只能同域，双向通信通道，还有深拷贝的神秘用法
+    - 同时可以用来和web worker通信
+    ```js
+    // postMessage
+    childWindow.postMessage(data, origin);
+    window.addEventListener('message', (e) => {
+        if (e.origin === expectedOrigin) {// 处理数据}
+    });
+    // Channel
+    const channel = new BroadcastChannel('app-channel');
+    channel.postMessage(data);
+    const channel = new BroadcastChannel('app-channel');
+    channel.onmessage = (e) => { /* 处理数据 */ };
+    ```
+- SharedWorker：
+    - 适合复杂场景的跨页面通信
+    - 所有页面通过worker进行数据同步
+- iframe桥接（微前端常用）：
+    - 嵌入其他网页，实现沙盒隔离（如微前端）。
+    - 主应用和子应用通过iframe通信
+    - 使用window.parent和contentWindow通信
+    - eg
+        `<iframe src="https://example.com" frameborder="0"></iframe>```
+        ```js
+        // 父页面向 iframe 发送消息
+        iframe.contentWindow.postMessage('Hello', 'https://example.com');
+        // iframe 接收消息
+        window.addEventListener('message', (e) => {
+            if (e.origin === 'https://parent.com') {...}
+        });
+        ```
+
+# 前端动画
+- 常用方法
+    - rAF+css transform
+        - transition：简单过渡效果
+        - animation/@keyframes：复杂动画序列
+        - transform/opacity：硬件加速，性能最佳
+    - Web Animations API
+- 常见动画库实现原理：
+    - GSAP：
+        - 使用rAF实现高性能动画
+        - 复杂的时间轴控制
+        - 硬件加速优化
+    - Anime.js：
+        - 基于CSS transform和rAF
+        - 支持SVG动画
+    - Three.js（3D动画）：
+        - 基于WebGL
+        - 使用requestAnimationFrame实现流畅渲染
+- 最佳实践：
+    - 优先使用CSS动画实现简单效果
+    - 复杂动画使用rAF+transform/opacity
+    - 避免在动画中触发重排
+    - 使用will-change提示浏览器优化
+
 # 前端加密
 - 就是让前端的js完成类似https的加密流程
 - 但是性能和安全性受限，比如密钥容易泄露
@@ -226,6 +344,16 @@
 - 高级技术
     - WebAssembly：将关键逻辑用WASM实现，增加逆向难度
     - 反调试技术：检测开发者工具是否打开
+
+# Worker
+- web worker与service worker
+    - 后者其实是基于前者开发的，所以不是同级关系
+    - web worker就是开的另一个线程，通过message和主线程沟通
+    - service worker
+        - 可以理解为持久化的web worker，哪怕浏览器关闭了也可以运行
+        - 目的是创建有效的离线应用体验和拦截网络请求，并根据网络是否可用和更新来自服务器上的新资源而采取适当的操作。它们还被允许访问推送通知和后台同步API。
+        - 可以类比为 "浏览器操作系统中的常驻后台服务进程"
+        - 但可以被用作多线程
 
 # 功能实现
 ## 遮罩
@@ -756,3 +884,12 @@
 - Svelte: 一个编译型前端框架，将组件编译为高效的原生 JavaScript 代码。无虚拟 DOM，运行时开销极小，适合构建高性能应用。 SvelteKit 是 Svelte 的全栈框架，支持 SSR、SSG 和客户端渲染。
 - Solid.js: 一个高性能的响应式 UI 框架，语法类似 React，但无虚拟 DOM。通过细粒度的响应式更新实现高性能。适合需要极致性能的应用。
 - Qwik: 一个专注于即时加载性能的框架，通过延迟加载 JavaScript 实现极快的首屏加载。适合内容密集型网站，如电商或新闻站点。
+
+
+# 前端底层
+- 你认为为什么要学习前端框架/引擎的底层原理？
+    - 复杂bug的解决
+    - 深入到底层的性能优化
+    - 可以自定义拓展高级功能
+    - 对框架的深入理解有助前期技术选型。
+    - 新技术的学习路线更平缓（因为很多技术都是从现有技术慢慢迭代的）

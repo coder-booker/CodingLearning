@@ -191,6 +191,8 @@
     - 复习下scrollTop
         - 子元素的offsetTop和非static position的父容器的scrollTop对比下就能实现懒加载
         - offsetWidth包含padding不包含滚动条。scroll也只到padding不需要考虑滚动条
+- router
+    - react router 的底层没有按需加载的机制，但可以用createBrowserRouterAPI更优雅地设置该不该懒加载（手动封装好）
 ## 自定义钩子
 - 复用逻辑，复杂状态管理，复杂的副作用逻辑
 ## 好用的react第三方钩子
