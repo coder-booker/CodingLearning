@@ -109,14 +109,54 @@
         - `a.at(i)` 越界返回undefined，但可以-1 
         - `a.charAt(i)` 越界时返回空值
     - 子串
-        - `a.substring([start], [end?])` 不接受负数，如果start > end会自动交换这两个数
+        - `a.substring([start][, end])` 不接受负数，如果start > end会自动交换这两个数
         - `a.slice([start[, end])` 接受负数为从末尾倒数的index，如果start > end会返回空字符串
-    - 正则
-        - `a.match([regex]) -> Array<string>`
-        - `a.matchAll([regex]) -> Array<string>`
+    - 搜索
+        - `a.match([regex]) -> Array<string>`   仅匹配第一个，返回数组的第一个元素是是匹配到的子串，之后是捕获的子串，所以用数组
+            - 返回值是一个特殊的类数组对象，包含
+                - 属性
+                    - .index
+                    - .input
+                    - .groups
+                - 数组
+                    - 匹配到的内容
+                    - 捕获到的内容
+            - 使用 `/g` 会使 index 和 groups 消失
+        - `a.matchAll([regex])`
+            - 必须使用 `/g` 标识
+            - 返回一个迭代器，用 of 访问
+            -   最好用 `Array.from` 处理成二维数组先
+        - `.exec`
+            - 每调用一次返回一个结果，知道字符串尾也找不到了就返回 NULL
+            - 其实就是 matchAll 的传统方法
+        - `input.includes("important") -> boolean`
+        - `.startsWith`/`.endsWith(<string>) -> boolean`
+    - 替换
+        - `.replace([regex or string], replacer) -> string` 返回替换好的 string
+    - 分隔
+        - `const fruits: string[] = data.split(","); // ["apple", "banana", "orange"]`
+        - `const limited: string[] = data.split(",", 2); // ["apple", "banana"]`
+        - `const complexSplit: string[] = "a,b;c d".split(/[,; ]/); // ["a", "b", "c", "d"]`
     - 格式化
-        - `a.padStart/End(number, str)` 左侧或者右侧填充number个str
-        - `a.repeat(<length>)`可以把`<length>`个`a`拼在一起，注意是`a`的值而非字符`'a'`
+        - `const a = b.padStart/End(number, str)` 左侧或者右侧填充number个str
+        - `const b = a.repeat(<length>)`可以把`<length>`个`a`拼在一起，注意是`a`的值而非字符`'a'`
+        - 去除空格
+            - `const trimmed: string = padded.trim(); // "Hello World"`
+            - `const leftTrimmed: string = padded.trimStart(); // "Hello World   "`
+            - `const rightTrimmed: string = padded.trimEnd(); // "   Hello World"`
+        - 拼接
+            - `const combined: string = part1.concat(" ", part2); // "Hello World"`
+        - 大小写
+            - `const upper: string = mixed.toUpperCase(); // "HELLO TYPESCRIPT"`
+            - `const lower: string = mixed.toLowerCase(); // "hello typescript"`
+        - 多行
+            ```js
+            const multiLine: string = `
+                This is a
+                multi-line
+                string
+            `;
+            ```
     - `a.charCodeAt(i);` 打印`a[i]`处字符的ascii code
 - 静态方法
     - `String.fromCharCode`
@@ -133,6 +173,8 @@
     - 如果不使用new关键字，String会变成一般的原始值
     - `valueOf`返回原始值
     - `String()`其实是进行类型转换的方法
+- js 中的正则
+    - 
 ### Symbol
 - 特点
     - 唯一性：在任何地方定义的Symbol都是唯一的
@@ -192,9 +234,9 @@
         - 原地排序，注意默认会把元素转换为字符串，然后字典序排列
         - 默认ascending，重写才能变成decending
         - 重写的话，返回值有三种要求：
-            - > 0 : a > b 
-            - = 0 : a === b
-            - < 0 : a < b
+            - > 0 : a > b，对调 
+            - = 0 : a === b，不动
+            - < 0 : a < b，不动
     - `const result = arr.length` 长度
     - `const result = arr.pop()` 删除并返回最后一位元素
     - `const result = arr.toString()` 用`,`拼接所有元素成字符串，注意没法改分隔符，要改只能用Array.prototype.join(separator)
@@ -212,6 +254,7 @@
         - 可以修改/创建`.length`个元素为`<item>`并返回这个数组
         - 可以选择填入范围，一样左闭右开
         - 注意，`.fill`的`<item>`是被复制的而非重新创建的，因此不能填入引用
+        - 注意，如果不 fill 的话是没办法 map 的，因为 map 并不以
     - `arr.splice(a, b, c, d);`
         - 高度集成的数组方法，可以同时添加、删除、替换元素
         - 以索引a为起始，删除b个元素。b可以 = 0 或 > arr.length
@@ -659,7 +702,7 @@
 - 回调地狱（Callback Hell）问题
 - promise是用来封装和管理异步编程的，它本身不是异步的，只是封装异步操作的话可以很方便地管理成功失败和异步顺序。
 - Promise大致流程：
-    - Promsie实例化后立刻执行executor函数，状态改变后创建一个新的微任务，这个微任务的任务就是处理Promise操作的下一个状态阶段的回调函数，例如.then的和.catch的
+    - Promise实例化后立刻执行executor函数，状态改变后创建一个新的微任务，这个微任务的任务就是处理Promise操作的下一个状态阶段的回调函数，例如.then的和.catch的
     - 但状态改变的语句可以被异步操作的回调包裹，这样异步操作结束后才会改变状态。Promise也是因此适合异步操作
 - executor内的同步代码会被立刻运行，异步代码则会被正常加入任务队列，如果这些异步代码使用了resolve或reject则会触发整个promise的状态改变
 - 注意事项：
@@ -911,6 +954,8 @@
         7. 原型链
         Map: 没有原型链，不会继承额外的属性或方法。
         Object: 有原型链，可能会继承一些不期望的属性或方法。
+    - 经验：
+        - forEach 的 key 和 value 是反过来的，但其他迭代方法不是
 ### JSON
 - `JSON.stringify()`把对象转变为json字符串样式
 - `.json()`不只是解析json内容，同时还会转化为js的对象

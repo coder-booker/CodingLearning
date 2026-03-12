@@ -1,13 +1,46 @@
-import merge from 'lodash'
+// import {
+//   GetObjectCommand,
+//   NoSuchKey,
+//   S3Client,
+//   S3ServiceException,
+// } from "@aws-sdk/client-s3";
 
-let a = {
-    '1': 1,
-    '2': 2
-}
+// /**
+//  * Get a single object from a specified S3 bucket.
+//  * @param {{ bucketName: string, key: string }}
+//  */
+// export const main = async ({ bucketName, key }) => {
+//   const client = new S3Client({});
 
-let b = {
-    '3': 3,
-    '4': 4,
-}
+//   try {
+//     const response = await client.send(
+//       new GetObjectCommand({
+//         Bucket: bucketName,
+//         Key: key,
+//       }),
+//     );
+//     console.log(JSON.stringify(response, null, 2));
+//     // The Body object also has 'transformToByteArray' and 'transformToWebStream' methods.
+//     const str = await response.Body.transformToString();
+//     console.log(str);
+//   } catch (caught) {
+//     if (caught instanceof NoSuchKey) {
+//       console.error(
+//         `Error from S3 while getting object "${key}" from "${bucketName}". No such key exists.`,
+//       );
+//     } else if (caught instanceof S3ServiceException) {
+//       console.error(
+//         `Error from S3 while getting object from ${bucketName}.  ${caught.name}: ${caught.message}`,
+//       );
+//     } else {
+//       throw caught;
+//     }
+//   }
+// };
 
-console.log(merge(a, b))
+
+
+// main({
+//   bucketName: "momentum-ai-storage",
+//   key: "袁浩成 - singcon牵丝戏伴奏 (mp3cut.net).mp3",
+// });

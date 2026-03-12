@@ -79,8 +79,17 @@
 - React.memo
     - 用来缓存组件的，注意和useMemo不一样
     - 在触发了重新渲染的场景（比如父组件重新渲染），浅对比props来决定要不要重新渲染这个组件
+- 传递 children
+    - children 为 props 时，意思是组件不关心其子元素是什么，只知道需要把这个子元素包起来，以实现类似 framework 的功能
+    - 组件其实可以操作 children，但因为 children 的类型不可见，所以有 `React.Children` api 帮助操作 children props
+    - children 的内容：
+        - 普通值：undefined, number, string
+        - 单个组件：`{ $$typeof: Symbol(react.element), type: "h1", props: { children: "标题" }, ... }`
+        - 多个组件：`[{ $$typeof: Symbol(react.element), type: "h1", props: { children: "标题" }, ... }]`
+        - 混合：啥都有，用数组包起来
 
 # Hook 钩子
+## 原生钩子
 - useState
     - `setState(n => n+1)`：setState传入函数时，其参数是直接在state更新队列中获取的值，所以获取的一定是最新的值
     - 懒初始化：直接给useState默认值传入一个函数体会自动被调用一次，然后以返回值来当默认值
@@ -200,7 +209,7 @@
     - 注意，useCallback的最大作用就是让函数作为props传递时不会重新渲染，因为每次传的都是同一个函数指针
     - 用ref来记录输入的回调函数实现返回值地址固定，但仍然能调用最新的回调函数的返回值
     - 原本的useCallback为了动态定义函数且在生命周期中持续保存，会把依赖闭包保存在内部（注意箭头函数虽然会捕获，但一次定义只会捕获一次，如果有上下文改变但箭头函数没有被重新定义一次的情况，就会出现闭包陷阱），通过判断依赖来决定要不要更新。
-    - 而useEventCallback则把更新箭头函数定义的工作和跨生命周期保存的工作用useLayoutEffect和ref解决了，使需要更新函数定义的场景能够被正确检测到以刷新回调函数的上下文。
+    - 而useEventCallback则把更新箭头函数定义的工作和跨生命周期保存的工作用useLayoutEffect和ref解决了，使需要更新函数定义的场景能够被正确检测到以刷新回调函数的上下文，而仍然保有 useCallback 的不变性。
     - 不能在render中调用useEvent的返回值
         1. 实际上并不是用useLayoutEffect更新的，但是是刚好在其之前更新的。而因为子组件的 useLayoutEffect比父组件的执行更早，如果这样用的话，子组件的 useLayoutEffect中访问到的 ref一定是旧的。
         2. 调用useEvent的返回值时layoutEffect还没触发，所以渲染中调用的useEvent返回值一定是旧的还没更新的
@@ -338,7 +347,7 @@
 - 在很多文章中将纤程理解为协程的一种实现。在JS中，协程的实现便是Generator。
 - 所以，我们可以将纤程(Fiber)、协程(Generator)理解为代数效应思想在JS中的体现。
 - React Fiber可以理解为：
-    - React内部实现的一套状态更新机制。支持任务不同优先级，可中断与恢复，并且恢复后可以复用之前的中间状态。
+    - React内部实现的一套状态更新机制，把状态更新所造成的影响变成一个个细小的任务，支持任务不同优先级，可中断与恢复，并且恢复后可以复用之前的中间状态。
     - 其中每个任务更新单元为React Element对应的Fiber节点。
 - Fiber节点结构简化版：
     ```ts

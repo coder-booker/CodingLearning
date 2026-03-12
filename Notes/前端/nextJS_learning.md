@@ -23,7 +23,7 @@
                 - Entity: Entity_name + 物件名字
                 - utilities: no restriction 
             - /layouts: 定义pages的layouts
-        - /features: 
+        - /features:
             - 更大一点的section，可以用page名字或者其他某种特征来进一步细分
     - /models: 定义数据结构
     - /styles/theme: 

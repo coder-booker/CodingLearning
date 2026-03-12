@@ -175,7 +175,8 @@
     - rebase：被rebase的分支会接到当前分支后，视为新的commit之类的
     - merge：分支融合，不是接上，且会保留两遍分别的记录而非想rebase一样合成同一个
     - amend：用于修改上次commit，代码和信息都可以
-
+- gitignore
+    - 只有还没被追踪的文件/文件夹能够被 ignore ，如果已经被追踪了，就需要把 cache 清除
 
 
 # 奇怪的电脑知识
@@ -217,6 +218,44 @@
     - intel的架构，也就是一般windows pc的架构
     - x86是32位，x64/amd64是64位
     - x64 = amd64 = x86-64
+
+# conda
+- 启动
+    - conda activate med-llm / conda deactivate
+- 增：
+    - 环境：
+        - conda create -n med-llm python=3.10
+    - 包：
+        - conda install numpy
+        - 指定渠道：conda install -c conda-forge openai pydantic
+        - conda 没收录时：pip install fastapi-poe
+- 删：
+    - conda remove -n med-llm --all
+    - 包：conda remove numpy
+    - 缓存：
+        - conda clean -a
+        - 包缓存：conda clean -p
+- 改：
+    - conda update numpy
+    - # 更新所有包（慎用，可能引起冲突）
+    - conda update --all
+- 查：
+    - 环境
+        - conda env list
+        - conda info --envs
+    - 包：
+        - conda list
+        - conda list openai
+- other
+    - conda --version
+    - conda --help
+    - conda <command> --help
+    - 配置yaml
+        - 导出：conda env export -n med-llm > environment.yml
+        - 导入：conda env create -f environment.yml
+
+
+
 
 # 其他
 - 截长图

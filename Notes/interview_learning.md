@@ -119,41 +119,139 @@
 # 通用/HR 面
 - 对HR面的总结
     - 软技能与实际应用：有没有什么软技能的方法论，在现实中（比如项目、实习、生活中）怎么应用的
-        - 学习能力
-        - 解难能力
-        - 团队协作能力
-        - 个人优缺点
+        - 学习能力：把知识点串联起来
+        - 解难能力：三步
+        - 团队协作能力：敢于说出来
+        - 个人优缺点：善于反思，过于注重细节
     - 个人偏好与该岗位的匹配度
-        - 为什么选这个领域
-        - 为什么选这个岗位
-        - 为什么选这个公司
+        - 为什么选这个领域：个人对交互感兴趣
+        - 为什么选这个岗位：前端最复杂的几个场景
+        - 为什么选这个公司：大厂，做产品的能够提升影响力和直接解决现实难题的技术
         - 有没有别的offer/面试机会？会选哪个？
         - 个人兴趣爱好
     - 其他（比较无关紧要的小问题，感觉不怎么影响面试结果，但曾经hr真的问过我才放进来的）
         - 生活态度
         - 生活习惯
         - 个人健康
-- 个人
+- new
     - 自我介紹
+	    - career goal: mark impact by tech
+	    1. Student Reaserch Assistant in Centre of Applied English Studies
+	        - RAG AI Web App from scratch, integrated linguistic function to empower the teaching process in Faculty of Arts.
+	        - talk with non-tech stakeholders. (eg client who is lecturer and users who are students)
+	        - The app is officially launched and u can access it at corpus-chat.com.
+	        - Its not a toy project, its a real product.
+	        - I practice on the entire development lifecycle of a real product. and how to co-work with stakeholders who don't have tech background
+        2. （可以跳过）Intern in BOCHK Corp banking team, I learn how risk and security reflect in tech.
+	        - I identify the regression defects problem in some of the legacy test script, improved it and reduced future operation risk.
+	    3. intern in Tencent Docs team, productivity tool
+	        - work in large-scale system and mature team, affect millions of users
+	        - reduce the memory usage on users' browser by refactored a data transformation module. 150+ business use cases are benefited.
+	        - redesign part of cross-platform interaction process, make it more aligns with users' mental model, cut 90% of user negative feedback
+	        - Learn: how to work in a complete and mature team (CICD, life cycle of a task). experience fight with PM, developers from other team. project scheduling on milestone, deadlines, etc
     - 你的缺点和优点/能力点是什么
-        - 性格：善于反思（反思反思这个行为本身，以避免灯下黑的情况）
-        - 能力：适应力强
-        - 缺点：性子比较急
+        - 优点：active learning
+            - 描述：
+                - 结构化学习流程规划
+            - story:
+                - 案例：AI Hackathon 中的高效学习与交付
+                - 背景与挑战
+                    - 参加 AI hackathon，时间紧张（1天），比赛要求用 vibe coding（AI 辅助开发）快速交付。面临三大风险：需求变化、集成复杂、AI 生成代码不稳定且调试时间不可控。
+                - 目标设定
+                    - 明确目标：在截止前交付可 demo 的 MVP，能跑通端到端流程。
+                - 差距诊断
+                    - 基于 AI 辅助的过往经验，我发现真正的瓶颈不是"写代码"，而是"让 AI 持续产出合规代码并快速验证"。
+                - 学习计划与执行
+                    - 务实优先：不追求"优雅代码"，先让系统跑起来
+                    - 模块拆解与优先级：先分析哪些部分不能由 AI 决定（接口协议、项目架构），再按难易度排列模块，让 AI 逐个生成
+                    
+                    - 迭代式上下文优化：通过每次生成，积累对 AI 性能的了解，动态调整应该给 AI 的上下文详细程度
+                    - 迭代边界：如果 AI 在两次迭代内完成任务并通过验证，就认为当前方法有效；否则进行小规模方法调整
+                    
+                    - 里程碑管控：设置时间节点（如"15:00 前完成端到端功能 A"），未达成就大规模 review 并修改整体方法论
+                    - 验证机制：每次生成都明确要求 AI **写 mock 数据做 unit test**，**并写 comment + 总结段落**（完成了什么任务、代码流程是什么），供人类快速验证
+
+                - 结果与沉淀
+                    - 效率提升：原本需要 3 天的开发，在不写一行代码的情况下 1 天完成
+                    - 方法沉淀：形成可复用的 prompt 模板体系
+                        - AI 不懂如何设计 clean code，所以架构必须由人类掌控
+                        - 明确 AI 的决策范围，边界必须由人类掌控
+                        - 快速验证机制
+                        
+                        - System prompt：整体项目结构 + 代码风格（写 comment、设计模式 preference、强类型）
+                            - 核心认知：
+                        - 任务 prompt：目标 + 方法 + entry point + 硬性要求（接口约束、依赖边界）+ checklist
+
+        - 缺点：过于注重细节，导致进度有些缓慢。
+            - story：
+                - tencent 150 test case，我用了一份表格来记录他们。没办法找 tester 因为不是新功能，所以我
+                    1. 筛选必要的测试范围
+                        1. 有些修改不大可能出错，未必需要测试
+                    2. 根据 module 名称进行功能分类
+                    3. 写兜底逻辑，让功能最多是有些难用而不是用不了
+                    4. 寻求 mentee 帮助，帮我看看我的测试方法论是否恰当。
+                    5. 先大体完成，后续抽空把一些筛掉的功能补上
+            - 学到了什么：工程师改进流程，而不是加班
+
     - 职业规划
-        - 短期计划：找能够深入学习、有mentor的长期技术实习，学习成熟先进的技术，并寻求转正机会。
-        - 长期计划：5年内深入了解毕业公司的技术架构，提升个人行业影响力，成为业内的专业人士
-    - 有没有哪段时间或者某件事情让你受挫/压力大/有挑战？
-        - 什么挑战
-            - 去年的春招
-            - 需要短时间内take up大量知识
-        - 为什么会有挑战、怎么解决的
-            - 拖延症（前：提示、减少启动成本；中：持续；后：反馈）
-            - 个人自驱力不够（没有清晰的目标和动力）
-            - 信息闭塞
-        - 学习到了什么
-            - 各种方法论：拖延症怎么解决
-            - 提前准备、搜集信息
-- 能力
+	    - palmistry/palm reading
+	    - in Tencent, there is opportunity for return offer and clear promotion path
+    - 压力大/有挑战的经历
+        1. 拆分为可控与不可控
+            - 不可控则通过沟通尝试变的可控
+            - 可控的则进行优先级排序与优化
+        2. 当时同时在做一个 feature 和 intern presentation
+            1. 缩减 present 工作：
+                - 出于质量与学习目的：draft by myself -> refer other & review improve -> practice -> present 改为
+                - 为了保持质量的同时赶 ddl ：refer & draft -> present with team to review -> present
+            2. 不可避免的加班
+        - 我学到了什么：
+            - 高压时好的工程师会改进流程，而不是只加班。
+            - 压力一定存在，重点是如何管理
+    - School 之外你会做什么？
+        - 面试官在看：你是否有自驱、长期主义、能把兴趣转化为产出，并且能解释“为什么这对工作也有价值”。
+        - story
+            - 事件：健身
+            - 动机：当你知道你的motivation其实十分脆弱之后，你就必须找一种方法来 ‘play with it’，保持每天的动力。健身对我来说是一种精神补给，用来给我提供‘我仍然在前进，我仍然在进步，我完成了一些事’之感的方法
+            - 持续性：我有计划，且因为时间、器械、身体限制调整了很多次。最终计划为：胸背一天，手臂一天，休息一到两天（我不练腿）
+            - 反馈闭环：第二天的疼痛会让我感到很充实
+            - 迁移价值：即便过了很糟糕的一天，也能有‘我确实完成了什么’的成就感，让我不至于消沉下去
+        - 可选的“加分 insight”
+            - “我不把它当兴趣，而当成一种保持motivated的工具”
+    - Unexpected change / unseen problem in project
+        - 面试官在看：你如何应对不确定性、止损、重排优先级，以及如何让团队/干系人对齐。
+        - story:
+            - 变化是什么：与合作的另一个团队成员对项目的理解有落差，导致前端有些需求无法被满足（页面刷新范围不是整个页面，而是仅子模块，但后端在当前品类下没有对应callback），会导致共享文档的其他用户与主用户的行为感知差异
+            - 行为与 tradeoff：不慌，分析对最终产出、工期、质量的影响，尽快给出多个降级方案：时间优先则维持现状因为并不是不能用，折中则是用不太稳定的计时来让其他用户的行为保持一致，质量优先则是提新需求并推迟工期。
+            - 沟通对齐：拉会同步，决定决策，之后进行复盘：如何同步、争取资源、管理预期（谁需要知道、给出选项而非抱怨）。
+        - 可选的“加分 insight”
+            - 对颗粒度对齐有了进一步的了解
+            - “变化不可避免，但我会把不确定性产品化管理：先缩小问题边界，再用里程碑把风险显性化。”
+    - 无法解决的困难
+        - 面试官在看：你的判断力、韧性、边界感、以及在不可控条件下的专业度（别硬扛、别甩锅）。
+        - story
+            - 不可解的原因要“客观”：HSBC 的 case competition 与 HKUST 的 hackathon 有时间重叠。我们简单分工之后由我主导 hackathon，financial 的队友对应做 hsbc 的 case comp。我完全没有跟进 HSBC ，而我的队友们要做不完了，我也没法立刻帮忙。
+            - 你做了哪些合理尝试：用极短时间与队友沟通，尝试阅读现有成果，确认卡点能不能短时间 catch up（不能），尝试给 AI 更大的决策空间来完成任务（效果不好）。
+            - 你如何处理：及时与队友商讨降级方案，将不需要 catch up 内容的部分交给我（ppt 制作、排版，format处理），寻找 AI 工具尝试提速（找到了个 ppt AI 完全不需要做 ppt）。
+            - 结果：最终没有完成最完美的版本，交上了一份阉割了一些地方的部分。
+        - 可选的“加分 insight”
+            - 你学到了什么：团队合作下即便信任很重要，也绝不要完全不闻不问 + 在项目初期就讨论备用方案
+            - 成熟不是每次都能解题，而是能在解不了时把损失最小化、把信息透明化，并推动正确的决策。
+    - 和同事的冲突？
+        - 面试官在看：情绪管理、同理心、沟通与协作成熟度；以及你是否能把冲突从“人”转回“事”。
+        - story
+            - 冲突类型：有个开 startup 的朋友委托我完成一些功能，但他又相当多的地方没有交代，导致我出现了大量与其外的工作 + 额外的沟通成本
+            - 你先做了自检：我作为有经验的软开，我应该在前期就主动澄清某些细节，但我因为对他的能力的信任而选择相信他
+            - 事实与影响：我心情很差，也因为额外的工作不得不付出额外时间和工期来完成任务。他也对我的能力有了些怀疑
+            - 对齐共同目标：但我和他压下这些不满意，而是先完成了当前任务先。我把原本的代码设计简化，和他积极进行沟通道出现状（双方都有责任），看看能不能 figure out sth 例如延长工期，他也空出时间来和我专门对其颗粒度
+            - 结果：虽然拖延一天，但总算是完成了任务。时候回头看其实没那么大件事，我也有责任。后续我们复盘时即便还有不满，也都能够化解
+        - 可选的“加分 insight”
+            - 冲突对流程没有帮助，先完成了再宣泄情绪
+    - leadership experience
+        - ACCT project experience on 'trust' and engagement
+    - do sth you refuse to do, whats the outcome
+    - why you r a good match
+- old
     - 你这一年来的亮点/学习到了什么/遇到了什么困难
         - 技术
             - 代码设计能力：
@@ -167,62 +265,63 @@
                 - 通过实习和CorpusChat实际业务两者建立对出社会工作的初步认知
             - 解难能力：独立接触业务的压力
                 - CorpusChat的压力强迫走出舒适圈，让我形成了一套解难方法论
+            - 抗压能力
             - 工程师思维：
                 - 思考产品而非代码
-    - 觉得自己技术上还有哪些需要提升的地方，以及怎么提升
-        - 缺乏大型产品的实操经验和行业前沿的开发经验。
-            - 可以通过积极寻找高质量实习来突破
     - 你的解难方法论、学习方法论是什么？
         - 前：提升我方，降低敌方
-            - 资源利用
-                - 团队协作：组织代码审查或头脑风暴会议
-                - 外部资源：查阅Stack Overflow、官方文档、技术博客、相关论文或开源项目类似实现
-            - 更改方案
-                - 评估是否有替代方案可以绕过该问题
-                - 考虑是否可以通过重构简化问题
-                - 必要时与利益相关者沟通调整需求
             - 问题分析与拆解
                 - 重新分析问题：用不同方式表述问题，确认真正痛点
                 - 分解问题：将大问题拆分为可管理的小模块（如使用分治法）
                 - 绘制流程图：可视化问题场景和数据流
+            - 更改方案
+                - 是否可以绕过该问题
+                - 是否可以简化问题
+            - 资源利用
+                - 团队协作：组织代码审查或头脑风暴会议
+                - 外部资源：查阅Stack Overflow、官方文档、技术博客、相关论文或开源项目类似实现
         - 中：调整我方，解决敌方
             - 技术解决策略
-                - 多角度验证：尝试不同的算法/架构方案
+                - Divergent Thinking：思考不同方案、思考更多拓展问题（eg 如何评估、如何量化、如何拓展功能）
                 - 原型验证：为可能的解决方案构建最小可行原型
-                - 日志与调试：增加详细日志，使用条件断点调试
-                - 设定里程碑：将长期问题分解为阶段性目标
+                - 时刻记录：把思路记下来，有助梳理和反思
+                - 排期：切分任务与工期评估，以便随时调整
             - 心态与时间管理
                 - 适当休息：通过休息获得新视角（如橡皮鸭调试法）
-        - 后：记录敌方和我方
-            - 记录过程：保持详细的问题解决日志
+        - 后：反思、验证
+            - 评估成果
+            - 评估资源消耗
+            - 评估整个流程
+            - 总结为文档/经验以防止日后重复思考问题
 - 公司相关
-    - 为什么选择这家公司/你期望的实习环境是怎么样的（反之可以思考什么情况下会考虑辞职）
-        - 有充足个人发挥空间：扁平化，实现个人价值
-        - 有充足个人发展机会：学习行业前沿技术；在市场上留下足迹，提升影响力（尤其是在AI环境下）
+    - 为什么选择这家公司
+        1. why this industry: I want to make impact by tech. Other than infra and natural resources, money is the most common one.
+        2. why this company: 
     - 对之前几次面试的感受：
-        - 面试官比较专业，问了一些我从未想过的角度，我从面试中也学到很多知识
-    - 你认为实习时可预见的困难
-        - 工作环境的差异：和香港不一样，但多少也有一些经验，能够适应
-        - 技术积累的追赶：大项目、历史积累
+        - 问的方向很不一样，不再执着于八股
+    - 你认为可预见的困难
+        - 工作环境的差异：压力相对较大
+        - 技术积累的追赶：大项目、历史积累、AI 方向
     - 能为公司带来什么？
         - 有工作经验
             - 快速适应工作环境：技术岗工作流程、懂得怎么协作
             - 真实业务，真的有价值
         - 年轻外向
-            - 25 26 27届见证了整个时代的发展，眼界更开阔
             - 为团队带来活力
-        - 能吃苦
-            - 比较基础的工作总是要做的，而我正好可以借此机会学习、融入
+            - 25 26 27 届见证了整个时代的发展，眼界更开阔
         - 其他
             - 在两地都生活过，或许为我提供了不一样的思维方式来解决问题
     - 工作压力比较大, 你认为能适应吗?
-        - 哪几个方面的压力
-            - 协作压力
-            - 待办事项
-        - 为什么会有压力
-        - 怎么解决压力
-            - 加班无非就是保持productive更长时间，我有经验
-            - 学会自我调节（长期短期）
+        1. 能接受加班
+        2. 会尽力提升工作效率
+- 反问
+    - 薪资构成（补贴？绩效？）
+    - 工时（双休？大小周？）
+    - 考核制度
+    - 考勤制度
+    - 部门的产品等等
+    - 结果什么时候出
+
 # 经验
 - 逻辑题就是脑筋急转弯
     - 可以多用数学的思维，比如符号标记啥的
@@ -254,87 +353,103 @@
     3. Azure的openai assistant功能并没有nodejs的SDK
 - technical difference btw python and nodejs
     - nodejs:
-        - 基于事件驱动和非阻塞 I/O 模型，适合处理**I/O 密集型任务**（如文件操作、数据库查询）和**网络实时应用**（如 WebSocket、SSE）。
-        - 单语言全栈开发，减少上下文切换
-        - 生态系统统一且丰富（如 Express、NextJS 框架），工具链完整。
-        - 社区活跃，更新频繁，支持现代开发实践。
-        - 启动速度快，资源占用较少，适合微服务架构和 Serverless 场景。
-        - **单线程模型**在处理 CPU 密集型任务（如复杂计算、图像处理）时性能较差。
-            - 虽然可以通过 worker_threads 实现多线程，但复杂度较高。
+        - 优势：
+            - 基于事件驱动和非阻塞 I/O 模型，适合处理**I/O 密集型任务**（如文件操作、数据库查询）和**网络实时应用**（如 WebSocket、SSE）。
+            - 单语言全栈开发，减少上下文切换
+            - 生态系统统一且丰富（如 Express、NextJS 框架），工具链完整。
+        - 劣势：
+            - **单线程模型**在处理 CPU 密集型任务（如复杂计算、图像处理）时性能较差。
+                - 虽然可以通过 worker_threads 实现多线程，但复杂度较高。
     - python:
-        - Python语法简洁，适合中小型项目或需要**快速迭代**的场景
-        - 生态系统丰富
-        - Python在算法实现和数据处理方面表现优异，如数据科学、机械学习等。
-        - 更好的多线程和多进程支持，适合处理 CPU 密集型任务。
-            - 但GIL（全局解释器锁）限制了多线程性能，需要asyio解决
-        - Python是**解释型语言**，执行效率较低，不适合高并发或实时性要求高的场景。
-            - 但可以通过多进程或异步编程（如 asyncio）优化。
-        - Python 的异步性能和事件驱动机制不如 Node.js，不适合开发实时应用（如 WebSocket、SSE）。
+        - 优势：
+            - Python语法简洁，适合中小型项目或需要**快速迭代**的场景
+            - 生态系统丰富
+            - Python在算法实现和数据处理方面表现优异，如数据科学、机械学习等。
+            - 更好的多线程和多进程支持，适合处理 CPU 密集型任务。
+                - 但GIL（全局解释器锁）限制了多线程性能，需要asyio解决
+        - 劣势：
+            - Python是**解释型语言**，执行效率较低，不适合高并发或实时性要求高的场景。
+                - 但可以通过多进程或异步编程（如 asyncio）优化。
+            - Python 的异步性能和事件驱动机制不如 Node.js，不适合开发实时应用（如 WebSocket、SSE）。
 - Redux
-    - Context缺点
-        - 大量switch来判断fetch操作
-        - 性能问题：当 Context 的值发生变化时，所有消费该 Context 的组件都会重新渲染，即使它们只依赖 Context 的一部分数据。需要通过 useMemo 或 useCallback 优化性能。
-        - 不适合复杂状态管理：缺乏 Redux 中的中间件、时间旅行调试等功能。且状态更新逻辑分散在各个组件中，难以集中管理。
-        - 调试困难：没有 Redux DevTools 这样的强大调试工具。
-    - Redux优点
-        - 集中式状态管理：所有状态存储在单一的 Store 中，状态更新逻辑集中在 Reducer 中，加上状态分片，易于管理、追踪和测试。
-        - 强大的中间件支持：支持中间件（如 redux-thunk、redux-saga），可以处理异步操作、日志记录等。
-        - 时间旅行调试：通过 Redux DevTools，可以回溯和重放状态变化，方便调试。
-        - 性能优化：通过 useSelector 选择性订阅状态，浅对比返回值，避免不必要的重新渲染。
-    - 事实上react自己就有useReducer的钩子
-        - 但很多东西都需要自己手动定义，例如action的type
-        - redux还封装好了全局的state，而非仅当前组件内的state
-    - Redux设计理念：
-        - 统一状态管理
-        - 把复杂的状态管理逻辑组合封装为一个个行为，提高可读性（也就是用文字的action来封装复杂的setState）
-    - redux手动实现
-        - listener队列：包含着所有订阅者的通知用回调函数（也就是selector）
-        - subcribe函数：把订阅者的通知用回调函数传入listener队列。这个回调函数需要与组件声明周期挂钩，如useState的setter，useEffect的依赖数组值改变等等
-        - reducer函数：传入action和state，并对action做出对应修改
-        - dispatch函数：更改state，通知listener队列里对应的selector
-        - useSelector钩子：封装subscribe和getState的钩子
-            - 嵌套钩子原来也会重新渲染组件
-        - getState函数：获得state
-        - store：包含了state、reducer、listener的对应关系
-        - 通过action的type和订阅时的type分片，只让指定的
-    - 用action承载用以更改的数据，在reducer中把action里的数据更新到state中并通过selector广播
-    - Slice：
-        - name、initial state、reducers、extraReducers
-        - name就是这个slice中所有同步action的type 前缀，后缀则是reducer的名字。
-        - createSlice：reducer、action、action creator的语法糖
-        - extraReducers：处理异步thunk的状态
-            - 内置一些常用的一部状态，包括pending、fulfilled、rejected
-    - Thunk：
-        - 第一个参数是action type前缀。至于后缀则是thunk名
-        - 第二个参数是一些给thunk用的redux API
-            - 因为异步操作的复杂性，它的处理都是独立于其他同步reducer的，state也只能通过api获得。
-        - 调用就是直接用thunk，但传入的参数会被传给第二个定义时的函数。
-            - eg
-                ```ts
-                // incrementAsync(123)就是给amount传入123
-                export const incrementAsync = createAsyncThunk(
-                    'counter/incrementAsync',
-                    async (amount, { dispatch, getState, rejectWithValue }) => {
-                        // 模拟异步操作
-                        await new Promise((resolve) => setTimeout(resolve, 1000));
-                        dispatch(incrementByAmount(amount)); // 调用同步Action
-                    }
-                );
-                ```
-    - Store
-        - 注册reducer、state、和他们的关系，让redux知道有哪些reducer和state被定义了，以及配置它们的对应关系，让reducer只会接到一小段配置给它的子state
-        - store提供dispatch。每次dispatch都会遍历注册的reducer，让输入的action能找到其匹配的reducer
-    - Selector
-        - 使用useSelector从store中提取状态（如count和status）。
-        - 得配合定义好的selector才能暴露给组件使用
-            - eg
-                ```ts
-                // selector.ts
-                const selectOpenAIChatModels = (state) => state.entities.openAIChatModels;
+    - 基础介绍
+        - Redux设计理念：
+            - 统一状态管理
+            - 把复杂的状态管理逻辑组合封装为一个个行为，提高可读性（也就是用文字的action来封装复杂的setState）
+        - Context缺点
+            - 大量switch来判断fetch操作
+            - 性能问题：当 Context 的值发生变化时，所有消费该 Context 的组件都会重新渲染，即使它们只依赖 Context 的一部分数据。需要通过 useMemo 或 useCallback 优化性能。
+            - 不适合复杂状态管理：缺乏 Redux 中的中间件、时间旅行调试等功能。且状态更新逻辑分散在各个组件中，难以集中管理。
+            - 调试困难：没有 Redux DevTools 这样的强大调试工具。
+        - Redux优点
+            - 集中式状态管理：所有状态存储在单一的 Store 中，状态更新逻辑集中在 Reducer 中，加上状态分片，易于管理、追踪和测试。
+            - 强大的中间件支持：支持中间件（如 redux-thunk、redux-saga），可以处理异步操作、日志记录等。
+            - 时间旅行调试：通过 Redux DevTools，可以回溯和重放状态变化，方便调试。
+            - 性能优化：通过 useSelector 选择性订阅状态，浅对比返回值，避免不必要的重新渲染。
+        - Slice：
+            - name、initial state、reducers、extraReducers
+            - name就是这个slice中所有同步action的type 前缀，后缀则是reducer的名字。
+            - createSlice：reducer、action、action creator的语法糖
+            - extraReducers：处理异步thunk的状态
+                - 内置一些常用的一部状态，包括pending、fulfilled、rejected
+        - Thunk：
+            - 第一个参数是action type前缀。至于后缀则是thunk名
+            - 第二个参数是一些给thunk用的redux API
+                - 因为异步操作的复杂性，它的处理都是独立于其他同步reducer的，state也只能通过api获得。
+            - 调用就是直接用thunk，但传入的参数会被传给第二个定义时的函数。
+                - eg
+                    ```ts
+                    // incrementAsync(123)就是给amount传入123
+                    export const incrementAsync = createAsyncThunk(
+                        'counter/incrementAsync',
+                        async (amount, { dispatch, getState, rejectWithValue }) => {
+                            // 模拟异步操作
+                            await new Promise((resolve) => setTimeout(resolve, 1000));
+                            dispatch(incrementByAmount(amount)); // 调用同步Action
+                        }
+                    );
+                    ```
+        - Store
+            - 注册reducer、state、和他们的关系，让redux知道有哪些reducer和state被定义了，以及配置它们的对应关系，让reducer只会接到一小段配置给它的子state
+            - store提供dispatch。每次dispatch都会遍历注册的reducer，让输入的action能找到其匹配的reducer
+        - Selector
+            - 使用useSelector从store中提取状态（如count和status）。
+            - 得配合定义好的selector才能暴露给组件使用
+                - eg
+                    ```ts
+                    // selector.ts
+                    const selectOpenAIChatModels = (state) => state.entities.openAIChatModels;
 
-                // components.tsx
-                const openAIChatModels = useSelector(selectOpenAIChatModels)
-                ```
+                    // components.tsx
+                    const openAIChatModels = useSelector(selectOpenAIChatModels)
+                    ```
+        - 用action承载用以更改的数据，在reducer中把action里的数据更新到state中并通过selector广播
+    - 深入介绍
+        - 事实上react自己就有useReducer的钩子
+            - 但很多东西都需要自己手动定义，例如action的type
+            - redux还封装好了全局的state，而非仅当前组件内的state
+        - redux手动实现
+            - listener队列：包含着所有订阅者的通知用回调函数（也就是selector）
+            - subcribe函数：把订阅者的通知用回调函数传入listener队列。这个回调函数需要与组件声明周期挂钩，如useState的setter，useEffect的依赖数组值改变等等
+            - reducer函数：传入action和state，并对action做出对应修改
+            - dispatch函数：更改state，通知listener队列里对应的selector
+            - useSelector钩子：封装subscribe和getState的钩子
+                - 嵌套钩子原来也会重新渲染组件
+            - getState函数：获得state
+            - store：包含了state、reducer、listener的对应关系
+            - 通过action的type和订阅时的type分片，只让指定的
+    - Corpus的redux优化
+        - useSelector按需更新
+        - 精细化state的selector
+        - 生产环境禁用dev tool的历史记录
+            ```js
+            const store = createStore(
+                reducer,
+                process.env.NODE_ENV === 'production' 
+                    ? undefined 
+                    : window.__REDUX_DEVTOOLS_EXTENSION__?.()
+            );
+            ```
 - 后端
     - SW在项目中的完整流程解说：
         1. 需求分析和系统设计
@@ -347,23 +462,15 @@
             - 后端开发：实现 AI 助手数据流的核心逻辑，集成 Azure Services 进行自然语言处理。
             - 测试：建立本地测试环境；编写简易单元测试和集成测试
             - 安全性：使用 JWT 实现用户认证；参数化查询防止 SQL 注入；仅在 HTTPS 连接中发送 cookie，禁止 JavaScript 访问 cookie，防止跨站请求伪造 (CSRF)
-        3. 版本控制
-            - Git 使用：使用 Git 管理代码，创建分支开发新功能，合并到主分支后进行部署。
+        3. 团队协作
+            - 代码版本控制：使用 Git 管理代码，创建分支开发新功能，合并到主分支后进行部署。
+            - 客户、团队成员交流：及时通讯软件、线上文档、开会
         4. 部署与运维
             - CI/CD：使用 Azure APP Service 持续集成和持续交付，自动化构建和部署。
             - 监控：使用 Azure APP Service 监控系统日志和性能
         5. 后续更新
             - 新功能：保持代码质量，保持弹性和可拓展性
             - 优化：前端和后端
-        
-        - 面试准备建议
-            - 熟悉项目细节：清晰描述项目的每个阶段（需求分析、设计、开发、测试、部署）。
-            - 掌握基础知识：复习软件工程的核心概念（如敏捷开发、CI/CD、版本控制）。
-            - 准备技术问题：面试官可能会问具体技术问题（如 React 生命周期、Redux 工作原理、JWT 实现）。
-            - 展示解决问题的能力：准备一些你在项目中遇到的问题和解决方案（如性能优化、Bug 修复）。
-        
-        - 示例面试回答
-            - 面试官：请描述一下你在项目中的角色和贡献。你：我负责了从需求分析到测试上线的全流程开发。在需求分析阶段，我与学校教师和学生沟通，明确了 AI 助手的功能需求。在设计阶段，我选择了 MVC 架构，并使用 React 和 Node.js 实现了前后端。在开发阶段，我使用 Redux 管理状态，并通过 JWT 实现了用户认证和权限控制。最后，我使用 Azure DevOps 实现了 CI/CD，确保系统能够高效部署和运行。
     
     - Alibaba MVC架构，最重要的manager在项目中的应用
         - manager就是一些service的通用逻辑
@@ -475,10 +582,29 @@
             - offsetWidth包含padding不包含滚动条。scroll也只到padding不需要考虑滚动条
 - 基于 SSE 的实时聊天交互、机器人回复的流式显示
     - 长连接，缓存块，pesudoMessage
-- 自定义Hooks来抽象数据获取和表单处理逻辑，提升了代码的可读性和可维护性。
+- 自定义Hooks来
     - 为什么要自定义hook？
         - 复用、封装逻辑
         - 分离逻辑：把和UI没有直接关系的运算、数据获取逻辑全部封装成钩子，让组件只关心怎么用数据渲染UI，而不用理会数据的预处理
+    - 抽象数据获取和表单处理逻辑，提升了代码的可读性和可维护性。
+    - 本质上就是utils的封装
+    - 什么场景下应该使用钩子：
+        - 高级组件
+            - Form
+                - 一个formInstance实例用来提供表单整体方法和管理字段方法
+                - 通过跨组件状态传递让子组件也能访问这个formInstance
+                - 控制翻转：注册自己，获得val，设置val，验证val，val重渲染逻辑
+        - 逻辑复用
+            - 性能/行为监控钩子
+        - 组织代码/逻辑抽象
+            - 半静态constant的钩子
+                - 较长时间不需变更，但仍然有变更机会的数据，比如i18n的内容
+            - 层级设计
+                - 用hooks来管理原始selector，避免创建新的selector并同一层之中互相调用
+                - 比如数据获取、验证、parse的场景
+                    - 其实redux的query或者thunk本身就是一种基于钩子思维开发的组件
+                    - 跨api的数据要二次parsing，用钩子封装
+                        - 比如数组变成set/map的情况
 - 路由
     - History路由 vs Hash路由
         - 两者其实都是前端拦截url改变的请求，但同时两者都不会拦截刷新网页时对前端服务器的请求
@@ -593,25 +719,6 @@
     // 初始化渲染
     handleRouteChange();
     ```
-- 自定义钩子的说辞（form）
-    - 本质上就是utils的封装
-    - 什么场景下应该使用钩子：
-        - 高级组件
-            - Form
-                - 一个formInstance实例用来提供表单整体方法和管理字段方法
-                - 通过跨组件状态传递让子组件也能访问这个formInstance
-                - 控制翻转：注册自己，获得val，设置val，验证val，val重渲染逻辑
-        - 逻辑复用
-            - 性能/行为监控钩子
-        - 组织代码/逻辑抽象
-            - 半静态constant的钩子
-                - 较长时间不需变更，但仍然有变更机会的数据，比如i18n的内容
-            - 层级设计
-                - 用hooks来管理原始selector，避免创建新的selector并同一层之中互相调用
-                - 比如数据获取、验证、parse的场景
-                    - 其实redux的query或者thunk本身就是一种基于钩子思维开发的组件
-                    - 跨api的数据要二次parsing，用钩子封装
-                        - 比如数组变成set/map的情况  
 - Corpus的工程化优化：
     - splitChunk：
         - 把第三方库独立打包
@@ -638,21 +745,59 @@
                 ```js
                 optimization: {
                     moduleIds: 'deterministic', // 模块 ID 根据路径生成，内容不变则 ID 不变
-                    chunkIds: 'deterministic'   // 同上
+                    chunkIds: 'deterministic',   // 同上
                 }
                 ```
-- Corpus的redux优化
-    - useSelector按需更新
-    - 精细化state的selector
-    - 生产环境禁用dev tool的历史记录
-        ```js
-        const store = createStore(
-            reducer,
-            process.env.NODE_ENV === 'production' 
-                ? undefined 
-                : window.__REDUX_DEVTOOLS_EXTENSION__?.()
-        );
-        ```
+- 测试脚本
+    - Implemented a comprehensive automated testing strategy (unit, integration, E2E) achieving 85% code coverage, which prevented numerous critical bugs and accelerated future development cycles.
+    - 要准备的面试内容：
+        - 剩下 15% 是什么？
+        - 用的什么语言？怎么设定测试的？
+        - 异步任务难以追踪，是怎么处理的？
+        - 解决了什么 bug ？
+
+### 中银
+- 对于企业银行相关内容（to B 侧的银行业务）的数据处理、测试、验证等等
+    - 分析服务器健康状态的脚本
+        - 情景：内部测试服务器的健康检查脚本，发现有 bug，会出现 false-true 的检测问题
+        - 任务：修复它
+        - 行动：
+            1. 定位到问题在于其中一个健康检查的指标：错误统计归因的检查代码并不完善，添加新逻辑以完善
+            2. 顺手进行了优化，用更小规模的方式检查问题而非全量检查
+        - 结果：成功修复问题，降低运维人员工作量，加快工作流程
+        - 要准备的面试内容：
+            - 基于什么来判断？
+            - 判断了哪些健康状态？
+            - 具体代码有什么技术点吗？
+    - 修复+优化 xml 数据迭代的自动化脚本
+        - 情景：数据结构版本迭代，需要批量更新旧数据为新数据。有一个上一个实习生写的脚本，但这个脚本相当简陋且耦合，新的数据需要通过修改代码才能更新。
+        - 任务：更新这个脚本以用在新迭代
+        - 行动：
+            1. 大幅重构该脚本，优化为了能够通过一份配置文件动态地定义如何更新数据，大幅提升泛用性和灵活度
+            2. 原逻辑性能堪忧，我通过空间换时间的思路优化了性能，避免全量检查
+            3. 定位到一个输入文件编码的错误，于是增加多种编码格式的兼容
+        - 结果：更可复用的结构，更快的性能。有助提升未来的迭代效率和工作推进效率
+        - 要准备的面试内容：
+            - 有什么难点？
+            - 在业务流程的哪一部分？
+    - 测试脚本
+        - 情景：有很多团队内部常用的 java 工具，随着时间会慢慢更新新功能，但一直没有测试脚本
+        - 任务：编写测试脚本
+        - 行动：了解脚本用途并编写测试用例
+        - 结果：加快工具迭代，提升工作效率
+        - 要准备的面试内容：
+            - 什么技术栈？
+            - 什么脚本/工具？
+    - 数据看板？
+
+
+# 简历方向
+- financial：严谨性、可靠性、对金融业务的理解、技术驱动的业务价值。
+- software ：技术深度、架构能力、性能优化和工程卓越。
+
+- techSupport：解决问题的能力、沟通技巧、客户导向和同理心。
+- leadership/culture：影响力、团队协作、知识分享和领导潜力。
+
 # 八股
 ### 前端
 - css
@@ -686,7 +831,7 @@
         - 注意clear的含义其实就是不允许某个方向上有人浮动，所以float的left和right与clear的left和right注意需要互相对着
             - 比如float在前且float:left，你后面的元素clear:right是没用的
             - 此外，因为float前的块会顶开float，对前块设置clear没用
-    - 父级变成BFC
+    - 父级变成 BFC
         - overflow不为visible
         - `display: flow-root`
         - 注意只能让父元素能够识别和包含浮动元素，float的后子元素仍然会被覆盖
@@ -742,9 +887,13 @@
     - http请求减少、资源压缩
     - 按需加载
     - 服务端渲染
-    - 防抖与节流
-        - 防抖：短时间内多次，只算最后一次
-        - 节流：短时间内多次，每一稳定时间区间只算一次
+    - 减少更新频次：
+        - 减少 dom
+        - 防抖与节流
+            - 防抖：短时间内多次，只算最后一次
+            - 节流：短时间内多次，每一稳定时间区间只算一次
+        - 浅对比
+    - worker/后台处理计算密集任务
 - 闭包
     - 保存状态：闭包可以保存函数执行时的状态，即使函数已经执行完毕。
     - 实现私有变量：通过闭包，可以模拟私有变量，避免外部直接访问和修改。
@@ -938,56 +1087,6 @@
 - 硬件都来了
     - 【解决】基带和频带
     - 【解决】比特率和波特率
-- AI
-    - AI的影响
-        - AI边缘
-            - 私有数据训练的道德规范
-            - 新兴技能需求
-                - 提示工程（Prompt Engineering）成为必备技能
-                - AI生成内容的审查与质量控制
-                - 人机协作开发模式规范制定
-                - AI协作能力，无论IDE工具还是聊天机器人
-            - 商业模式创新
-                - 按需算力租赁（处理超大型文档分析）
-        - AI核心
-            - 智能生产力工具
-                - 生成稿件、代码、文档
-                - 个性化助手服务
-                - 行业垂直解决方案（教育/医疗专用模板引擎）
-            - 生产力提升工具（工作流加速）
-                - 多语言实时协作（自动翻译保持格式）
-                - 将自动化拓展到人文领域：合规性自动检查（法律/财务文档风险识别）
-                - 会议录音→结构化笔记自动生成
-            - 交互体验提升
-                - 拓展控制方式：以非文字方式访问数字世界，例如手势、语音
-                - 多模态：语音、视觉、文字混合交互，例如让ai根据图片和说的内容生成内容
-                - 逻辑简化：简化交互逻辑，把更复杂的内容交给ai处理
-            - 知识管理革命
-                - 让AI组织和筛选杂乱的信息
-                - 知识检索可以更加高效自由，如跨语言检索、快速筛选等
-    - 解决问题的方法论
-        - 前：提升我方，降低敌方
-            - 资源利用
-                - 团队协作：组织代码审查或头脑风暴会议
-                - 外部资源：查阅Stack Overflow、官方文档、技术博客、相关论文或开源项目类似实现
-            - 更改方案
-                - 评估是否有替代方案可以绕过该问题
-                - 考虑是否可以通过重构简化问题
-                - 必要时与利益相关者沟通调整需求
-            - 问题分析与拆解
-                - 重新分析问题：用不同方式表述问题，确认真正痛点
-                - 分解问题：将大问题拆分为可管理的小模块（如使用分治法）
-                - 绘制流程图：可视化问题场景和数据流
-        - 中：调整我方，解决敌方
-            - 技术解决策略
-                - 多角度验证：尝试不同的算法/架构方案
-                - 原型验证：为可能的解决方案构建最小可行原型
-                - 日志与调试：增加详细日志，使用条件断点调试
-                - 设定里程碑：将长期问题分解为阶段性目标
-            - 心态与时间管理
-                - 适当休息：通过休息获得新视角（如橡皮鸭调试法）
-        - 后：记录敌方和我方
-            - 记录过程：保持详细的问题解决日志
 - 腾子的面经
     - 你认为为什么要学习前端框架/引擎的底层原理？
         - 复杂bug的解决
@@ -1020,10 +1119,12 @@
         ```
 
 
+
 # todo
 - 紧急些的
     - 如果有基础的话，可以试试更进阶的，比如 Codeforces 上面的div 2，可以给自己开virtual participation，如果2h的比赛可以稳定独立做出3~4个题，笔试和面试阶段的算法题应该不会难住你了。
 - 算法
+    - 正则的语法
     - 最大团问题
     - 给定一堆区间，给出有多少区间的两两组合符合以下条件：max(l) <= min(r)
     - 排序算法
@@ -1034,6 +1135,7 @@
     - 给定完全二叉树的叶节点数量、该二叉树的总节点数量最多/最少是多少？
     - 给定无向图G = {V, E}，深度优先遍历可能得到哪些序列？
 - 前端开发
+    - 二进制数据：ArrayBuffer、Uint8Array 之类的
     - 你认为AI有哪些有前景的应用？对前端开发和共享文档行业又会有什么影响
     - 前端性能优化
         - 项目怎么优化的，具体数据？
